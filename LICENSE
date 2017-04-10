@@ -1,3 +1,21 @@
+Files are licensed by the first applicable rule:
+* By the license in the header of the file
+* The first parent directory to contain a LICENSE file
+* The licenses to paths specified below
+* All remaining files are licensed under MPLv2 (included below)
+
+## License to paths
+Apache-2.0
+* thirdparty/src/main/java/ch/boye/httpclientandroidlib/
+* thirdparty/src/main/java/org/json/simple/
+* thirdparty/src/main/java/org/mozilla/apache/commons/codec/
+
+Note: A copy of the licenses should be available at the directory in the
+specified paths.
+
+## Remaining files
+The MPLv2 applies to all remaining files and is included below:
+
 Mozilla Public License Version 2.0
 ==================================
 
