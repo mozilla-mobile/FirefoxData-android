@@ -7,6 +7,11 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- These themes are imported from m-c. TODO: workaround. -->
+    <style name="ActionBar"/>
+    <style name="Gecko.Preferences" parent=""/>
+
+    <!-- END -->
     <style name="FxAccountTheme" parent="Gecko.Preferences" />
 
     <style name="FxAccountTheme.FxAccountStatusActivity" parent="@style/FxAccountTheme">

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FirefoxAccounts</string>
+
+    <!-- Strings left out from big import, for some reason. Actual text is guessed. -->
+    <string name="fxaccount_remove_account_dialog_action_confirm">Confirm</string>
+
 </resources>
