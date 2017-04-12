@@ -1,1 +1,1 @@
-include ':app', ':thirdparty', ':fennec'
+include ':accounts', ':thirdparty', ':fennec'
