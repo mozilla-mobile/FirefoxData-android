@@ -77,7 +77,7 @@ public class FxAccountNotificationManager {
 
     if (!localeUpdated) {
       localeUpdated = true;
-      Locales.getLocaleManager().getAndApplyPersistedLocale(context);
+      //Locales.getLocaleManager().getAndApplyPersistedLocale(context);
     }
 
     final String title;

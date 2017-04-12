@@ -38,6 +38,7 @@ public class Locales {
     }
 
     public static void initializeLocale(Context context) {
+        /*
         final LocaleManager localeManager = getLocaleManager();
         final StrictMode.ThreadPolicy savedPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
@@ -46,6 +47,7 @@ public class Locales {
         } finally {
             StrictMode.setThreadPolicy(savedPolicy);
         }
+        */
     }
 
     public static abstract class LocaleAwareAppCompatActivity extends AppCompatActivity {
