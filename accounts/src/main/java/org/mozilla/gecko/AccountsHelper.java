@@ -23,8 +23,8 @@ import org.mozilla.gecko.fxa.FxAccountDeviceRegistrator;
 import org.mozilla.gecko.fxa.authenticator.AndroidFxAccount;
 import org.mozilla.gecko.fxa.login.Engaged;
 import org.mozilla.gecko.fxa.login.State;
-import org.mozilla.gecko.restrictions.Restrictable;
-import org.mozilla.gecko.restrictions.Restrictions;
+//import org.mozilla.gecko.restrictions.Restrictable;
+//import org.mozilla.gecko.restrictions.Restrictions;
 import org.mozilla.gecko.sync.SyncConfiguration;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.util.BundleEventListener;
@@ -46,38 +46,40 @@ public class AccountsHelper implements BundleEventListener {
     private static final String LOGTAG = "GeckoAccounts";
 
     protected final Context mContext;
-    protected final GeckoProfile mProfile;
+    //protected final GeckoProfile mProfile;
 
-    public AccountsHelper(Context context, GeckoProfile profile) {
+    //public AccountsHelper(Context context, GeckoProfile profile) {
+    public AccountsHelper(Context context) {
         mContext = context;
-        mProfile = profile;
+        //mProfile = profile;
 
-        EventDispatcher.getInstance().registerGeckoThreadListener(this,
-                "Accounts:CreateFirefoxAccountFromJSON",
-                "Accounts:UpdateFirefoxAccountFromJSON",
-                "Accounts:DeleteFirefoxAccount",
-                "Accounts:Exist",
-                "Accounts:ProfileUpdated");
-        EventDispatcher.getInstance().registerUiThreadListener(this,
-                "Accounts:Create",
-                "Accounts:ShowSyncPreferences");
+//        EventDispatcher.getInstance().registerGeckoThreadListener(this,
+//                "Accounts:CreateFirefoxAccountFromJSON",
+//                "Accounts:UpdateFirefoxAccountFromJSON",
+//                "Accounts:DeleteFirefoxAccount",
+//                "Accounts:Exist",
+//                "Accounts:ProfileUpdated");
+//        EventDispatcher.getInstance().registerUiThreadListener(this,
+//                "Accounts:Create",
+//                "Accounts:ShowSyncPreferences");
     }
 
     public synchronized void uninit() {
-        EventDispatcher.getInstance().unregisterGeckoThreadListener(this,
-                "Accounts:CreateFirefoxAccountFromJSON",
-                "Accounts:UpdateFirefoxAccountFromJSON",
-                "Accounts:DeleteFirefoxAccount",
-                "Accounts:Exist",
-                "Accounts:ProfileUpdated");
-        EventDispatcher.getInstance().unregisterUiThreadListener(this,
-                "Accounts:Create",
-                "Accounts:ShowSyncPreferences");
+//        EventDispatcher.getInstance().unregisterGeckoThreadListener(this,
+//                "Accounts:CreateFirefoxAccountFromJSON",
+//                "Accounts:UpdateFirefoxAccountFromJSON",
+//                "Accounts:DeleteFirefoxAccount",
+//                "Accounts:Exist",
+//                "Accounts:ProfileUpdated");
+//        EventDispatcher.getInstance().unregisterUiThreadListener(this,
+//                "Accounts:Create",
+//                "Accounts:ShowSyncPreferences");
     }
 
     @Override // BundleEventListener
     public void handleMessage(final String event, final GeckoBundle message,
                               final EventCallback callback) {
+        /*
         if (!Restrictions.isAllowed(mContext, Restrictable.MODIFY_ACCOUNTS)) {
             // We register for messages in all contexts; we drop, with a log and an error to JavaScript,
             // when the profile is restricted.  It's better to return errors than silently ignore messages.
@@ -87,6 +89,7 @@ public class AccountsHelper implements BundleEventListener {
             }
             return;
         }
+        */
 
         if ("Accounts:CreateFirefoxAccountFromJSON".equals(event)) {
             // As we are about to create a new account, let's ensure our in-memory accounts cache
@@ -112,7 +115,8 @@ public class AccountsHelper implements BundleEventListener {
                 State state = new Engaged(email, uid, verified, unwrapkB, sessionToken, keyFetchToken);
                 fxAccount = AndroidFxAccount.addAndroidAccount(mContext,
                         email,
-                        mProfile.getName(),
+                        //mProfile.getName(),
+                        "profile name TODO", // TODO: change me!
                         authServerEndpoint,
                         tokenServerEndpoint,
                         profileServerEndpoint,
