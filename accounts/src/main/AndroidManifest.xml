@@ -3,6 +3,7 @@
           package="org.mozilla.gecko"
 >
 
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
@@ -28,6 +29,13 @@
                  android:roundIcon="@mipmap/ic_launcher_round"
                  android:supportsRtl="true"
                  android:theme="@style/AppTheme">
+
+        <activity
+                android:theme="@style/Theme.AppCompat.NoActionBar"
+                android:label="@string/fxaccount_login_webview_label"
+                android:name="org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity"
+                android:exported="true"
+        />
 
         <activity
                 android:theme="@style/FxAccountTheme.FxAccountStatusActivity"
