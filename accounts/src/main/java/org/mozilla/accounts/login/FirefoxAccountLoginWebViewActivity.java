@@ -17,6 +17,7 @@ import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.FirefoxAccount;
+import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.gecko.R;
 import org.mozilla.util.ResourcesUtil;
 import org.mozilla.util.WebViewUtil;
@@ -32,20 +33,22 @@ import org.mozilla.util.WebViewUtil;
  *  - add loading timeout
  *  - assumes never used when user already logged in.
  *  - test more complex flows, like verification, failed password.
- *  - return or persist data. add docs on usage.
+ *  - return or persist data.
  *  - add docs on how class should be used.
- *  - server url? returning auth urls?
  */
 public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "lol";
 
-    private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
+    public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.accounts.config";
 
-    private static final String DEV_URL = "https://stable.dev.lcip.org/signin?service=sync&context=fx_ios_v1"; // todo: to config? context.
+    private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
 
     private WebView webView;
     private String script;
+
+    private FirefoxAccountEndpointConfig endpointConfig;
+    private String webViewURL;
 
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
@@ -55,8 +58,19 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         setSupportActionBar((Toolbar) findViewById(R.id.fxaccount_login_toolbar));
         webView = (WebView) findViewById(R.id.fxaccount_login_web_view);
 
+        // Code in this block must be called before initWebView.
         script = ResourcesUtil.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
+        initFromIntent();
+
         initWebView();
+    }
+
+    private void initFromIntent() {
+        final Intent intent = getIntent();
+        endpointConfig = intent.getParcelableExtra(EXTRA_ACCOUNT_CONFIG);
+        if (endpointConfig == null) { throw new IllegalArgumentException("Expected EXTRA_ACCOUNT_CONFIG with intent."); }
+
+        webViewURL = endpointConfig.signInURL.toString();
     }
 
     private void initWebView() {
@@ -64,8 +78,8 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true); // needed for FxA login.
         webView.setWebViewClient(new ScriptInjectionWebViewClient(script));
-        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ);
-        webView.loadUrl(DEV_URL);
+        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ); // TODO: min SDK 17?
+        webView.loadUrl(webViewURL);
     }
 
     @Override
@@ -120,7 +134,7 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         injectMessage("login");
 
         // todo: error out before or after login message?
-        final FirefoxAccount account = FirefoxAccount.fromWebFlow(data);
+        final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             setResult(Activity.RESULT_CANCELED);
             finish();
@@ -148,7 +162,7 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // WebView methods must be called from UiThread.
-                final String script = "window.postMessage(" + jsonStr + ", '" + DEV_URL + "');";
+                final String script = "window.postMessage(" + jsonStr + ", '" + webViewURL + "');";
                 WebViewUtil.evalJS(webView, script);
             }
         });

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
 
 public class AccountsExampleActivity extends AppCompatActivity {
@@ -15,6 +16,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final Intent intent = new Intent(this, FirefoxAccountLoginWebViewActivity.class);
+        intent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStableDev());
         startActivityForResult(intent, 10);
     }
 

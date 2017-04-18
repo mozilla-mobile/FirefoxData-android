@@ -28,7 +28,7 @@ public class FirefoxAccount {
     public final String uid;
 
     public final State accountState;
-    //public final FirefoxAccountConfiguration accountConfig;
+    public final FirefoxAccountEndpointConfig endpointConfig;
 
     // version?
     // deviceRegistration - reg for this device.
@@ -36,10 +36,12 @@ public class FirefoxAccount {
     // stateCache // sync accountState. unclear diff between.
     // syncAuthState
 
-    public FirefoxAccount(final String email, final String uid, final State state) {
+    public FirefoxAccount(final String email, final String uid, final State state,
+            final FirefoxAccountEndpointConfig endpointConfig) {
         this.email = email;
         this.uid = uid;
         this.accountState = state;
+        this.endpointConfig = endpointConfig;
     }
 
     /**
@@ -48,7 +50,7 @@ public class FirefoxAccount {
      * @param jsonData The stringified JSON of the "event.details.data" object.
      * @return the account associated with the JSON or null if an error occurs.
      */
-    public static FirefoxAccount fromWebFlow(final String jsonData) {
+    public static FirefoxAccount fromWebFlow(final FirefoxAccountEndpointConfig endpointConfig, final String jsonData) {
         if (TextUtils.isEmpty(jsonData) || jsonData.equals("undefined")) {
             Log.e(LOGTAG, "fromWebFlow: input empty.");
             return null;
@@ -70,17 +72,8 @@ public class FirefoxAccount {
             final byte[] sessionToken = Utils.hex2Byte(data.getString("sessionToken"));
             final byte[] unwrapBKey = Utils.hex2Byte(data.getString("unwrapBKey"));
 
-//            final String authServerEndpoint = json.getString("authServerEndpoint",
-//                    FxAccountConstants.DEFAULT_AUTH_SERVER_ENDPOINT);
-//            final String tokenServerEndpoint = json.getString("tokenServerEndpoint",
-//                    FxAccountConstants.DEFAULT_TOKEN_SERVER_ENDPOINT);
-//            final String profileServerEndpoint = json.getString("profileServerEndpoint",
-//                    FxAccountConstants.DEFAULT_PROFILE_SERVER_ENDPOINT);
-//                    AndroidFxAccount.DEFAULT_AUTHORITIES_TO_SYNC_AUTOMATICALLY_MAP);
-//                    //mProfile.getName(),
-
             final State accountState = new Engaged(email, uid, verified, unwrapBKey, sessionToken, keyFetchToken);
-            return new FirefoxAccount(email, uid, accountState);
+            return new FirefoxAccount(email, uid, accountState, endpointConfig);
         } catch (final JSONException e) {
             Log.d(LOGTAG, "fromWebFlow: unable to gather all necessary fields from json."); // Don't log exception to avoid leaking user data.
             return null;
