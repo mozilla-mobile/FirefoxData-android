@@ -17,6 +17,7 @@ import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.FirefoxAccount;
+import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.gecko.R;
 import org.mozilla.util.ResourcesUtil;
@@ -141,8 +142,9 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
             return;
         }
 
+        new FirefoxAccountDevelopmentStore(this).saveFirefoxAccount(account);
+
         final Intent result = new Intent();
-        //result.putExtra("extra.account", account);
         result.putExtra("lol", account.email);
         setResult(Activity.RESULT_OK, result);
         finish();
