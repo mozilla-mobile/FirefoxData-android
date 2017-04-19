@@ -34,13 +34,16 @@ import org.mozilla.util.WebViewUtil;
  *  - add loading timeout
  *  - assumes never used when user already logged in.
  *  - test more complex flows, like verification, failed password.
- *  - return or persist data.
  *  - add docs on how class should be used.
+ *  - prefill username & password when stored & needs verification.
+ *  - how does Android *currently* handle unverified accounts? How does it know to go back to verified?
+ *  - how do we update the verified state on disk?
  */
 public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
 
-    private static final String LOGTAG = "lol";
+    private static final String LOGTAG = "FirefoxAccountLoginWebV";
 
+    public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
     public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.accounts.config";
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
@@ -51,6 +54,8 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
     private FirefoxAccountEndpointConfig endpointConfig;
     private String webViewURL;
 
+    private boolean hasLoggedIn = false;
+
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +63,8 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fxaccount_login_web_view);
         setSupportActionBar((Toolbar) findViewById(R.id.fxaccount_login_toolbar));
         webView = (WebView) findViewById(R.id.fxaccount_login_web_view);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Code in this block must be called before initWebView.
         script = ResourcesUtil.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
@@ -95,6 +102,13 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         webView.onResume();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        if (!hasLoggedIn) { setResult(RESULT_CANCELED); } // Don't overwrite a login result code.
+        onBackPressed();
+        return true;
+    }
+
     private class JSInterface {
         @JavascriptInterface
         public void onCommand(final String command, final String data) {
@@ -116,17 +130,19 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
     }
 
     private void onCanLinkAccount() {
-        // TODO: confirm a relink?
+        // TODO: verify we can link the account. e.g. on iOS, we can only store one account so we can't link a different account.
         injectMessage("can_link_account", true);
     }
 
     private void onSessionStatus() {
         // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
+        // TODO: how handle? iOS doesn't.
         injectMessage("error");
     }
 
     private void onSignOut() {
         // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
+        // TODO: how handle? iOS doesn't.
         injectMessage("error");
     }
 
@@ -134,19 +150,27 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         // The user has signed in to a Firefox Account. We're done!
         injectMessage("login");
 
-        // todo: error out before or after login message?
+        // TODO: Should we error out before we inject the login message?
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
-            setResult(Activity.RESULT_CANCELED);
+            // TODO: Should we display an error to the user or rely on the Activity who started the WebView flow?
+            // TODO: inject "error"? like onSignOut/onSessionStatus. Maybe instead of "login".
+            Log.w(LOGTAG, "Could not create account. Returning from login...");
+            setResult(RESULT_ERROR);
             finish();
             return;
         }
 
+        hasLoggedIn = true;
+        setResult(RESULT_OK);
         new FirefoxAccountDevelopmentStore(this).saveFirefoxAccount(account);
 
-        final Intent result = new Intent();
-        result.putExtra("lol", account.email);
-        setResult(Activity.RESULT_OK, result);
+        if (!account.accountState.verified) {
+            // User should stay in the flow to verify their account. However, we don't get notified when the account is
+            // verified so the user has to manually close the view.
+            return;
+        }
+
         finish();
     }
 

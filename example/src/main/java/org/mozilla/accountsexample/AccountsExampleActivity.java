@@ -26,17 +26,17 @@ public class AccountsExampleActivity extends AppCompatActivity {
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == Activity.RESULT_OK) {
-            Log.d("lol", data.getStringExtra("lol"));
-
+        if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_OK) {
             final FirefoxAccount account = new FirefoxAccountDevelopmentStore(this).loadFirefoxAccount();
             if (account == null) {
                 Log.d("lol", "Nothing.");
             } else {
                 Log.d("lol", account.uid);
             }
+        } else if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_CANCELED) {
+            Log.d("lol", "User canceled login");
         } else {
-            Log.d("lol", "uh oh");
+            Log.d("lol", "error!");
         }
     }
 }
