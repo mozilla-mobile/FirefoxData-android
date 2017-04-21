@@ -49,6 +49,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
         this.syncConfig = syncConfig;
     }
 
+    // TODO: sync won't work.
     public static FirefoxAccountEndpointConfig getStableDev() {
         return new FirefoxAccountEndpointConfig(
                 /* label */ "StableDev",

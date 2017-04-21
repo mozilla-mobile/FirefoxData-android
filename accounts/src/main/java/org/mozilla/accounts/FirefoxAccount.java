@@ -4,6 +4,7 @@
 
 package org.mozilla.accounts;
 
+import android.support.annotation.CheckResult;
 import android.text.TextUtils;
 import android.util.Log;
 import org.json.JSONException;
@@ -27,6 +28,7 @@ public class FirefoxAccount {
     public final String email;
     public final String uid;
 
+    // TODO: no easy access to tokens stored in accountStore.
     public final State accountState;
     public final FirefoxAccountEndpointConfig endpointConfig;
 
@@ -42,6 +44,17 @@ public class FirefoxAccount {
         this.uid = uid;
         this.accountState = state;
         this.endpointConfig = endpointConfig;
+    }
+
+    /**
+     * Gets a new account instance with the updated state - does *not*
+     * modify the existing account instance.
+     *
+     * @return the account with the given state.
+     */
+    @CheckResult
+    public FirefoxAccount withNewState(final State newState) {
+        return new FirefoxAccount(email, uid, newState, endpointConfig);
     }
 
     /**

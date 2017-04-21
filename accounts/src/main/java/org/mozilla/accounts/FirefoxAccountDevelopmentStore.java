@@ -26,6 +26,7 @@ import java.security.spec.InvalidKeySpecException;
  * those decisions for now.
  *
  * TODO: replace me. See rules ^.
+ * Note: iOS is encrypted with iOS keystore (uses pin from phone login) but Android is not.
  */
 public class FirefoxAccountDevelopmentStore {
 
@@ -45,10 +46,6 @@ public class FirefoxAccountDevelopmentStore {
     public FirefoxAccountDevelopmentStore(final Context context, final String storeName) {
         this.contextWeakReference = new WeakReference<Context>(context);
         this.storeName = storeName;
-    }
-
-    public static FirefoxAccountDevelopmentStore getDefault(final Context context) {
-        return new FirefoxAccountDevelopmentStore(context, DEFAULT_STORE_NAME);
     }
 
     public void saveFirefoxAccount(final FirefoxAccount account) {
@@ -76,8 +73,6 @@ public class FirefoxAccountDevelopmentStore {
     }
 
     // TODO: docs, return null when empty.
-    // TODO: should be done from BG thread.
-    // TODO: use cache?
     public FirefoxAccount loadFirefoxAccount() {
         final Context context = contextWeakReference.get();
         if (context == null) {
