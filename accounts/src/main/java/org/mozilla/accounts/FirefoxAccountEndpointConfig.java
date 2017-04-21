@@ -30,8 +30,11 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
     public final URI settingsURL;
     public final URI forceAuthURL;
 
+    public final Sync15EndpointConfig syncConfig;
+
     private FirefoxAccountEndpointConfig(final String label, final String authServerURL, final String oauthServerURL,
-            final String profileServerURL, final String signInURL, final String settingsURL, final String forceAuthURL) {
+            final String profileServerURL, final String signInURL, final String settingsURL, final String forceAuthURL,
+            final Sync15EndpointConfig syncConfig) {
         this.label = label;
         try {
             this.authServerURL = new URI(authServerURL);
@@ -43,6 +46,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
         } catch (final URISyntaxException e) {
             throw new IllegalArgumentException("Expected valid URI", e);
         }
+        this.syncConfig = syncConfig;
     }
 
     public static FirefoxAccountEndpointConfig getStableDev() {
@@ -53,7 +57,8 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* profileServer */ "https://stable.dev.lcip.org/profile",
                 /* signIn */ appendContextParam("https://stable.dev.lcip.org/signin?service=sync"),
                 /* settings */ appendContextParam("https://stable.dev.lcip.org/settings"),
-                /* forceAuth */ appendContextParam("https://stable.dev.lcip.org/force_auth?service=sync")
+                /* forceAuth */ appendContextParam("https://stable.dev.lcip.org/force_auth?service=sync"),
+                Sync15EndpointConfig.getStage()
         );
     }
 
@@ -65,7 +70,8 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* profileServer */ "https://latest.dev.lcip.org/profile",
                 /* signIn */ appendContextParam("https://latest.dev.lcip.org/signin?service=sync"),
                 /* settings */ appendContextParam("https://latest.dev.lcip.org/settings"),
-                /* forceAuth */ appendContextParam("https://latest.dev.lcip.org/force_auth?service=sync")
+                /* forceAuth */ appendContextParam("https://latest.dev.lcip.org/force_auth?service=sync"),
+                Sync15EndpointConfig.getStage()
         );
     }
 
@@ -77,7 +83,8 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* profileServer */ "https://profile.stage.mozaws.net/v1",
                 /* signIn */ appendContextParam("https://accounts.stage.mozaws.net/signin?service=sync"),
                 /* settings */ appendContextParam("https://accounts.stage.mozaws.net/settings"),
-                /* forceAuth */ appendContextParam("https://accounts.stage.mozaws.net/force_auth?service=sync")
+                /* forceAuth */ appendContextParam("https://accounts.stage.mozaws.net/force_auth?service=sync"),
+                Sync15EndpointConfig.getStage()
         );
     }
 
@@ -89,7 +96,8 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* profileServer */ "https://profile.accounts.firefox.com/v1",
                 /* signIn */ appendContextParam("https://accounts.firefox.com/signin?service=sync"),
                 /* settings */ appendContextParam("https://accounts.firefox.com/settings"),
-                /* forceAuth */ appendContextParam("https://accounts.firefox.com/force_auth?service=sync")
+                /* forceAuth */ appendContextParam("https://accounts.firefox.com/force_auth?service=sync"),
+                Sync15EndpointConfig.getProduction()
         );
     }
 
@@ -99,8 +107,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
     }
 
     // --- START PARCELABLE --- //
-    @Override
-    public int describeContents() { return 0; }
+    @Override public int describeContents() { return 0; }
 
     @Override
     public void writeToParcel(final Parcel dest, final int flags) {
@@ -115,10 +122,10 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
         }) {
             dest.writeString(uri.toString());
         }
+        dest.writeParcelable(syncConfig, flags);
     }
 
     public static final Parcelable.Creator<FirefoxAccountEndpointConfig> CREATOR = new Parcelable.Creator<FirefoxAccountEndpointConfig>() {
-
         @Override
         public FirefoxAccountEndpointConfig createFromParcel(final Parcel source) {
             return new FirefoxAccountEndpointConfig(
@@ -128,12 +135,12 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                     source.readString(),
                     source.readString(),
                     source.readString(),
-                    source.readString()
+                    source.readString(),
+                    Sync15EndpointConfig.CREATOR.createFromParcel(source)
             );
         }
 
-        @Override
-        public FirefoxAccountEndpointConfig[] newArray(final int size) { return new FirefoxAccountEndpointConfig[size]; }
+        @Override public FirefoxAccountEndpointConfig[] newArray(final int size) { return new FirefoxAccountEndpointConfig[size]; }
     };
     // --- END PARCELABLE --- //
 }
