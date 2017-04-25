@@ -6,6 +6,8 @@
 * l10n
 * Delete Android account code
 * Figure out RobocopTarget
+* Where is NativeCrypto code? Do I need NDK?
+* telemetry
 
 ### Support
 * get tests working
