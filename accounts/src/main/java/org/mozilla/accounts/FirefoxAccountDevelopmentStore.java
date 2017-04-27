@@ -30,7 +30,7 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class FirefoxAccountDevelopmentStore {
 
-    private static final String LOGTAG = "FirefoxAccountDevelopme";
+    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountDevelopmentStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";

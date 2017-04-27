@@ -23,7 +23,7 @@ import org.mozilla.gecko.sync.Utils;
  */
 public class FirefoxAccount {
 
-    private static final String LOGTAG = "FirefoxAccount";
+    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     public final String email;
     public final String uid;

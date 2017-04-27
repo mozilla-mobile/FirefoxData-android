@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountEndpointConfig;
+import org.mozilla.accounts.FirefoxAccountShared;
 import org.mozilla.gecko.R;
 import org.mozilla.util.ResourcesUtil;
 import org.mozilla.util.WebViewUtil;
@@ -41,7 +42,7 @@ import org.mozilla.util.WebViewUtil;
  */
 public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
 
-    private static final String LOGTAG = "FirefoxAccountLoginWebV";
+    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
     public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.accounts.config";
