@@ -4,12 +4,16 @@
 
 package org.mozilla.accounts.sync;
 
+import android.content.Context;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountShared;
+import org.mozilla.accounts.login.FirefoxAccountLoginMarriedDelegate.MarriedCallback;
+import org.mozilla.accounts.login.FirefoxAccountLoginUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;
 import org.mozilla.gecko.fxa.login.Married;
+import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;
 import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
@@ -38,35 +42,47 @@ public class FirefoxAccountSyncTokenAccessor {
      *
      * @throws IllegalStateException if the account is not in the Married state.
      */
-    public static void get(final FirefoxAccount account, final TokenCallback callback) {
-        assertMarried(account);
-
-        final Married marriedState = (Married) account.accountState;
-        final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
-        final String assertion;
-        try {
-            assertion = marriedState.generateAssertion(FxAccountUtils.getAudienceForURL(tokenServerURI.toString()),
-                    JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
-        } catch (final NonObjectJSONException | IOException | GeneralSecurityException | URISyntaxException e) {
-            callback.onError(e);
-            return;
-        }
-
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
-        tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
-                new FirefoxAccountTokenServerClientDelegate(callback));
+    public static void get(final Context context, final FirefoxAccount account, final TokenCallback callback) {
+        // We make GetTokenMarriedCallback non-anonymous to prevent leaking the Context.
+        FirefoxAccountLoginUtils.advanceStateToMarried(context, account, new GetTokenMarriedCallback(callback, account));
     }
 
-    private static void assertMarried(final FirefoxAccount account) {
-        if (!(account.accountState instanceof Married)) {
-            throw new IllegalStateException("Expected account to be in the Married state. Instead: " +
-                    account.accountState.getClass().getSimpleName());
+    private static class GetTokenMarriedCallback implements MarriedCallback {
+        private TokenCallback callback;
+        private FirefoxAccount account;
+
+        private GetTokenMarriedCallback(final TokenCallback callback, final FirefoxAccount account) {
+            this.callback = callback;
+            this.account = account;
+        }
+
+        @Override
+        public void onNotMarried(final FirefoxAccount account, final State notMarriedState) {
+            // TODO: anything else?
+            callback.onError(new Exception("Could not advance to married state. Instead: " + notMarriedState.getStateLabel()));
+        }
+
+        @Override
+        public void onMarried(final FirefoxAccount updatedAccount, final Married marriedState) {
+            final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
+            final String assertion;
+            try {
+                assertion = marriedState.generateAssertion(FxAccountUtils.getAudienceForURL(tokenServerURI.toString()),
+                        JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
+            } catch (final NonObjectJSONException | IOException | GeneralSecurityException | URISyntaxException e) {
+                callback.onError(e);
+                return;
+            }
+
+            final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
+            tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
+                    new FirefoxAccountTokenServerClientDelegate(callback));
         }
     }
 
     private static class FirefoxAccountTokenServerClientDelegate implements TokenServerClientDelegate {
 
-        private final TokenCallback callback;
+        private final FirefoxAccountSyncTokenAccessor.TokenCallback callback;
 
         private FirefoxAccountTokenServerClientDelegate(final TokenCallback callback) {
             this.callback = callback;
