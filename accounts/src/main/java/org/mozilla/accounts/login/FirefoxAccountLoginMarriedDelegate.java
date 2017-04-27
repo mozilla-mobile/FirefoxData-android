@@ -4,6 +4,7 @@
 
 package org.mozilla.accounts.login;
 
+import android.content.Context;
 import android.util.Log;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.gecko.fxa.login.Married;
@@ -25,20 +26,19 @@ public class FirefoxAccountLoginMarriedDelegate extends FirefoxAccountLoginDefau
         void onMarried(FirefoxAccount updatedAccount, Married marriedState);
     }
 
-    public FirefoxAccountLoginMarriedDelegate(final FirefoxAccount account, final MarriedCallback callback) {
-        super(account);
+    public FirefoxAccountLoginMarriedDelegate(final Context context, final FirefoxAccount account, final MarriedCallback callback) {
+        super(context, account);
         this.callback = callback;
     }
 
     @Override
-    public void handleFinal(final State finalState) {
+    public void handleFinal(final FirefoxAccount updatedAccount, final State finalState) {
         if (finalState.getStateLabel() != StateLabel.Married) {
             Log.w(LOGTAG, "Unable to get to Married state.");
             callback.onNotMarried(account, finalState);
         } else {
             final Married marriedState = (Married) finalState;
-            final FirefoxAccount marriedAccount = account.withNewState(marriedState);
-            callback.onMarried(marriedAccount, marriedState);
+            callback.onMarried(updatedAccount, marriedState);
         }
     }
 }

@@ -92,8 +92,8 @@ public class AccountsExampleActivity extends AppCompatActivity {
     }
 
     private void sync(final FirefoxAccount account) {
-        FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(this, account);
-        client.ensureSyncToken(new FirefoxAccountSyncTokenAccessor.TokenCallback() {
+        FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
+        client.ensureSyncToken(this, new FirefoxAccountSyncTokenAccessor.TokenCallback() {
             @Override
             public void onError(final Exception e) {
                 Log.w(LOGTAG, "Could not retrieve sync token.", e);

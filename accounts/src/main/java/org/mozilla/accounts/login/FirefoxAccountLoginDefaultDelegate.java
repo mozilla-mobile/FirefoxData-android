@@ -4,8 +4,10 @@
 
 package org.mozilla.accounts.login;
 
+import android.content.Context;
 import android.util.Log;
 import org.mozilla.accounts.FirefoxAccount;
+import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountShared;
 import org.mozilla.gecko.background.fxa.FxAccountClient;
 import org.mozilla.gecko.background.fxa.FxAccountClient20;
@@ -15,19 +17,41 @@ import org.mozilla.gecko.fxa.login.FxAccountLoginTransition;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.StateFactory;
 
+import java.lang.ref.WeakReference;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * A login state machine delegate that provides a default configuration.
+ * A login state machine delegate that provides a default configuration and stores an updated account configuration.
  */
 public abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLoginStateMachine.LoginStateMachineDelegate {
 
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
+    private final WeakReference<Context> contextWeakReference;
     protected final FirefoxAccount account;
 
-    public FirefoxAccountLoginDefaultDelegate(final FirefoxAccount account) {
+    public FirefoxAccountLoginDefaultDelegate(final Context context, final FirefoxAccount account) {
+        this.contextWeakReference = new WeakReference<>(context);
         this.account = account;
+    }
+
+    public abstract void handleFinal(final FirefoxAccount updatedAccount, final State state);
+
+    @Override
+    public void handleFinal(final State state) {
+        final FirefoxAccount updatedAccount = account.withNewState(state);
+
+        // Updating the state while others can still access the state seems fragile - I wonder if
+        // we should synchronize access while updating the account state.
+        final Context context = contextWeakReference.get();
+        if (context == null) {
+            Log.w(LOGTAG, "Unable to save account with updated state: context is null.");
+        } else {
+            // The account state has been updated - store it so all consumers can access it!
+            new FirefoxAccountDevelopmentStore(context).saveFirefoxAccount(updatedAccount);
+        }
+
+        handleFinal(updatedAccount, state);
     }
 
     @Override

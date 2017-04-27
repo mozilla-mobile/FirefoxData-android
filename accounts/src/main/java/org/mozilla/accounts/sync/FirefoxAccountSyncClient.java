@@ -5,9 +5,7 @@
 package org.mozilla.accounts.sync;
 
 import android.content.Context;
-import android.util.Log;
 import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountShared;
 import org.mozilla.accounts.login.FirefoxAccountLoginMarriedDelegate;
 import org.mozilla.accounts.login.FirefoxAccountLoginMarriedDelegate.MarriedCallback;
@@ -19,7 +17,6 @@ import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class FirefoxAccountSyncClient {
@@ -34,11 +31,9 @@ public class FirefoxAccountSyncClient {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
-    private final WeakReference<Context> contextWeakReference;
     private final FirefoxAccount account;
 
-    public FirefoxAccountSyncClient(final Context context, final FirefoxAccount account) {
-        this.contextWeakReference = new WeakReference<>(context);
+    public FirefoxAccountSyncClient(final FirefoxAccount account) {
         this.account = account;
     }
 
@@ -49,9 +44,9 @@ public class FirefoxAccountSyncClient {
     }
 
     // todo: need married, then sync token.
-    public void ensureSyncToken(final TokenCallback callback) {
+    public void ensureSyncToken(final Context context, final TokenCallback callback) {
         // TODO: if on disk/in-memory, access that value. Should this be separate cache class?
-        advanceToMarried(new MarriedCallback() {
+        advanceToMarried(context, new MarriedCallback() {
             @Override
             public void onNotMarried(final FirefoxAccount account, final State notMarriedState) {
                 // TODO: anything else?
@@ -60,30 +55,20 @@ public class FirefoxAccountSyncClient {
 
             @Override
             public void onMarried(final FirefoxAccount updatedAccount, final Married marriedState) {
-                maybeStoreAccount(updatedAccount); // TODO: maybe don't conflate storing account with SyncClient.
                 FirefoxAccountSyncTokenAccessor.get(updatedAccount, callback);
             }
         });
     }
 
-    private void advanceToMarried(final MarriedCallback marriedCallback) {
+    private void advanceToMarried(final Context context, final MarriedCallback marriedCallback) {
         // TODO: we could be more efficient if we didn't spawn a new Runnable each time.
         // advance uses the network & must be called from a background thread.
         FirefoxAccountShared.executor.execute(new Runnable() {
             @Override
             public void run() {
                 new FxAccountLoginStateMachine().advance(account.accountState, StateLabel.Married,
-                        new FirefoxAccountLoginMarriedDelegate(account, marriedCallback));
+                        new FirefoxAccountLoginMarriedDelegate(context, account, marriedCallback));
             }
         });
-    }
-
-    private void maybeStoreAccount(final FirefoxAccount account) {
-        final Context context = contextWeakReference.get();
-        if (context != null) {
-            new FirefoxAccountDevelopmentStore(context).saveFirefoxAccount(account);
-        } else {
-            Log.w(LOGTAG, "Unable to store Firefox Account: context is null.");
-        }
     }
 }
