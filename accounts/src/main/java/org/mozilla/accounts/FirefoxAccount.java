@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
 import org.mozilla.gecko.fxa.login.Engaged;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.Utils;

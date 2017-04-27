@@ -7,57 +7,38 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import ch.boye.httpclientandroidlib.Header;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
-import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountEndpointConfig;
-import org.mozilla.accounts.login.FirefoxAccountLoginStateMachineDelegate;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
-import org.mozilla.gecko.background.fxa.FxAccountUtils;
+import org.mozilla.accounts.sync.FirefoxAccountSyncClient;
+import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
 import org.mozilla.gecko.background.fxa.SkewHandler;
-import org.mozilla.gecko.browserid.JSONWebTokenUtils;
-import org.mozilla.gecko.db.BrowserContract;
-import org.mozilla.gecko.fxa.FxAccountConstants;
-import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.Married;
-import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
-import org.mozilla.gecko.sync.GlobalSession;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.NonObjectJSONException;
-import org.mozilla.gecko.sync.SharedPreferencesClientsDataDelegate;
 import org.mozilla.gecko.sync.SyncConfiguration;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.sync.crypto.CryptoException;
 import org.mozilla.gecko.sync.crypto.KeyBundle;
-import org.mozilla.gecko.sync.delegates.ClientsDataDelegate;
-import org.mozilla.gecko.sync.delegates.GlobalSessionCallback;
 import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
-import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.Record;
-import org.mozilla.gecko.sync.stage.GlobalSyncStage;
-import org.mozilla.gecko.tokenserver.TokenServerClient;
-import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
-import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.Scanner;
 import java.util.concurrent.Executor;
@@ -101,7 +82,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 Log.d("lol", "Nothing.");
             } else {
                 Log.d("lol", account.uid);
-                advance(account);
+                sync(account);
             }
         } else if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_CANCELED) {
             Log.d("lol", "User canceled login");
@@ -110,50 +91,18 @@ public class AccountsExampleActivity extends AppCompatActivity {
         }
     }
 
-    private void advance(final FirefoxAccount account) {
-        // TODO: better handle NetworkonMainthread exception?
-        // TODO: Account store concurrency. (only allow one account?)
-        // TODO: what happens on failure?
-        bgHandler.post(new Runnable() {
+    private void sync(final FirefoxAccount account) {
+        FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(this, account);
+        client.ensureSyncToken(new FirefoxAccountSyncTokenAccessor.TokenCallback() {
             @Override
-            public void run() {
-                // TODO: this reference is context - leak!.
-                // TODO: style.
-                new FxAccountLoginStateMachine().advance(account.accountState, State.StateLabel.Married, new FirefoxAccountLoginStateMachineDelegate(AccountsExampleActivity.this, account, new FirefoxAccountLoginStateMachineDelegate.LoginHandler() {
-                    @Override
-                    public void handleNotMarried(final State notMarriedState) {
-                    }
-
-                    @Override
-                    public void handleMarried(final FirefoxAccount account, final Married married) {
-                        sync(account, married);
-                    }
-                }));
-            }
-        });
-    }
-
-    private void sync(final FirefoxAccount account, final Married marriedState) {
-        final TokenServerClientDelegate tokenServerClientDelegate = new TokenServerClientDelegate() {
-            @Override public String getUserAgent() { return FxAccountConstants.USER_AGENT; }
-
-            @Override
-            public void handleFailure(final TokenServerException e) {
-                Log.e(LOGTAG, "handleFailure: tokenException.", e);
+            public void onError(final Exception e) {
+                Log.w(LOGTAG, "Could not retrieve sync token.", e);
             }
 
             @Override
-            public void handleError(final Exception e) {
-                Log.e(LOGTAG, "handleError: tokenException.", e);
-            }
+            public void onTokenReceived(final TokenServerToken token) {
+                final FirefoxAccount updatedAccount = new FirefoxAccountDevelopmentStore(AccountsExampleActivity.this).loadFirefoxAccount();
 
-            @Override
-            public void handleBackoff(final int backoffSeconds) {
-                Log.w(LOGTAG, "handleBackoff: " + backoffSeconds);
-            }
-
-            @Override
-            public void handleSuccess(final TokenServerToken token) {
                 // We expect Sync to upload large sets of records. Calculating the
                 // payload verification hash for these record sets could be expensive,
                 // so we explicitly do not send payload verification hashes to the
@@ -176,14 +125,9 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
                     authHeaderProvider = new HawkAuthHeaderProvider(token.id, token.key.getBytes("UTF-8"), includePayloadVerificationHash, storageServerSkew);
 
-                    syncConfig = new SyncConfiguration(token.uid, authHeaderProvider, sharedPrefs, marriedState.getSyncKeyBundle());
+                    syncConfig = new SyncConfiguration(token.uid, authHeaderProvider, sharedPrefs, ((Married) updatedAccount.accountState).getSyncKeyBundle());
                     syncConfig.stagesToSync = null; // sync all.
                     syncConfig.setClusterURL(storageServerURI);
-                    /*
-                    final GlobalSession session = new GlobalSession(syncConfig, new SessionCallback(),
-                            AccountsExampleActivity.this, new SharedPreferencesClientsDataDelegate(sharedPrefs, AccountsExampleActivity.this)); // todo: CONTEXT
-                    session.start(System.currentTimeMillis() + 60000L); // todo: CORRECT?
-                    */
 
 
                     //final URI uri = new URI(storageServerURI.toString() + "/info/collections");
@@ -250,89 +194,10 @@ public class AccountsExampleActivity extends AppCompatActivity {
                         }
                     };
                     resource.get();
-
-                    /*
-                    final HttpUrl url = HttpUrl.get(uri);
-                    final Request request = new Request.Builder()
-                            .url(url)
-                            .build();
-
-                    final Response res = client.newCall(request).execute();
-                    Log.d(LOGTAG, res.body().string());
-                    */
                 } catch (final Exception e) {
                     Log.e(LOGTAG, "handleSuccess: Failed to sync", e);
                 }
             }
-        };
-
-        final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
-        final String assertion;
-        try {
-            assertion = marriedState.generateAssertion(FxAccountUtils.getAudienceForURL(tokenServerURI.toString()), JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
-        } catch (NonObjectJSONException | IOException | GeneralSecurityException | URISyntaxException e) {
-            Log.e(LOGTAG, "Failed to sync: ", e);
-            return;
-        }
-
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, executor);
-        tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(), tokenServerClientDelegate);
-    }
-
-    private static class SessionCallback implements GlobalSessionCallback {
-        @Override
-        public void requestBackoff(final long backoff) {
-
-        }
-
-        @Override
-        public void informUnauthorizedResponse(final GlobalSession globalSession, final URI oldClusterURL) {
-
-        }
-
-        @Override
-        public void informUpgradeRequiredResponse(final GlobalSession session) {
-
-        }
-
-        @Override
-        public void informMigrated(final GlobalSession session) {
-
-        }
-
-        @Override
-        public void handleAborted(final GlobalSession globalSession, final String reason) {
-            Log.e(LOGTAG, "handleAborted: global session apported: " + reason);
-        }
-
-        @Override
-        public void handleError(final GlobalSession globalSession, final Exception ex) {
-            Log.e(LOGTAG, "handleError: global session failed", ex);
-        }
-
-        @Override
-        public void handleSuccess(final GlobalSession globalSession) {
-            Log.d(LOGTAG, "handleSuccess: global session succeeded.");
-        }
-
-        @Override
-        public void handleStageCompleted(final GlobalSyncStage.Stage currentState, final GlobalSession globalSession) {
-
-        }
-
-        @Override
-        public void handleIncompleteStage(final GlobalSyncStage.Stage currentState, final GlobalSession globalSession) {
-
-        }
-
-        @Override
-        public void handleFullSyncNecessary() {
-
-        }
-
-        @Override
-        public boolean shouldBackOffStorage() {
-            return false;
-        }
+        });
     }
 }
