@@ -33,8 +33,10 @@ public class FirefoxAccountSyncTokenAccessor {
 
     public interface TokenCallback {
         void onError(Exception e);
-        void onTokenReceived(TokenServerToken token);
+        void onTokenReceived(FirefoxAccount updatedAccount, TokenServerToken token);
     }
+
+    private FirefoxAccountSyncTokenAccessor() {}
 
     /**
      * Gets a Sync Token or returns an error through the provided callback. The given account
@@ -76,21 +78,23 @@ public class FirefoxAccountSyncTokenAccessor {
 
             final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
             tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
-                    new FirefoxAccountTokenServerClientDelegate(callback));
+                    new FirefoxAccountTokenServerClientDelegate(updatedAccount, callback));
         }
     }
 
     private static class FirefoxAccountTokenServerClientDelegate implements TokenServerClientDelegate {
 
+        private final FirefoxAccount updatedAccount;
         private final FirefoxAccountSyncTokenAccessor.TokenCallback callback;
 
-        private FirefoxAccountTokenServerClientDelegate(final TokenCallback callback) {
+        private FirefoxAccountTokenServerClientDelegate(final FirefoxAccount updatedAccount, final TokenCallback callback) {
+            this.updatedAccount = updatedAccount;
             this.callback = callback;
         }
 
         @Override
         public void handleSuccess(final TokenServerToken token) {
-            callback.onTokenReceived(token);
+            callback.onTokenReceived(updatedAccount, token);
         }
 
         @Override
