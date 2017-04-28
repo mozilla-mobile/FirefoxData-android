@@ -4,16 +4,12 @@
 
 package org.mozilla.accounts.sync;
 
-import android.content.Context;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountShared;
-import org.mozilla.accounts.login.FirefoxAccountLoginMarriedDelegate.MarriedCallback;
-import org.mozilla.accounts.login.FirefoxAccountLoginUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;
 import org.mozilla.gecko.fxa.login.Married;
-import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;
 import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
@@ -25,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 
-// TODO: not public.
 /**
  * A static class that provides functions to retrieve sync tokens.
  */
@@ -33,7 +28,7 @@ public class FirefoxAccountSyncTokenAccessor {
 
     public interface TokenCallback {
         void onError(Exception e);
-        void onTokenReceived(FirefoxAccount updatedAccount, TokenServerToken token);
+        void onTokenReceived(TokenServerToken token);
     }
 
     private FirefoxAccountSyncTokenAccessor() {}
@@ -44,68 +39,39 @@ public class FirefoxAccountSyncTokenAccessor {
      *
      * @throws IllegalStateException if the account is not in the Married state.
      */
-    public static void get(final Context context, final FirefoxAccount account, final TokenCallback callback) {
+    public static void get(final FirefoxAccount account, final TokenCallback callback) {
         // We make GetTokenMarriedCallback non-anonymous to prevent leaking the Context.
-        FirefoxAccountLoginUtils.advanceStateToMarried(context, account, new GetTokenMarriedCallback(callback, account));
-    }
+        // TODO: assert married.
+        final Married marriedState = (Married) account.accountState;
 
-    private static class GetTokenMarriedCallback implements MarriedCallback {
-        private TokenCallback callback;
-        private FirefoxAccount account;
-
-        private GetTokenMarriedCallback(final TokenCallback callback, final FirefoxAccount account) {
-            this.callback = callback;
-            this.account = account;
+        final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
+        final String assertion;
+        try {
+            assertion = marriedState.generateAssertion(FxAccountUtils.getAudienceForURL(tokenServerURI.toString()),
+                    JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
+        } catch (final NonObjectJSONException | IOException | GeneralSecurityException | URISyntaxException e) {
+            callback.onError(e);
+            return;
         }
 
-        @Override
-        public void onNotMarried(final FirefoxAccount account, final State notMarriedState) {
-            // TODO: anything else?
-            callback.onError(new Exception("Could not advance to married state. Instead: " + notMarriedState.getStateLabel()));
-        }
-
-        @Override
-        public void onMarried(final FirefoxAccount updatedAccount, final Married marriedState) {
-            final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
-            final String assertion;
-            try {
-                assertion = marriedState.generateAssertion(FxAccountUtils.getAudienceForURL(tokenServerURI.toString()),
-                        JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
-            } catch (final NonObjectJSONException | IOException | GeneralSecurityException | URISyntaxException e) {
-                callback.onError(e);
-                return;
-            }
-
-            final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
-            tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
-                    new FirefoxAccountTokenServerClientDelegate(updatedAccount, callback));
-        }
+        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
+        tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
+                new FirefoxAccountTokenServerClientDelegate(callback));
     }
 
     private static class FirefoxAccountTokenServerClientDelegate implements TokenServerClientDelegate {
 
-        private final FirefoxAccount updatedAccount;
         private final FirefoxAccountSyncTokenAccessor.TokenCallback callback;
 
-        private FirefoxAccountTokenServerClientDelegate(final FirefoxAccount updatedAccount, final TokenCallback callback) {
-            this.updatedAccount = updatedAccount;
+        private FirefoxAccountTokenServerClientDelegate(final TokenCallback callback) {
             this.callback = callback;
         }
 
-        @Override
-        public void handleSuccess(final TokenServerToken token) {
-            callback.onTokenReceived(updatedAccount, token);
-        }
-
-        @Override
-        public void handleFailure(final TokenServerException e) {
+        @Override public void handleSuccess(final TokenServerToken token) { callback.onTokenReceived(token); }
+        @Override public void handleFailure(final TokenServerException e) {
             callback.onError(e);
         }
-
-        @Override
-        public void handleError(final Exception e) {
-            callback.onError(e);
-        }
+        @Override public void handleError(final Exception e) { callback.onError(e); }
 
         @Override
         public void handleBackoff(final int backoffSeconds) {

@@ -19,6 +19,7 @@ import org.mozilla.gecko.fxa.login.StateFactory;
 
 import java.lang.ref.WeakReference;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Executor;
 
 /**
  * A login state machine delegate that provides a default configuration and stores an updated account configuration.
@@ -27,36 +28,17 @@ public abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLog
 
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
-    private final WeakReference<Context> contextWeakReference;
     protected final FirefoxAccount account;
+    private final Executor networkExecutor;
 
-    public FirefoxAccountLoginDefaultDelegate(final Context context, final FirefoxAccount account) {
-        this.contextWeakReference = new WeakReference<>(context);
+    public FirefoxAccountLoginDefaultDelegate(final FirefoxAccount account, final Executor networkExecutor) {
         this.account = account;
-    }
-
-    public abstract void handleFinal(final FirefoxAccount updatedAccount, final State state);
-
-    @Override
-    public void handleFinal(final State state) {
-        final FirefoxAccount updatedAccount = account.withNewState(state);
-
-        // Updating the state while others can still access the state seems fragile - I wonder if
-        // we should synchronize access while updating the account state.
-        final Context context = contextWeakReference.get();
-        if (context == null) {
-            Log.w(LOGTAG, "Unable to save account with updated state: context is null.");
-        } else {
-            // The account state has been updated - store it so all consumers can access it!
-            new FirefoxAccountDevelopmentStore(context).saveFirefoxAccount(updatedAccount);
-        }
-
-        handleFinal(updatedAccount, state);
+        this.networkExecutor = networkExecutor;
     }
 
     @Override
     public FxAccountClient getClient() {
-        return new FxAccountClient20(account.endpointConfig.authServerURL.toString(), FirefoxAccountShared.executor);
+        return new FxAccountClient20(account.endpointConfig.authServerURL.toString(), networkExecutor);
     }
 
     @Override
@@ -65,9 +47,7 @@ public abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLog
     }
 
     @Override
-    public BrowserIDKeyPair generateKeyPair() throws NoSuchAlgorithmException {
-        return StateFactory.generateKeyPair();
-    }
+    public BrowserIDKeyPair generateKeyPair() throws NoSuchAlgorithmException { return StateFactory.generateKeyPair(); }
 
     // The values below are from existing Delegate implementations - I'm not sure why these values are chosen.
     @Override

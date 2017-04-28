@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync;
+package org.mozilla.accounts.sync.commands;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
@@ -22,7 +22,7 @@ import java.security.GeneralSecurityException;
  *
  * {@link #syncConfig} & {@link #authHeaderProvider} should be set by mutation before the request is made.
  */
-abstract class SyncClientBaseResourceDelegate implements ResourceDelegate {
+public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate {
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
@@ -32,13 +32,13 @@ abstract class SyncClientBaseResourceDelegate implements ResourceDelegate {
      * The authHeaderProvider returned by {@see #getAuthHeaderProvider}. It's inconvenient to pass this
      * value into the constructor so we allow mutation.
      */
-    protected AuthHeaderProvider authHeaderProvider = null;
+    public AuthHeaderProvider authHeaderProvider = null;
 
     /**
      * The sync config associated with the account making the request. It's inconvenient to pass this value into
      * the constructor so we allow mutation.
      */
-    protected SyncConfiguration syncConfig = null;
+    public SyncConfiguration syncConfig = null;
 
     /** @return {@code <path>} in {@code <server-storage-uri><path>} */
     public abstract String getResourcePath();
