@@ -71,12 +71,12 @@ public class AccountsExampleActivity extends AppCompatActivity {
         client.getHistory(this, 1000, new SyncHistoryCallback() {
             @Override
             public void onReceive(final List<HistoryRecord> historyRecords) {
-
+                Log.e(LOGTAG, "onReceive: error!");
             }
 
             @Override
             public void onError(final Exception e) {
-
+                Log.e(LOGTAG, "onError: error!", e);
             }
         });
     }

@@ -36,6 +36,6 @@ public class FirefoxAccountSyncClient {
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig(final Context context) {
-        return new FirefoxAccountSyncConfig(context, account, networkExecutor, null);
+        return new FirefoxAccountSyncConfig(context, account, networkExecutor, null, null);
     }
 }

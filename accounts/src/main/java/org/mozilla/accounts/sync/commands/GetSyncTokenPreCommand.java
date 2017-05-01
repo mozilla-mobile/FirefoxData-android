@@ -27,7 +27,7 @@ public class GetSyncTokenPreCommand extends SyncClientAsyncPreCommand {
                 @Override
                 public void onTokenReceived(final TokenServerToken token) {
                     final FirefoxAccountSyncConfig updatedSyncConfig = new FirefoxAccountSyncConfig(syncConfig.contextWeakReference,
-                            syncConfig.account, syncConfig.networkExecutor, token);
+                            syncConfig.account, syncConfig.networkExecutor, token, null);
                     onComplete.onSuccess(updatedSyncConfig);
                 }
             });

@@ -26,7 +26,7 @@ public class SyncClientCommands {
             final CountDownLatch makeSynchronousLatch = new CountDownLatch(1);
             final ReturnValueContainer returnValueContainer = new ReturnValueContainer();
 
-            initAsyncCall(syncConfig, new OnAsyncPreCommandComplete() {
+            initAsyncCall(syncConfig, new OnAsyncPreCommandComplete() { // TODO: help callers: don't allow callback called more than once.
                 @Override
                 public void onException(final Exception e) {
                     returnValueContainer.exception = e;
@@ -49,7 +49,7 @@ public class SyncClientCommands {
          * Begins the async call associated with this pre-command.
          * @param onComplete When the async call is completed, one of the methods should be called.
          */
-        abstract void initAsyncCall(FirefoxAccountSyncConfig syncConfig, OnAsyncPreCommandComplete onComplete);
+        abstract void initAsyncCall(FirefoxAccountSyncConfig syncConfig, OnAsyncPreCommandComplete onComplete) throws Exception;
 
         private static class ReturnValueContainer {
             private Exception exception;

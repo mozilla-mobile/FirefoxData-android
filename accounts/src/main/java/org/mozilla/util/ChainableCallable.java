@@ -57,6 +57,7 @@ public abstract class ChainableCallable<V> implements Callable {
         private ChainableCallableCallback callback;
         public ChainableCallableWithCallback(final ChainableCallableCallback callback) { this.callback = callback; }
 
+        // TODO: If .get() throws, this method won't be called. :(
         @Override
         public final V call(final V value) throws Exception {
             try {

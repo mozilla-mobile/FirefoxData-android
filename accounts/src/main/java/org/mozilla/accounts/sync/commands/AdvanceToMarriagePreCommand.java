@@ -33,7 +33,7 @@ public class AdvanceToMarriagePreCommand extends SyncClientAsyncPreCommand {
                             updatedAccount.accountState.getStateLabel().name()));
                 } else {
                     onComplete.onSuccess(new FirefoxAccountSyncConfig(syncConfig.contextWeakReference,
-                            updatedAccount, syncConfig.networkExecutor, syncConfig.token));
+                            updatedAccount, syncConfig.networkExecutor, syncConfig.token, null));
                 }
             }
 

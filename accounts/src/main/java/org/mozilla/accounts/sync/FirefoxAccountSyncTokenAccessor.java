@@ -68,9 +68,7 @@ public class FirefoxAccountSyncTokenAccessor {
         }
 
         @Override public void handleSuccess(final TokenServerToken token) { callback.onTokenReceived(token); }
-        @Override public void handleFailure(final TokenServerException e) {
-            callback.onError(e);
-        }
+        @Override public void handleFailure(final TokenServerException e) { callback.onError(e); }
         @Override public void handleError(final Exception e) { callback.onError(e); }
 
         @Override
