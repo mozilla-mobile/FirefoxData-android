@@ -5,10 +5,11 @@
 package org.mozilla.accounts.sync.callbacks;
 
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
+import org.mozilla.util.ChainableCallable.ChainableCallableCallback;
 
 import java.util.List;
 
 /** A callback for a sync client history request. */
-public interface SyncHistoryCallback extends BaseSyncCallback {
+public interface SyncHistoryCallback extends ChainableCallableCallback {
     void onReceive(List<HistoryRecord> historyRecords);
 }

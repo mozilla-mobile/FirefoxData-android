@@ -8,7 +8,9 @@ import android.support.annotation.NonNull;
 import org.mozilla.accounts.sync.commands.AdvanceToMarriagePreCommand;
 import org.mozilla.accounts.sync.commands.GetCryptoKeysPreCommand;
 import org.mozilla.accounts.sync.commands.GetSyncTokenPreCommand;
-import org.mozilla.accounts.sync.commands.SyncClientPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
+import org.mozilla.util.ChainableCallable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,7 +22,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-// TODO: do Executor threads really die when exception thrown?
 /**
  * An encapsulation to queue & run the given sync commands but first ensuring their prerequisites are met
  * (e.g. we have the keys to decrypt the Sync download).
@@ -28,7 +29,7 @@ import java.util.concurrent.TimeoutException;
  * ---
  * This is an alternative to having a large chain of callbacks and provides some benefits:
  * - It's much simpler to add/remove precommands because they're no longer tightly coupled.
- * - The concerns are better encapsulated
+ * - Each step is better encapsulated
  * - It's clearer which thread everything runs on.
  * - Errors are easily propagated via the {@link org.mozilla.util.ChainableCallable}.
  *
@@ -42,7 +43,7 @@ class SyncClientCommandRunner {
     // assuming they will never run concurrently.
     private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
 
-    private List<? extends SyncClientPreCommand> getPreCommands() {
+    private List<? extends SyncClientAsyncPreCommand> getPreCommands() {
         return Collections.unmodifiableList(Arrays.asList(
                 // The order matters: these commands may rely on results from the previous operations.
                 new AdvanceToMarriagePreCommand(),
@@ -60,20 +61,18 @@ class SyncClientCommandRunner {
      * This function is thread-safe: it's synchronized to ensure items are added to the queue
      * serially.
      */
-    protected synchronized void queueAndRunCommand(final SyncClientPreCommand command,
+    protected synchronized void queueAndRunCommand(final SyncClientResourceCommand command,
             final FirefoxAccountSyncConfig initialSyncConfig) {
-        // TODO: rename vars in fn?
-        final List<? extends SyncClientPreCommand> commands = getPreCommands();
-        //commands.add(command);
+        final List<? extends ChainableCallable<FirefoxAccountSyncConfig>> preCommands = getPreCommands();
 
-        // TODO: names.
         Future<FirefoxAccountSyncConfig> result = new ReturnInputFuture(initialSyncConfig); // hack: set initial input.
-        for (final SyncClientPreCommand preCommand : commands) {
+        for (final ChainableCallable<FirefoxAccountSyncConfig> preCommand : preCommands) {
             preCommand.setFutureDependency(result);
             result = commandExecutor.submit(preCommand);
         }
 
-        // todo: replace with list.
+        // It'd be great to add this to preCommands and do it all in a loop but
+        // I can't get the types right.
         command.setFutureDependency(result);
         commandExecutor.submit(command);
     }

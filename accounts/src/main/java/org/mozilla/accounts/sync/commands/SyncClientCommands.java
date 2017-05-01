@@ -6,14 +6,21 @@ package org.mozilla.accounts.sync.commands;
 
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.util.ChainableCallable;
+import org.mozilla.util.ChainableCallable.ChainableCallableWithCallback;
 
 import java.util.concurrent.CountDownLatch;
 
-/** Base class for Sync pre commands. */
-public abstract class SyncClientPreCommand extends ChainableCallable<FirefoxAccountSyncConfig> {
+/** Container file for SyncClientCommand classes. */
+public class SyncClientCommands {
+    private SyncClientCommands() {}
 
-    /** Helper for handling pre-commands that begin an async request and need to block until completion. */
-    static abstract class SyncClientAsyncPreCommand extends SyncClientPreCommand {
+    /** A type-class for commands accessing sync resources - these are expected to have callbacks. */
+    public static abstract class SyncClientResourceCommand extends ChainableCallableWithCallback<FirefoxAccountSyncConfig> {
+        public SyncClientResourceCommand(final ChainableCallableCallback callback) { super(callback); }
+    }
+
+    /** A helper for handling pre-commands that begin an async request and need to block until completion. */
+    public static abstract class SyncClientAsyncPreCommand extends ChainableCallable<FirefoxAccountSyncConfig> {
         @Override
         public final FirefoxAccountSyncConfig call(final FirefoxAccountSyncConfig syncConfig) throws Exception {
             final CountDownLatch makeSynchronousLatch = new CountDownLatch(1);
@@ -39,14 +46,14 @@ public abstract class SyncClientPreCommand extends ChainableCallable<FirefoxAcco
         }
 
         /**
-         * Begins the async call associated with this precommand.
+         * Begins the async call associated with this pre-command.
          * @param onComplete When the async call is completed, one of the methods should be called.
          */
         abstract void initAsyncCall(FirefoxAccountSyncConfig syncConfig, OnAsyncPreCommandComplete onComplete);
 
         private static class ReturnValueContainer {
-            protected Exception exception;
-            protected FirefoxAccountSyncConfig updatedSyncConfig;
+            private Exception exception;
+            private FirefoxAccountSyncConfig updatedSyncConfig;
         }
     }
 

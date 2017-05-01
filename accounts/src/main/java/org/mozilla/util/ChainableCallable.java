@@ -28,8 +28,9 @@ import java.util.concurrent.Future;
  *       result = executor.submit(callable);
  *   }
  *
- *   // Maybe in an async callback...
- *   V finalResult = result.get(); // or it will throw an Exception.
+ *   The result from the final callable can be accessed via the returned Future, which will
+ *   return the result or throw a cascaded Exception. If the final callable uses a callback,
+ *   {@link ChainableCallableWithCallback} is recommended instead.
  * </pre>
  */
 public abstract class ChainableCallable<V> implements Callable {
@@ -46,4 +47,32 @@ public abstract class ChainableCallable<V> implements Callable {
      * @param value The return value from the previous Callable in the chain.
      */
     public abstract V call(final V value) throws Exception;
+
+    /**
+     * A {@link ChainableCallable} that does not allow the user to accidentally suppress errors
+     * by throwing during `call`: any thrown exceptions will call the error handler of the
+     * given callback.
+     */
+    public static abstract class ChainableCallableWithCallback<V> extends ChainableCallable<V> {
+        private ChainableCallableCallback callback;
+        public ChainableCallableWithCallback(final ChainableCallableCallback callback) { this.callback = callback; }
+
+        @Override
+        public final V call(final V value) throws Exception {
+            try {
+                callWithCallback(value);
+            } catch (final Exception e) {
+                callback.onError(e);
+            }
+            return null; // This is expected to end in a callback so we don't care for result.
+        }
+
+        /**
+         * Computes a result or throws an Exception if it is unable to do so. All Exceptions will
+         * call the `onError` handler of the given callback.
+         */
+        public abstract void callWithCallback(final V value) throws Exception;
+    }
+
+    public interface ChainableCallableCallback { void onError(Exception e); }
 }

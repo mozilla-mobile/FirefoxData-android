@@ -5,11 +5,13 @@
 package org.mozilla.accounts.sync.commands;
 
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 
 /** A command to get the crypto keys necessary to begin a sync. */
-public class GetCryptoKeysPreCommand extends SyncClientPreCommand {
+public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
     @Override
-    public FirefoxAccountSyncConfig call(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        return syncConfig;
+    void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final OnAsyncPreCommandComplete onComplete) {
+        onComplete.onSuccess(syncConfig);
     }
 }

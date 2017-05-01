@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.accounts.sync.callbacks.SyncHistoryCallback;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
 import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.CryptoRecord;
@@ -34,54 +35,45 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import static org.mozilla.accounts.sync.FirefoxAccountSyncClient.SYNC_CONFIG_SHARED_PREFS_NAME;
 
 // TODO: docs.
-// TODO: we don't want to precommand because we'll throw instead of callback on error.
-public class GetSyncHistoryCommand extends SyncClientPreCommand {
+public class GetSyncHistoryCommand extends SyncClientResourceCommand {
     private final SyncClientHistoryResourceDelegate syncClientResourceDelegate;
     private final SyncHistoryCallback callback;
 
     public GetSyncHistoryCommand(final int itemLimit, final SyncHistoryCallback callback) {
+        super(callback);
         this.syncClientResourceDelegate = new SyncClientHistoryResourceDelegate(itemLimit, callback);
         this.callback = callback;
     }
 
-    // TODO: no return type, can't throw exception. exceptions are sucking.
     @Override
-    public FirefoxAccountSyncConfig call(final FirefoxAccountSyncConfig syncConfig) throws Exception {
+    public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
         final Context context = syncConfig.contextWeakReference.get();
         if (context == null) {
             callback.onError(new Exception("Received token & unable to continue: context is null"));
-            return null;
+            return;
         }
 
         // TODO: set up code is shared.
-        try {
-            final URI storageServerURI = new URI(syncConfig.token.endpoint);
-            final AuthHeaderProvider authHeaderProvider = getAuthHeaderProvider(syncConfig.token, storageServerURI);
-            syncClientResourceDelegate.authHeaderProvider = authHeaderProvider;
+        final URI storageServerURI = new URI(syncConfig.token.endpoint);
+        final AuthHeaderProvider authHeaderProvider = getAuthHeaderProvider(syncConfig.token, storageServerURI);
+        syncClientResourceDelegate.authHeaderProvider = authHeaderProvider;
 
-            final SharedPreferences sharedPrefs = context.getSharedPreferences(SYNC_CONFIG_SHARED_PREFS_NAME, Utils.SHARED_PREFERENCES_MODE);
-            // todo: OLD NECESSARY?
-            final SyncConfiguration oldStyleSyncConfig = new SyncConfiguration(syncConfig.token.uid, authHeaderProvider, sharedPrefs,
-                    ((Married) syncConfig.account.accountState).getSyncKeyBundle());
-            oldStyleSyncConfig.setClusterURL(storageServerURI);
-            syncClientResourceDelegate.syncConfig = oldStyleSyncConfig; // todo: name.
+        final SharedPreferences sharedPrefs = context.getSharedPreferences(SYNC_CONFIG_SHARED_PREFS_NAME, Utils.SHARED_PREFERENCES_MODE);
+        // todo: OLD NECESSARY?
+        final SyncConfiguration oldStyleSyncConfig = new SyncConfiguration(syncConfig.token.uid, authHeaderProvider, sharedPrefs,
+                ((Married) syncConfig.account.accountState).getSyncKeyBundle());
+        oldStyleSyncConfig.setClusterURL(storageServerURI);
+        syncClientResourceDelegate.syncConfig = oldStyleSyncConfig; // todo: name.
 
-            final URI uri = new URI(storageServerURI.toString() + syncClientResourceDelegate.getResourcePath());
-            final BaseResource resource = new BaseResource(uri);
-            resource.delegate = syncClientResourceDelegate;
-            resource.get();
-        } catch (final NoSuchAlgorithmException | UnsupportedEncodingException | URISyntaxException | InvalidKeyException e) {
-            callback.onError(e);
-        }
-        return null;
+        final URI uri = new URI(storageServerURI.toString() + syncClientResourceDelegate.getResourcePath());
+        final BaseResource resource = new BaseResource(uri);
+        resource.delegate = syncClientResourceDelegate;
+        resource.get();
     }
 
     private AuthHeaderProvider getAuthHeaderProvider(final TokenServerToken token, final URI storageServerURI) throws UnsupportedEncodingException {

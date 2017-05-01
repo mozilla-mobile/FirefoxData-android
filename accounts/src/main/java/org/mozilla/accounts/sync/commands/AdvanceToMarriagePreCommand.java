@@ -9,12 +9,11 @@ import android.util.Log;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.login.FirefoxAccountLoginDefaultDelegate;
-import org.mozilla.accounts.sync.commands.SyncClientPreCommand.SyncClientAsyncPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.State;
-
-import java.util.concurrent.CountDownLatch;
 
 /**
  * A sync pre command to advance the account to the Marriage state.

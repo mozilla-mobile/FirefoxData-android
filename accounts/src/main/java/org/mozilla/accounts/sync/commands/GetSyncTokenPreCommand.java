@@ -6,11 +6,13 @@ package org.mozilla.accounts.sync.commands;
 
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
-import org.mozilla.accounts.sync.commands.SyncClientPreCommand.SyncClientAsyncPreCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 
 /**
- * A command to get the Sync token associated with the Firefox account.
+ * A command to get the Sync token associated with the Firefox account. This command expects
+ * the account to be in the married state.
  */
 public class GetSyncTokenPreCommand extends SyncClientAsyncPreCommand {
 
