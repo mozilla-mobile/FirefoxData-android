@@ -12,11 +12,14 @@ import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.accounts.sync.FirefoxAccountSyncClient;
 import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
+import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 public class AccountsExampleActivity extends AppCompatActivity {
 
@@ -68,7 +71,20 @@ public class AccountsExampleActivity extends AppCompatActivity {
     private void sync(final FirefoxAccount account) {
         FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
         // TODO: should not be anonymous if don't want to leak context.
-        //client.getHistory(this, 1000, new SyncCollectionCallback<HistoryRecord>() {
+        /*
+        client.getHistory(this, 1000, new SyncCollectionCallback<HistoryRecord>() {
+            @Override
+            public void onReceive(final List<HistoryRecord> receivedRecords) {
+                Log.e(LOGTAG, "onReceive: error!");
+                for (final HistoryRecord record : receivedRecords) {
+                    Log.d(LOGTAG, record.title + ": " + record.histURI);
+                }
+            }
+
+            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
+        });
+        */
+
         client.getPasswords(this, new SyncCollectionCallback<PasswordRecord>() {
             @Override
             public void onReceive(final List<PasswordRecord> receivedRecords) {
@@ -79,10 +95,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 }
             }
 
-            @Override
-            public void onError(final Exception e) {
-                Log.e(LOGTAG, "onError: error!", e);
-            }
+            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
         });
     }
 }

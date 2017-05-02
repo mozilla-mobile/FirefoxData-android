@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 public class SyncClientCommands {
     private SyncClientCommands() {}
 
-    /** A base-class for commands accessing sync resources - these are expected to have callbacks. */
+    /** A base-class for commands accessing collections from sync  - these are expected to have callbacks. */
     public static abstract class SyncClientCollectionCommand<R> extends ChainableCallableWithCallback<FirefoxAccountSyncConfig> {
         protected final SyncCollectionCallback<R> callback;
 
