@@ -26,9 +26,9 @@ import org.mozilla.gecko.sync.repositories.domain.Record;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * Gets the history for the associated account from Firefox Sync.
@@ -67,40 +67,44 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
         private final SyncHistoryCallback callback;
 
         public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncHistoryCallback callback) {
-            super(syncConfig);
+            super(syncConfig, callback);
             this.callback = callback;
         }
 
         @Override
-        public void handleResponse(final HttpResponse response) {
-            Log.d(LOGTAG, response.toString());
-            Scanner s = null;
+        public void handleResponse(final HttpResponse response, final String responseBody) {
+            final HistoryRecordFactory recordFactory = new HistoryRecordFactory();
+            final KeyBundle keyBundle;
+            final JSONArray recordArray;
             try {
-                s = new Scanner(response.getEntity().getContent()).useDelimiter("\\A");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String result = s.hasNext() ? s.next() : "";
-            final JSONArray array;
-            final HistoryRecordFactory fact = new HistoryRecordFactory();
-            try {
-                final KeyBundle bundle = syncConfig.collectionKeys.keyBundleForCollection(HISTORY_COLLECTION);
-                array = new JSONArray(result);
-                for (int i = 0; i < array.length(); ++i) {
-                    final JSONObject obj = array.getJSONObject(i);
-                    final Record record = new HistoryRecord(obj.getString("id"));
-                    final CryptoRecord crecord = new CryptoRecord(record);
-                    crecord.payload = new ExtendedJSONObject(obj.getString("payload"));
-                    crecord.setKeyBundle(bundle);
-                    crecord.decrypt();
-                    final HistoryRecord hrecord = (HistoryRecord) fact.createRecord(crecord);
-                    Log.d(LOGTAG, hrecord.histURI);
-                }
-            } catch (JSONException | NonObjectJSONException | IOException | CryptoException | NoCollectionKeysSetException e) {
+                keyBundle = syncConfig.collectionKeys.keyBundleForCollection(HISTORY_COLLECTION);
+                recordArray = new JSONArray(responseBody);
+            } catch (final NoCollectionKeysSetException | JSONException e) {
                 callback.onError(e);
                 return;
             }
-            callback.onReceive(null);
+
+            final ArrayList<HistoryRecord> receivedRecords = new ArrayList<>(recordArray.length());
+            for (int i = 0; i < recordArray.length(); ++i) {
+                try {
+                    final JSONObject jsonRecord = recordArray.getJSONObject(i);
+                    final HistoryRecord historyRecord = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
+                    receivedRecords.add(historyRecord);
+                } catch (final IOException | JSONException | NonObjectJSONException | CryptoException e) {
+                    Log.w(LOGTAG, "Unable to decrypt record", e); // Let's not log to avoid leaking user data.
+                }
+            }
+            callback.onReceive(receivedRecords);
+        }
+
+        private HistoryRecord getAndDecryptRecord(final HistoryRecordFactory recordFactory, final KeyBundle keyBundle,
+                final JSONObject json) throws NonObjectJSONException, IOException, CryptoException, JSONException {
+            final Record recordToWrap = new HistoryRecord(json.getString("id"));
+            final CryptoRecord cryptoRecord = new CryptoRecord(recordToWrap);
+            cryptoRecord.payload = new ExtendedJSONObject(json.getString("payload"));
+            cryptoRecord.setKeyBundle(keyBundle);
+            cryptoRecord.decrypt();
+            return (HistoryRecord) recordFactory.createRecord(cryptoRecord);
         }
 
         @Override public void handleError(final Exception e) { callback.onError(e); }

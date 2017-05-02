@@ -72,6 +72,9 @@ public class AccountsExampleActivity extends AppCompatActivity {
             @Override
             public void onReceive(final List<HistoryRecord> historyRecords) {
                 Log.e(LOGTAG, "onReceive: error!");
+                for (final HistoryRecord record : historyRecords) {
+                    Log.d(LOGTAG, record.title + ": " + record.histURI);
+                }
             }
 
             @Override

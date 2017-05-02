@@ -12,9 +12,10 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.mozilla.accounts.FirefoxAccountShared;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
-import org.mozilla.gecko.sync.SyncConfiguration;
 import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.ResourceDelegate;
+import org.mozilla.util.ChainableCallable.ChainableCallableCallback;
+import org.mozilla.util.FileUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -33,15 +34,26 @@ public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
+    private final ChainableCallableCallback callback;
 
-    public SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig) {
+    public SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final ChainableCallableCallback callback) {
         this.syncConfig = syncConfig;
+        this.callback = callback;
     }
 
     public abstract void handleError(Exception e);
-    public abstract void handleResponse(final HttpResponse response);
+    public abstract void handleResponse(final HttpResponse response, final String responseBody);
 
-    @Override public final void handleHttpResponse(final HttpResponse response) { handleResponse(response); }
+    @Override public final void handleHttpResponse(final HttpResponse response) {
+        final String responseBody;
+        try {
+            responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
+        } catch (final IOException e) {
+            callback.onError(e);
+            return;
+        }
+        handleResponse(response, responseBody);
+    }
 
     @Override public String getUserAgent() { return null; } // TODO: return one in Constants?
 
