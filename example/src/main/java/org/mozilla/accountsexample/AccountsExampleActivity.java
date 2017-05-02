@@ -2,8 +2,6 @@ package org.mozilla.accountsexample;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import org.mozilla.accounts.FirefoxAccount;
@@ -12,41 +10,24 @@ import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.accounts.sync.FirefoxAccountSyncClient;
 import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
+import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 public class AccountsExampleActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "AccountsExampleActivity";
-
-    // TODO: maybe sync should be a service.
-    private final HandlerThread bgThread = new HandlerThread("background");
-    private final Executor executor = Executors.newSingleThreadExecutor(); // TODO: merge bgTHread & executor?
-    private Handler bgHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bgThread.start();
-        bgHandler = new Handler(bgThread.getLooper());
-
         final Intent intent = new Intent(this, FirefoxAccountLoginWebViewActivity.class);
-        intent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage());
+        intent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
         startActivityForResult(intent, 10); // TODO: request code.
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        bgThread.quit();
     }
 
     @Override
@@ -71,11 +52,22 @@ public class AccountsExampleActivity extends AppCompatActivity {
     private void sync(final FirefoxAccount account) {
         FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
         // TODO: should not be anonymous if don't want to leak context.
-        /*
+        client.getBookmarks(this, new SyncCollectionCallback<BookmarkRecord>() {
+            @Override
+            public void onReceive(final List<BookmarkRecord> receivedRecords) {
+                Log.e(LOGTAG, "onReceive: bookmarks!");
+                for (final BookmarkRecord record : receivedRecords) {
+                    Log.d(LOGTAG, record.title + ": " + record.bookmarkURI);
+                }
+            }
+
+            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
+        });
+
         client.getHistory(this, 1000, new SyncCollectionCallback<HistoryRecord>() {
             @Override
             public void onReceive(final List<HistoryRecord> receivedRecords) {
-                Log.e(LOGTAG, "onReceive: error!");
+                Log.e(LOGTAG, "onReceive: history!");
                 for (final HistoryRecord record : receivedRecords) {
                     Log.d(LOGTAG, record.title + ": " + record.histURI);
                 }
@@ -83,14 +75,12 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
             @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
         });
-        */
 
         client.getPasswords(this, new SyncCollectionCallback<PasswordRecord>() {
             @Override
             public void onReceive(final List<PasswordRecord> receivedRecords) {
-                Log.e(LOGTAG, "onReceive: error!");
+                Log.e(LOGTAG, "onReceive: passwords!");
                 for (final PasswordRecord record : receivedRecords) {
-                    //Log.d(LOGTAG, record.title + ": " + record.histURI);
                     Log.d(LOGTAG, record.encryptedPassword + ": " + record.encryptedUsername);
                 }
             }

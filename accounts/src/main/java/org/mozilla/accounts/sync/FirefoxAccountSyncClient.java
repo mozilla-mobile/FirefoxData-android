@@ -6,19 +6,23 @@ package org.mozilla.accounts.sync;
 
 import android.content.Context;
 import org.mozilla.accounts.FirefoxAccount;
+import org.mozilla.accounts.sync.commands.GetSyncBookmarksCommand;
 import org.mozilla.accounts.sync.commands.GetSyncHistoryCommand;
 import org.mozilla.accounts.sync.commands.GetSyncPasswordsCommand;
 import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
+import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// TODO: Read only name? Docs.
+/**
+ * A read-only sync client for Firefox Accounts.
+ *
+ * Perhaps in the future, it'll also do full syncing.
+ */
 public class FirefoxAccountSyncClient {
-
-    public static final String SYNC_CONFIG_SHARED_PREFS_NAME = "org.mozilla.accounts.FirefoxSyncClient.syncConfig";
 
     private final SyncClientCommandRunner commandRunner = new SyncClientCommandRunner();
     private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
@@ -29,11 +33,6 @@ public class FirefoxAccountSyncClient {
         this.account = account;
     }
 
-    public void getCollectionInfo() {
-        // TODO
-        //final URI uri = new URI(storageServerURI.toString() + "/info/collections");
-    }
-
     public void getHistory(final Context context, final int itemLimit, final SyncCollectionCallback<HistoryRecord> callback) {
         // todo: assert logged in.
         commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
@@ -41,6 +40,10 @@ public class FirefoxAccountSyncClient {
 
     public void getPasswords(final Context context, final SyncCollectionCallback<PasswordRecord> callback) {
         commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
+    }
+
+    public void getBookmarks(final Context context, final SyncCollectionCallback<BookmarkRecord> callback) {
+        commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(callback), getInitialSyncConfig(context));
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig(final Context context) {
