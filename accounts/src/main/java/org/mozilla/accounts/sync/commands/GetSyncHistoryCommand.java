@@ -9,8 +9,8 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
+import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
 import org.mozilla.accounts.sync.callbacks.SyncHistoryCallback;
 import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
 import org.mozilla.gecko.sync.CryptoRecord;
@@ -19,7 +19,6 @@ import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.crypto.CryptoException;
 import org.mozilla.gecko.sync.crypto.KeyBundle;
-import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
@@ -27,6 +26,8 @@ import org.mozilla.gecko.sync.repositories.domain.Record;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -47,30 +48,28 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
 
     @Override
     public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, itemLimit, callback);
-
-        // TODO: set up code is shared.
-        final URI storageServerURI = FirefoxAccountSyncUtils.getServerURI(syncConfig.token);
-        final URI uri = new URI(storageServerURI.toString() + resourceDelegate.getResourcePath()); // TODO: to util?
+        // TODO: some code is shared.
+        final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, callback);
+        final URI uri = FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, HISTORY_COLLECTION, null, getArgs());
         final BaseResource resource = new BaseResource(uri);
         resource.delegate = resourceDelegate;
         resource.get();
     }
 
+    private Map<String, String> getArgs() {
+        final Map<String, String> args = new HashMap<>(2);
+        args.put("full", "1"); // get full data, not just IDs.
+        args.put("limit", String.valueOf(itemLimit));
+        return args;
+    }
+
     private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate {
-        private final int itemLimit;
         private final SyncHistoryCallback callback;
 
-        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final int itemLimit,
-                final SyncHistoryCallback callback) {
+        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncHistoryCallback callback) {
             super(syncConfig);
-            this.itemLimit = itemLimit;
             this.callback = callback;
         }
-
-        @Override public void handleError(final Exception e) { callback.onError(e); }
-
-        @Override public String getResourcePath() { return "/storage/history?full=1&limit=" + itemLimit; } // TODO: seems unnecessary.
 
         @Override
         public void handleResponse(final HttpResponse response) {
@@ -103,5 +102,7 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
             }
             callback.onReceive(null);
         }
+
+        @Override public void handleError(final Exception e) { callback.onError(e); }
     }
 }

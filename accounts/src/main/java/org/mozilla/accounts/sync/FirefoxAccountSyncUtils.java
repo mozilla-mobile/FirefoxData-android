@@ -5,6 +5,7 @@
 package org.mozilla.accounts.sync;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
@@ -12,6 +13,7 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  * A group of util functions for the Sync servers.
@@ -19,20 +21,56 @@ import java.net.URISyntaxException;
 public class FirefoxAccountSyncUtils {
     private FirefoxAccountSyncUtils() {}
 
+    // The URI methods wrap String methods so we can avoid allocating too many unnecessary objects when composing the methods.
     public static URI getServerURI(@NonNull final TokenServerToken token) throws URISyntaxException {
-        return new URI(token.endpoint);
+        return new URI(getServerURIString(token));
     }
 
     public static URI getServerStorageURI(@NonNull final TokenServerToken token) throws URISyntaxException {
-        return new URI(getServerURI(token).toString() + "/storage");
+        return new URI(getServerStorageURIString(token));
     }
 
     /**
      * Gets the URI associated with the given collection & id. Equivalent to
      * {@link org.mozilla.gecko.sync.GlobalSession#wboURI(java.lang.String, java.lang.String)}.
      */
-    public static URI getCollectionURI(final TokenServerToken token, final String collection, final String id) throws URISyntaxException {
-        return new URI(getServerStorageURI(token).toString() + "/" + collection + "/" + id);
+    public static URI getCollectionURI(final TokenServerToken token, @NonNull final String collection,
+            @Nullable final String id, @Nullable final Map<String, String> getArgs) throws URISyntaxException {
+        return new URI(getCollectionURIString(token, collection, id, getArgs));
+    }
+
+    private static String getServerURIString(@NonNull final TokenServerToken token) {
+        return token.endpoint;
+    }
+
+    private static String getServerStorageURIString(@NonNull final TokenServerToken token) {
+        return getServerURIString(token) + "/storage";
+    }
+
+    private static String getCollectionURIString(final TokenServerToken token, @NonNull final String collection,
+            @Nullable final String id, @Nullable final Map<String, String> getArgs) throws URISyntaxException {
+        final StringBuilder stringBuilder = new StringBuilder(getServerStorageURIString(token))
+                .append('/')
+                .append(collection);
+
+        if (id != null) {
+            stringBuilder
+                    .append('/')
+                    .append(id);
+        }
+
+        if (getArgs != null && getArgs.size() > 0) {
+            stringBuilder.append('?');
+            for (final Map.Entry<String, String> entry : getArgs.entrySet()) {
+                stringBuilder
+                        .append(entry.getKey())
+                        .append('=')
+                        .append(entry.getValue())
+                        .append('&');
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1); // rm extra '&'.
+        }
+        return stringBuilder.toString();
     }
 
     public static HawkAuthHeaderProvider getAuthHeaderProvider(final TokenServerToken token) throws UnsupportedEncodingException, URISyntaxException {

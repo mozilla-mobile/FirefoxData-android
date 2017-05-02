@@ -65,7 +65,7 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
         */
 
         final SyncStorageRecordRequest request = new SyncStorageRecordRequest(
-                FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID));
+                FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
         request.delegate = new SyncStorageRequestDelegate() {
             @Override
             public void handleRequestSuccess(final SyncStorageResponse response) {

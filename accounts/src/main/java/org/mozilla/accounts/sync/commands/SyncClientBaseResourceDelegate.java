@@ -38,9 +38,6 @@ public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate
         this.syncConfig = syncConfig;
     }
 
-    /** @return {@code <path>} in {@code <server-storage-uri><path>} */
-    public abstract String getResourcePath();
-
     public abstract void handleError(Exception e);
     public abstract void handleResponse(final HttpResponse response);
 
