@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
 import org.mozilla.gecko.fxa.login.Engaged;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.Utils;
@@ -23,7 +24,7 @@ import org.mozilla.gecko.sync.Utils;
  */
 public class FirefoxAccount {
 
-    private static final String LOGTAG = "FirefoxAccount";
+    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     public final String email;
     public final String uid;
