@@ -6,12 +6,15 @@ package org.mozilla.accounts.sync;
 
 import android.content.Context;
 import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.sync.callbacks.SyncHistoryCallback;
 import org.mozilla.accounts.sync.commands.GetSyncHistoryCommand;
+import org.mozilla.accounts.sync.commands.SyncRecordCallback;
+import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
+import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+// TODO: Read only name? Docs.
 public class FirefoxAccountSyncClient {
 
     public static final String SYNC_CONFIG_SHARED_PREFS_NAME = "org.mozilla.accounts.FirefoxSyncClient.syncConfig";
@@ -30,7 +33,7 @@ public class FirefoxAccountSyncClient {
         //final URI uri = new URI(storageServerURI.toString() + "/info/collections");
     }
 
-    public void getHistory(final Context context, final int itemLimit, final SyncHistoryCallback callback) {
+    public void getHistory(final Context context, final int itemLimit, final SyncRecordCallback<HistoryRecord> callback) {
         // todo: assert logged in.
         commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
     }

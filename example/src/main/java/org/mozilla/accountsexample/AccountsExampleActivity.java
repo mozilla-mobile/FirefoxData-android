@@ -11,7 +11,7 @@ import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.accounts.sync.FirefoxAccountSyncClient;
-import org.mozilla.accounts.sync.callbacks.SyncHistoryCallback;
+import org.mozilla.accounts.sync.commands.SyncRecordCallback;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 
 import java.util.List;
@@ -68,7 +68,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
     private void sync(final FirefoxAccount account) {
         FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
         // TODO: should not be anonymous if don't want to leak context.
-        client.getHistory(this, 1000, new SyncHistoryCallback() {
+        client.getHistory(this, 1000, new SyncRecordCallback<HistoryRecord>() {
             @Override
             public void onReceive(final List<HistoryRecord> historyRecords) {
                 Log.e(LOGTAG, "onReceive: error!");

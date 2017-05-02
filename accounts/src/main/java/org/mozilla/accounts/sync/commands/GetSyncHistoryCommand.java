@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
 import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
-import org.mozilla.accounts.sync.callbacks.SyncHistoryCallback;
 import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
@@ -38,9 +37,9 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
     private static final String HISTORY_COLLECTION = "history";
 
     private final int itemLimit;
-    private final SyncHistoryCallback callback;
+    private final SyncRecordCallback<HistoryRecord> callback;
 
-    public GetSyncHistoryCommand(final int itemLimit, final SyncHistoryCallback callback) {
+    public GetSyncHistoryCommand(final int itemLimit, final SyncRecordCallback<HistoryRecord> callback) {
         super(callback);
         this.itemLimit = itemLimit;
         this.callback = callback;
@@ -64,9 +63,9 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
     }
 
     private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate {
-        private final SyncHistoryCallback callback;
+        private final SyncRecordCallback<HistoryRecord> callback;
 
-        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncHistoryCallback callback) {
+        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncRecordCallback<HistoryRecord> callback) {
             super(syncConfig, callback);
             this.callback = callback;
         }
