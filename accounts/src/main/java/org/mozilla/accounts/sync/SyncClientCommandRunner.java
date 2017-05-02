@@ -9,7 +9,7 @@ import org.mozilla.accounts.sync.commands.AdvanceToMarriagePreCommand;
 import org.mozilla.accounts.sync.commands.GetCryptoKeysPreCommand;
 import org.mozilla.accounts.sync.commands.GetSyncTokenPreCommand;
 import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.util.ChainableCallable;
 
 import java.util.Arrays;
@@ -61,7 +61,7 @@ class SyncClientCommandRunner {
      * This function is thread-safe: it's synchronized to ensure items are added to the queue
      * serially.
      */
-    protected synchronized void queueAndRunCommand(final SyncClientResourceCommand command,
+    protected synchronized void queueAndRunCommand(final SyncClientCollectionCommand command,
             final FirefoxAccountSyncConfig initialSyncConfig) {
         final List<? extends ChainableCallable<FirefoxAccountSyncConfig>> preCommands = getPreCommands();
 

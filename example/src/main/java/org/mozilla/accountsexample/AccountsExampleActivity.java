@@ -11,8 +11,8 @@ import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
 import org.mozilla.accounts.FirefoxAccountEndpointConfig;
 import org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.accounts.sync.FirefoxAccountSyncClient;
-import org.mozilla.accounts.sync.commands.SyncRecordCallback;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
+import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
+import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -68,12 +68,14 @@ public class AccountsExampleActivity extends AppCompatActivity {
     private void sync(final FirefoxAccount account) {
         FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
         // TODO: should not be anonymous if don't want to leak context.
-        client.getHistory(this, 1000, new SyncRecordCallback<HistoryRecord>() {
+        //client.getHistory(this, 1000, new SyncCollectionCallback<HistoryRecord>() {
+        client.getPasswords(this, new SyncCollectionCallback<PasswordRecord>() {
             @Override
-            public void onReceive(final List<HistoryRecord> historyRecords) {
+            public void onReceive(final List<PasswordRecord> receivedRecords) {
                 Log.e(LOGTAG, "onReceive: error!");
-                for (final HistoryRecord record : historyRecords) {
-                    Log.d(LOGTAG, record.title + ": " + record.histURI);
+                for (final PasswordRecord record : receivedRecords) {
+                    //Log.d(LOGTAG, record.title + ": " + record.histURI);
+                    Log.d(LOGTAG, record.encryptedPassword + ": " + record.encryptedUsername);
                 }
             }
 

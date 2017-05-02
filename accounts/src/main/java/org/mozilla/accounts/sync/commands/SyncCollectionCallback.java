@@ -8,7 +8,7 @@ import org.mozilla.util.ChainableCallable.ChainableCallableCallback;
 
 import java.util.List;
 
-/** A Callback for a Sync command that returns a list of records. */
-public interface SyncRecordCallback<R> extends ChainableCallableCallback {
+/** A callback for a Sync command that returns the value of a collection. */
+public interface SyncCollectionCallback<R> extends ChainableCallableCallback {
     void onReceive(List<R> records);
 }

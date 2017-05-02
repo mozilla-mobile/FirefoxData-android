@@ -26,7 +26,7 @@ import java.security.GeneralSecurityException;
  * Base implementation for requests made by {@see org.mozilla.accounts.sync.FirefoxAccountSyncClient}:
  * provides basic configuration and simplifies the error/response handling.
  */
-public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate {
+public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDelegate {
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
@@ -34,17 +34,17 @@ public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    private final ChainableCallableCallback callback;
+    protected final SyncCollectionCallback<R> callback;
 
-    public SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final ChainableCallableCallback callback) {
+    public SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<R> callback) {
         this.syncConfig = syncConfig;
         this.callback = callback;
     }
 
-    public abstract void handleError(Exception e);
     public abstract void handleResponse(final HttpResponse response, final String responseBody);
 
-    @Override public final void handleHttpResponse(final HttpResponse response) {
+    @Override
+    public final void handleHttpResponse(final HttpResponse response) {
         final String responseBody;
         try {
             responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
@@ -55,7 +55,13 @@ public abstract class SyncClientBaseResourceDelegate implements ResourceDelegate
         handleResponse(response, responseBody);
     }
 
-    @Override public String getUserAgent() { return null; } // TODO: return one in Constants?
+    /**
+     * Handles any errors that happen in the request process. This can be overridden to have custom behavior; the
+     * default implementation just forwards the exception to the callback.
+     */
+    public void handleError(Exception e) { callback.onError(e); }
+
+    @Override public String getUserAgent() { return null; } // TODO: return the one in Constants?
 
     // To keep things simple (for now), let's just set them all as errors.
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleError(e); }

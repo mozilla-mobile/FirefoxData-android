@@ -10,21 +10,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
-import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientResourceCommand;
+import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.crypto.CryptoException;
 import org.mozilla.gecko.sync.crypto.KeyBundle;
-import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,42 +29,32 @@ import java.util.Map;
 /**
  * Gets the history for the associated account from Firefox Sync.
  */
-public class GetSyncHistoryCommand extends SyncClientResourceCommand {
+public class GetSyncHistoryCommand extends SyncClientCollectionCommand<HistoryRecord> {
 
     private static final String HISTORY_COLLECTION = "history";
 
     private final int itemLimit;
-    private final SyncRecordCallback<HistoryRecord> callback;
 
-    public GetSyncHistoryCommand(final int itemLimit, final SyncRecordCallback<HistoryRecord> callback) {
+    public GetSyncHistoryCommand(final int itemLimit, final SyncCollectionCallback<HistoryRecord> callback) {
         super(callback);
         this.itemLimit = itemLimit;
-        this.callback = callback;
     }
 
     @Override
     public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        // TODO: some code is shared.
         final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, callback);
-        final URI uri = FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, HISTORY_COLLECTION, null, getArgs());
-        final BaseResource resource = new BaseResource(uri);
-        resource.delegate = resourceDelegate;
-        resource.get();
+        makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
     }
 
     private Map<String, String> getArgs() {
-        final Map<String, String> args = new HashMap<>(2);
-        args.put("full", "1"); // get full data, not just IDs.
+        final Map<String, String> args = new HashMap<>(1);
         args.put("limit", String.valueOf(itemLimit));
         return args;
     }
 
-    private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate {
-        private final SyncRecordCallback<HistoryRecord> callback;
-
-        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncRecordCallback<HistoryRecord> callback) {
+    private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate<HistoryRecord> {
+        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<HistoryRecord> callback) {
             super(syncConfig, callback);
-            this.callback = callback;
         }
 
         @Override
@@ -105,7 +92,5 @@ public class GetSyncHistoryCommand extends SyncClientResourceCommand {
             cryptoRecord.decrypt();
             return (HistoryRecord) recordFactory.createRecord(cryptoRecord);
         }
-
-        @Override public void handleError(final Exception e) { callback.onError(e); }
     }
 }

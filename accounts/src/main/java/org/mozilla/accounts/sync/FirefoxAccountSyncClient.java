@@ -7,7 +7,8 @@ package org.mozilla.accounts.sync;
 import android.content.Context;
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.sync.commands.GetSyncHistoryCommand;
-import org.mozilla.accounts.sync.commands.SyncRecordCallback;
+import org.mozilla.accounts.sync.commands.GetSyncPasswordsCommand;
+import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
@@ -33,9 +34,13 @@ public class FirefoxAccountSyncClient {
         //final URI uri = new URI(storageServerURI.toString() + "/info/collections");
     }
 
-    public void getHistory(final Context context, final int itemLimit, final SyncRecordCallback<HistoryRecord> callback) {
+    public void getHistory(final Context context, final int itemLimit, final SyncCollectionCallback<HistoryRecord> callback) {
         // todo: assert logged in.
         commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
+    }
+
+    public void getPasswords(final Context context, final SyncCollectionCallback<PasswordRecord> callback) {
+        commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig(final Context context) {
