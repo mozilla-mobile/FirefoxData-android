@@ -34,7 +34,7 @@ public class FirefoxAccountSyncConfig {
             final ExecutorService networkExecutor, final TokenServerToken token, final CollectionKeys collectionKeys) {
         this.contextWeakReference = new WeakReference<Context>(context);
         this.account = account;
-        this.networkExecutor = networkExecutor; // TODO: is this a bad place for it?
+        this.networkExecutor = networkExecutor;
         this.token = token;
         this.collectionKeys = collectionKeys;
     }
@@ -48,10 +48,7 @@ public class FirefoxAccountSyncConfig {
         this.collectionKeys = collectionKeys;
     }
 
-    // TODO: kind of sucks that all callers have to handle all of these exceptions.
-    /**
-     * Gets the sync key bundle. Assumes the account in the config is in the Married state.
-     */
+    /** Convenience method to get the sync key bundle. Assumes the account in the config is in the Married state. */
     public KeyBundle getSyncKeyBundle() throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
         if (keyBundleCache == null) {
             final Married married = FirefoxAccountUtils.getMarried(account.accountState);

@@ -75,7 +75,7 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
      */
     public void handleError(Exception e) { callback.onError(e); }
 
-    @Override public String getUserAgent() { return null; } // TODO: return the one in Constants?
+    @Override public String getUserAgent() { return null; }
 
     // To keep things simple (for now), let's just set them all as errors.
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleError(e); }

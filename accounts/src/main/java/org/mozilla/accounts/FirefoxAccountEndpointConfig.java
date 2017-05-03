@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
  */
 public class FirefoxAccountEndpointConfig implements Parcelable {
 
-    private static final String CONTEXT = "fx_ios_v1"; // TODO: get lib one. enters some mode...
+    private static final String CONTEXT = "fx_ios_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
 
     public final String label;
 
@@ -49,7 +49,10 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
         this.syncConfig = syncConfig;
     }
 
-    // TODO: sync won't work.
+    /**
+     * Gets an endpoint config for the stable dev servers; note <b>you will be unable to access sync data</b> with this
+     * configuration: the sync servers (stage) don't share resources with these dev servers.
+     */
     public static FirefoxAccountEndpointConfig getStableDev() {
         return new FirefoxAccountEndpointConfig(
                 /* label */ "StableDev",
@@ -59,10 +62,14 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* signIn */ appendContextParam("https://stable.dev.lcip.org/signin?service=sync"),
                 /* settings */ appendContextParam("https://stable.dev.lcip.org/settings"),
                 /* forceAuth */ appendContextParam("https://stable.dev.lcip.org/force_auth?service=sync"),
-                Sync15EndpointConfig.getStage()
+                Sync15EndpointConfig.getStage() // TODO: is there a better server to point to? Here & `LatestDev`.
         );
     }
 
+    /**
+     * Gets an endpoint config for the latest dev servers; note <b>you will be unable to access sync data</b> with this
+     * configuration: the sync servers (stage) don't share resources with these dev servers.
+     */
     public static FirefoxAccountEndpointConfig getLatestDev() {
         return new FirefoxAccountEndpointConfig(
                 /* label */ "LatestDev",

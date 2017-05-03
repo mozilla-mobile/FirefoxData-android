@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
 import org.mozilla.gecko.fxa.login.Engaged;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.Utils;
@@ -29,15 +28,8 @@ public class FirefoxAccount {
     public final String email;
     public final String uid;
 
-    // TODO: no easy access to tokens stored in accountStore.
     public final State accountState;
     public final FirefoxAccountEndpointConfig endpointConfig;
-
-    // version?
-    // deviceRegistration - reg for this device.
-    // pushRegistration - prolly don't need.
-    // stateCache // sync accountState. unclear diff between.
-    // syncAuthState
 
     public FirefoxAccount(final String email, final String uid, final State state,
             final FirefoxAccountEndpointConfig endpointConfig) {

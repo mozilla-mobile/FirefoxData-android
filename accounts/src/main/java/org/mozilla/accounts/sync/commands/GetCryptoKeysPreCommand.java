@@ -35,34 +35,10 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
 
     @Override
     void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final OnAsyncPreCommandComplete onComplete) throws Exception {
-        // TODO: add assertions here & elsewhere. Ensure we have collections?
-        // TODO: add todos for persistence.
-        /*
-        InfoCollections infoCollections = session.config.infoCollections;
-        if (infoCollections == null) {
-            session.abort(null, "No info/collections set in EnsureCrypto5KeysStage.");
+        if (syncConfig.token == null) {
+            onComplete.onException(new IllegalArgumentException("syncConfig.token unexpectedly null."));
             return;
         }
-        */
-
-        //new PersistedCrypto5Keys(getPrefs(), syncKeyBundle)
-        /*
-        syncConfig.
-        PersistedCrypto5Keys pck = session.config.persistedCryptoKeys();
-        long lastModified = pck.lastModified();
-        if (retrying || !infoCollections.updateNeeded(CRYPTO_COLLECTION, lastModified)) {
-            // Try to use our local collection keys for this session.
-            Logger.debug(LOG_TAG, "Trying to use persisted collection keys for this session.");
-            CollectionKeys keys = pck.keys();
-            if (keys != null) {
-                Logger.trace(LOG_TAG, "Using persisted collection keys for this session.");
-                session.config.setCollectionKeys(keys);
-                session.advance();
-                return;
-            }
-            Logger.trace(LOG_TAG, "Failed to use persisted collection keys for this session.");
-        }
-        */
 
         final SyncStorageRecordRequest request = new SyncStorageRecordRequest(
                 FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
@@ -106,8 +82,7 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
 
             @Override
             public String ifUnmodifiedSince() {
-                // TODO: do something here?
-                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns!
+                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns! TODO: do something here?
             }
         };
         request.get();

@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /** Container file for SyncClientCommand classes. */
 public class SyncClientCommands {
@@ -56,12 +57,14 @@ public class SyncClientCommands {
 
     /** A helper for handling pre-commands that begin an async request and need to block until completion. */
     public static abstract class SyncClientAsyncPreCommand extends ChainableCallable<FirefoxAccountSyncConfig> {
+        private static final long ASYNC_TIMEOUT_SECONDS = 60;
+
         @Override
         public final FirefoxAccountSyncConfig call(final FirefoxAccountSyncConfig syncConfig) throws Exception {
             final CountDownLatch makeSynchronousLatch = new CountDownLatch(1);
             final ReturnValueContainer returnValueContainer = new ReturnValueContainer();
 
-            initAsyncCall(syncConfig, new OnAsyncPreCommandComplete() { // TODO: help callers: don't allow callback called more than once.
+            initAsyncCall(syncConfig, new OnAsyncPreCommandComplete() {
                 @Override
                 public void onException(final Exception e) {
                     returnValueContainer.exception = e;
@@ -75,8 +78,9 @@ public class SyncClientCommands {
                 }
             });
 
-            makeSynchronousLatch.await(); // Await end of async operation. TODO: timeout?
-            if (returnValueContainer.exception != null) { throw returnValueContainer.exception; }
+            final boolean countDownReachedZero = makeSynchronousLatch.await(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS); // Await end of async operation.
+            if (!countDownReachedZero) { throw new Exception("Async command timed out."); }
+            else if (returnValueContainer.exception != null) { throw returnValueContainer.exception; }
             return returnValueContainer.updatedSyncConfig;
         }
 

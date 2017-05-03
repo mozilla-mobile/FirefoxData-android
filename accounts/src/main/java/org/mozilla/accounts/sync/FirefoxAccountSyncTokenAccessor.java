@@ -6,6 +6,7 @@ package org.mozilla.accounts.sync;
 
 import org.mozilla.accounts.FirefoxAccount;
 import org.mozilla.accounts.FirefoxAccountShared;
+import org.mozilla.accounts.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;
@@ -40,9 +41,12 @@ public class FirefoxAccountSyncTokenAccessor {
      * @throws IllegalStateException if the account is not in the Married state.
      */
     public static void get(final FirefoxAccount account, final TokenCallback callback) {
-        // We make GetTokenMarriedCallback non-anonymous to prevent leaking the Context.
-        // TODO: assert married.
-        final Married marriedState = (Married) account.accountState;
+        if (!FirefoxAccountUtils.isMarried(account.accountState)) {
+            callback.onError(new Exception("Assertion failed: expected account to be in married state. Instead: " +
+                    account.accountState.getStateLabel().name()));
+            return;
+        }
+        final Married marriedState = FirefoxAccountUtils.getMarried(account.accountState);
 
         final URI tokenServerURI = account.endpointConfig.syncConfig.tokenServerURL;
         final String assertion;
@@ -54,6 +58,7 @@ public class FirefoxAccountSyncTokenAccessor {
             return;
         }
 
+        // We make the TokenServerClientDelegate non-anonymous to prevent leaking the Context.
         final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor);
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 new FirefoxAccountTokenServerClientDelegate(callback));
