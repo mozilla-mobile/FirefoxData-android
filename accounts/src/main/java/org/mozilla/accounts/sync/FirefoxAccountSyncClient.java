@@ -29,6 +29,7 @@ public class FirefoxAccountSyncClient {
 
     private final FirefoxAccount account;
 
+    // TODO: this account can get updated but we'd never update it here. :( Pass in store instead?
     public FirefoxAccountSyncClient(final FirefoxAccount account) {
         this.account = account;
     }

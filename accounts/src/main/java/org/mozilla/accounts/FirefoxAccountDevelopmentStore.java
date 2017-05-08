@@ -63,7 +63,7 @@ public class FirefoxAccountDevelopmentStore {
                 .putString("state-label", account.accountState.getStateLabel().name())
                 .putString("state-json", account.accountState.toJSONObject().toJSONString())
                 .putString("config-label", account.endpointConfig.label)
-                .putString("config-authServer", account.endpointConfig.authServerURL.toString())
+                .putString("config-authServer", account.endpointConfig.authServerURL.toString()) // TODO: don't need all these.
                 .putString("config-oauthServer", account.endpointConfig.oauthServerURL.toString())
                 .putString("config-profile", account.endpointConfig.profileServerURL.toString())
                 .putString("config-signIn", account.endpointConfig.signInURL.toString())
