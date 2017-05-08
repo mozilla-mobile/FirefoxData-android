@@ -2,16 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync.commands;
+package org.mozilla.sync.sync.commands;
 
 import android.content.Context;
 import android.util.Log;
-import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
-import org.mozilla.accounts.login.FirefoxAccountLoginDefaultDelegate;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
-import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.FirefoxAccountDevelopmentStore;
+import org.mozilla.sync.login.FirefoxAccountLoginDefaultDelegate;
+import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
+import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
 import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.State;
 

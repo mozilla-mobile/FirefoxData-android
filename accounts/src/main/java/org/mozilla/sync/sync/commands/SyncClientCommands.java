@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync.commands;
+package org.mozilla.sync.sync.commands;
 
 import android.support.annotation.Nullable;
-import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
-import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
+import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.util.ChainableCallable;
 import org.mozilla.util.ChainableCallable.ChainableCallableWithCallback;

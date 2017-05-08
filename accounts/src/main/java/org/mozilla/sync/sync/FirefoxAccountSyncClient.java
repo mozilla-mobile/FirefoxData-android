@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync;
+package org.mozilla.sync.sync;
 
 import android.content.Context;
-import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.sync.commands.GetSyncBookmarksCommand;
-import org.mozilla.accounts.sync.commands.GetSyncHistoryCommand;
-import org.mozilla.accounts.sync.commands.GetSyncPasswordsCommand;
-import org.mozilla.accounts.sync.commands.SyncCollectionCallback;
+import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
+import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
+import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
+import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;

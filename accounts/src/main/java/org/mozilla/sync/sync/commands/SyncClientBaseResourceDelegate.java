@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync.commands;
+package org.mozilla.sync.sync.commands;
 
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -12,9 +12,9 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.accounts.FirefoxAccountShared;
-import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
-import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
+import org.mozilla.sync.FirefoxAccountShared;
+import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
@@ -25,7 +25,6 @@ import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.util.FileUtil;
 

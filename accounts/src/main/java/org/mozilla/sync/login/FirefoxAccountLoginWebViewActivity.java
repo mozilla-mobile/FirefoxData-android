@@ -2,9 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.login;
+package org.mozilla.sync.login;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,10 +15,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
-import org.mozilla.accounts.FirefoxAccountEndpointConfig;
-import org.mozilla.accounts.FirefoxAccountShared;
+import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.FirefoxAccountDevelopmentStore;
+import org.mozilla.sync.FirefoxAccountEndpointConfig;
+import org.mozilla.sync.FirefoxAccountShared;
 import org.mozilla.gecko.R;
 import org.mozilla.util.ResourcesUtil;
 import org.mozilla.util.WebViewUtil;

@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync;
+package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
-import org.mozilla.accounts.sync.commands.AdvanceToMarriagePreCommand;
-import org.mozilla.accounts.sync.commands.GetCryptoKeysPreCommand;
-import org.mozilla.accounts.sync.commands.GetSyncTokenPreCommand;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
+import org.mozilla.sync.sync.commands.AdvanceToMarriagePreCommand;
+import org.mozilla.sync.sync.commands.GetCryptoKeysPreCommand;
+import org.mozilla.sync.sync.commands.GetSyncTokenPreCommand;
+import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.util.ChainableCallable;
 
 import java.util.Arrays;

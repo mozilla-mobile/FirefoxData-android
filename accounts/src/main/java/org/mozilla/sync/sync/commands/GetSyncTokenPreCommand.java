@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync.commands;
+package org.mozilla.sync.sync.commands;
 
-import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
-import org.mozilla.accounts.sync.FirefoxAccountSyncTokenAccessor;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxAccountSyncTokenAccessor;
+import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
+import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 
 /**

@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync.commands;
+package org.mozilla.sync.sync.commands;
 
 import android.util.Log;
-import org.mozilla.accounts.sync.FirefoxAccountSyncConfig;
-import org.mozilla.accounts.sync.FirefoxAccountSyncUtils;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
-import org.mozilla.accounts.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
+import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
+import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
@@ -26,7 +26,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.mozilla.accounts.FirefoxAccountShared.LOGTAG;
+import static org.mozilla.sync.FirefoxAccountShared.LOGTAG;
 
 /** A command to get the crypto keys necessary to begin a sync. */
 public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {

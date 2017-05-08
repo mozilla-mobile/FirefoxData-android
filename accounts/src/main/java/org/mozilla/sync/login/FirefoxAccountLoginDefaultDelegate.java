@@ -2,13 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.login;
+package org.mozilla.sync.login;
 
-import android.content.Context;
 import android.util.Log;
-import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.FirefoxAccountDevelopmentStore;
-import org.mozilla.accounts.FirefoxAccountShared;
+import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.FirefoxAccountShared;
 import org.mozilla.gecko.background.fxa.FxAccountClient;
 import org.mozilla.gecko.background.fxa.FxAccountClient20;
 import org.mozilla.gecko.browserid.BrowserIDKeyPair;
@@ -17,7 +15,6 @@ import org.mozilla.gecko.fxa.login.FxAccountLoginTransition;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.StateFactory;
 
-import java.lang.ref.WeakReference;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 

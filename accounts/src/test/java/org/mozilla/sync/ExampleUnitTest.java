@@ -1,4 +1,4 @@
-package org.mozilla.accounts;
+package org.mozilla.sync;
 
 import org.junit.Test;
 

@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accounts.sync;
+package org.mozilla.sync.sync;
 
-import org.mozilla.accounts.FirefoxAccount;
-import org.mozilla.accounts.FirefoxAccountShared;
-import org.mozilla.accounts.FirefoxAccountUtils;
+import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.FirefoxAccountShared;
+import org.mozilla.sync.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;

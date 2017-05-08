@@ -1,4 +1,4 @@
-package org.mozilla.accounts;
+package org.mozilla.sync;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
