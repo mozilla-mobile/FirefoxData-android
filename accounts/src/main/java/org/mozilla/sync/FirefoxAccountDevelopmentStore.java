@@ -44,7 +44,7 @@ public class FirefoxAccountDevelopmentStore {
     }
 
     public FirefoxAccountDevelopmentStore(final Context context, final String storeName) {
-        this.contextWeakReference = new WeakReference<Context>(context);
+        this.contextWeakReference = new WeakReference<Context>(context); // TODO: shared prefs instead.
         this.storeName = storeName;
     }
 

@@ -44,7 +44,10 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
-    public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.accounts.config";
+    public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.sync.config";
+
+    public static final String ACTION_RETURN_FIREFOX_ACCOUNT = "org.mozilla.sync.ACTION.return-firefox-account";
+    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.account"; // TODO: prefix.
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
 
@@ -162,8 +165,9 @@ public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
         }
 
         hasLoggedIn = true;
-        setResult(RESULT_OK);
-        new FirefoxAccountDevelopmentStore(this).saveFirefoxAccount(account);
+        final Intent resultIntent = new Intent(ACTION_RETURN_FIREFOX_ACCOUNT);
+        resultIntent.putExtra(EXTRA_ACCOUNT, account);
+        setResult(RESULT_OK, resultIntent);
 
         if (!account.accountState.verified) {
             // User should stay in the flow to verify their account. However, we don't get notified when the account is

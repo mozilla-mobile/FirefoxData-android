@@ -7,6 +7,10 @@ import android.util.Log;
 import org.mozilla.sync.FirefoxAccount;
 import org.mozilla.sync.FirefoxAccountDevelopmentStore;
 import org.mozilla.sync.FirefoxAccountEndpointConfig;
+import org.mozilla.sync.FirefoxSync;
+import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.FirefoxSyncLoginManager;
+import org.mozilla.sync.LoginSyncException;
 import org.mozilla.sync.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.sync.sync.FirefoxAccountSyncClient;
 import org.mozilla.sync.sync.commands.SyncCollectionCallback;
@@ -20,20 +24,41 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "AccountsExampleActivity";
 
+    FirefoxSyncLoginManager loginManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // TODO: bad b/c store context. but short-lived... if onActivityResult.
+        loginManager = FirefoxSync.getLoginManager();
+        loginManager.promptLogin(this, "AccountsExample", new FirefoxSyncLoginManager.LoginCallback() {
+            @Override
+            public void onSuccess(final FirefoxSyncClient syncClient) {
+                Log.d(LOGTAG, "On success!");
+
+            }
+
+            @Override
+            public void onFailure(final LoginSyncException e) {
+                Log.d(LOGTAG, "onFailure: ", e);
+            }
+        });
+
+                /*
         final Intent intent = new Intent(this, FirefoxAccountLoginWebViewActivity.class);
         intent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
         startActivityForResult(intent, 10); // TODO: request code.
+        */
     }
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        loginManager.onActivityResult(requestCode, resultCode, data);
 
+        /*
         if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_OK) {
             final FirefoxAccount account = new FirefoxAccountDevelopmentStore(this).loadFirefoxAccount();
             if (account == null) {
@@ -47,6 +72,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         } else {
             Log.d("lol", "error!");
         }
+        */
     }
 
     private void sync(final FirefoxAccount account) {
