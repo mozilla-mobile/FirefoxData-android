@@ -14,10 +14,10 @@ import java.util.List;
 /**
  * TODO:
  */
-class FirefoxSyncClientImpl implements FirefoxSyncClient {
+class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     private final FirefoxAccount firefoxAccount;
 
-    FirefoxSyncClientImpl(final FirefoxAccount firefoxAccount) {
+    FirefoxSyncFirefoxAccountClient(final FirefoxAccount firefoxAccount) {
         this.firefoxAccount = firefoxAccount;
     }
 
