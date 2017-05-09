@@ -5,13 +5,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import org.mozilla.sync.FirefoxAccount;
-import org.mozilla.sync.FirefoxAccountDevelopmentStore;
-import org.mozilla.sync.FirefoxAccountEndpointConfig;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.LoginSyncException;
-import org.mozilla.sync.login.FirefoxAccountLoginWebViewActivity;
 import org.mozilla.sync.sync.FirefoxAccountSyncClient;
 import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
@@ -47,8 +44,8 @@ public class AccountsExampleActivity extends AppCompatActivity {
         });
 
                 /*
-        final Intent intent = new Intent(this, FirefoxAccountLoginWebViewActivity.class);
-        intent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
+        final Intent intent = new Intent(this, FirefoxAccountWebViewLoginActivity.class);
+        intent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
         startActivityForResult(intent, 10); // TODO: request code.
         */
     }
@@ -59,7 +56,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         loginManager.onActivityResult(requestCode, resultCode, data);
 
         /*
-        if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_OK) {
+        if (resultCode == FirefoxAccountWebViewLoginActivity.RESULT_OK) {
             final FirefoxAccount account = new FirefoxAccountDevelopmentStore(this).loadFirefoxAccount();
             if (account == null) {
                 Log.d("lol", "Nothing.");
@@ -67,7 +64,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 Log.d("lol", account.uid);
                 sync(account);
             }
-        } else if (resultCode == FirefoxAccountLoginWebViewActivity.RESULT_CANCELED) {
+        } else if (resultCode == FirefoxAccountWebViewLoginActivity.RESULT_CANCELED) {
             Log.d("lol", "User canceled login");
         } else {
             Log.d("lol", "error!");

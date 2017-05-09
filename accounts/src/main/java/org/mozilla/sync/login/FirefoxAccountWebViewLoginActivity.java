@@ -39,7 +39,7 @@ import org.mozilla.util.WebViewUtil;
  *  - how does Android *currently* handle unverified accounts? How does it know to go back to verified?
  *  - how do we update the verified state on disk?
  */
-public class FirefoxAccountLoginWebViewActivity extends AppCompatActivity {
+public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 

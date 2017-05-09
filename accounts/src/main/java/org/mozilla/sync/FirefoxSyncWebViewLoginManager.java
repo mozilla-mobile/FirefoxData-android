@@ -7,7 +7,7 @@ package org.mozilla.sync;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import org.mozilla.sync.login.FirefoxAccountLoginWebViewActivity;
+import org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity;
 
 /**
  * TODO: docs.
@@ -22,12 +22,12 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     // TODO: callback always async? here and below
     @Override
     public void promptLogin(final Activity activity, final String callerName, final LoginCallback callback) {
-        // todo: ENSURE only called once (or fix for multiple invocations), explain.
+        // TODO: ensure not called already.
         requestCallerName = callerName;
         requestLoginCallback = callback;
 
-        final Intent loginIntent = new Intent(activity, FirefoxAccountLoginWebViewActivity.class);
-        loginIntent.putExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
+        final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
+        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
@@ -37,16 +37,17 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         if (!isActivityResultOurs(requestCode, data)) { return; }
 
         switch (resultCode) {
-            case FirefoxAccountLoginWebViewActivity.RESULT_OK:
-                final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountLoginWebViewActivity.EXTRA_ACCOUNT);
+            case FirefoxAccountWebViewLoginActivity.RESULT_OK:
+                final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
                 // TODO: when married? When set caller name?
                 // TODO: verrified?
+                // TODO: persist account or whole sync client?
                 final FirefoxSyncClient syncClient = new FirefoxSyncClientImpl(firefoxAccount);
                 requestLoginCallback.onSuccess(syncClient);
                 break;
 
-            case FirefoxAccountLoginWebViewActivity.RESULT_ERROR:
-            case FirefoxAccountLoginWebViewActivity.RESULT_CANCELED:
+            case FirefoxAccountWebViewLoginActivity.RESULT_ERROR:
+            case FirefoxAccountWebViewLoginActivity.RESULT_CANCELED:
                 requestLoginCallback.onFailure(new LoginSyncException(null)); // todo
                 break;
         }
@@ -59,7 +60,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final String action = data.getAction();
         return (requestCode == REQUEST_CODE &&
                 action != null &&
-                action.equals(FirefoxAccountLoginWebViewActivity.ACTION_RETURN_FIREFOX_ACCOUNT)); // todo: explain
+                action.equals(FirefoxAccountWebViewLoginActivity.ACTION_RETURN_FIREFOX_ACCOUNT)); // todo: explain
     }
 
     @Override
