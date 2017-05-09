@@ -4,6 +4,8 @@
 
 package org.mozilla.sync;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.CheckResult;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,7 +13,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.gecko.fxa.login.Engaged;
 import org.mozilla.gecko.fxa.login.State;
+import org.mozilla.gecko.fxa.login.StateFactory;
+import org.mozilla.gecko.sync.ExtendedJSONObject;
+import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.Utils;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  * Data class representing a Firefox Account.
@@ -21,7 +30,7 @@ import org.mozilla.gecko.sync.Utils;
  * Accounts properly, we should have all Firefox Account apps accessing the same Account APK from Google Play, which is
  * beyond the scope of this implementation, considering we want to have it running quickly.
  */
-public class FirefoxAccount {
+public class FirefoxAccount implements Parcelable {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
@@ -85,4 +94,42 @@ public class FirefoxAccount {
             return null;
         }
     }
+
+    // --- START PARCELABLE --- //
+    @Override public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(final Parcel dest, final int flags) {
+        for (final String parcelString : new String[] {
+                email,
+                uid,
+                accountState.getStateLabel().name(),
+                accountState.toJSONObject().toJSONString(),
+        }) {
+            dest.writeString(parcelString);
+        }
+
+        endpointConfig.writeToParcel(dest, flags);
+    }
+
+    public static final Parcelable.Creator<FirefoxAccount> CREATOR = new Parcelable.Creator<FirefoxAccount>() {
+        @Override
+        public FirefoxAccount createFromParcel(final Parcel source) {
+            final String email = source.readString();
+            final String uid = source.readString();
+            final State.StateLabel stateLabel = State.StateLabel.valueOf(source.readString());
+            final State state;
+            try {
+                state = StateFactory.fromJSONObject(stateLabel, new ExtendedJSONObject(source.readString()));
+            } catch (final InvalidKeySpecException | NoSuchAlgorithmException | NonObjectJSONException | IOException e) {
+                throw new IllegalStateException("Parcelled state JSON should be retrievable");
+            }
+            final FirefoxAccountEndpointConfig endpointConfig = FirefoxAccountEndpointConfig.CREATOR.createFromParcel(source);
+
+            return new FirefoxAccount(email, uid, state, endpointConfig);
+        }
+
+        @Override public FirefoxAccount[] newArray(final int size) { return new FirefoxAccount[size]; }
+    };
+    // --- END PARCELABLE --- //
 }
