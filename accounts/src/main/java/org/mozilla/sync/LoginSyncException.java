@@ -17,7 +17,8 @@ public class LoginSyncException extends FirefoxSyncException {
     public FailureReason getFailureReason() { return failureReason; }
 
     public enum FailureReason {
-        CONTEXT_FAILED, // todo
-        UNABLE_TO_LOAD_ACCOUNT,
+        SERVER_SENT_UNEXPECTED_MESSAGE,
+        SERVER_SENT_INVALID_ACCOUNT,
+        UNKNOWN,
     }
 }

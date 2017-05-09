@@ -7,48 +7,50 @@ package org.mozilla.sync;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import org.mozilla.sync.LoginSyncException.FailureReason;
 import org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity;
 
 /**
  * TODO: docs.
  */
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
-    private static final int REQUEST_CODE = 3561;
+    private static final int REQUEST_CODE = 3561; // arbitrary.
 
     // TODO: explain.
     private String requestCallerName; // TODO: who sends? Client or LoginManager?
     private LoginCallback requestLoginCallback;
 
-    // TODO: callback always async? here and below
     @Override
-    public void promptLogin(final Activity activity, final String callerName, final LoginCallback callback) {
+    public void promptLogin(final Activity activity, final String callerName, @NonNull final LoginCallback callback) {
+        if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null"); }
+
         // TODO: ensure not called already.
         requestCallerName = callerName;
         requestLoginCallback = callback;
 
         final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
-        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
+        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage());
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
     // TODO: test verification state.
     @Override
-    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) { // todo: BOOLEAN TO HANDLE?
+    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) { // todo: BOOLEAN TO HANDLE?
         if (!isActivityResultOurs(requestCode, data)) { return; }
 
         switch (resultCode) {
             case FirefoxAccountWebViewLoginActivity.RESULT_OK:
-                final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
-                // TODO: when married? When set caller name?
-                // TODO: verrified?
-                // TODO: persist account or whole sync client?
-                final FirefoxSyncClient syncClient = new FirefoxSyncClientImpl(firefoxAccount);
-                requestLoginCallback.onSuccess(syncClient);
+                onActivityResultOK(data);
                 break;
 
             case FirefoxAccountWebViewLoginActivity.RESULT_ERROR:
+                onActivityResultError(data);
+                break;
+
             case FirefoxAccountWebViewLoginActivity.RESULT_CANCELED:
-                requestLoginCallback.onFailure(new LoginSyncException(null)); // todo
+                requestLoginCallback.onUserCancel();
                 break;
         }
 
@@ -56,22 +58,41 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         requestLoginCallback = null;
     }
 
-    private boolean isActivityResultOurs(final int requestCode, final Intent data) {
+    private void onActivityResultOK(@NonNull final Intent data) {
+        final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
+        // TODO: when married? When set caller name?
+        // TODO: verrified?
+        // TODO: persist account or whole sync client?
+        final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(firefoxAccount);
+        requestLoginCallback.onSuccess(syncClient);
+    }
+
+    private void onActivityResultError(@NonNull final Intent data) {
+        final String failureStr = data.getStringExtra(FirefoxAccountWebViewLoginActivity.EXTRA_FAILURE_REASON);
+        final FailureReason failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
+        requestLoginCallback.onFailure(new LoginSyncException(failureReason));
+    }
+
+    private boolean isActivityResultOurs(final int requestCode, @Nullable final Intent data) {
+        if (data == null) { return false; }
         final String action = data.getAction();
         return (requestCode == REQUEST_CODE &&
                 action != null &&
-                action.equals(FirefoxAccountWebViewLoginActivity.ACTION_RETURN_FIREFOX_ACCOUNT)); // todo: explain
+                // Another Activity can use the same request code so we verify the Intent data too.
+                action.equals(FirefoxAccountWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN));
     }
 
     @Override
-    public void loadStoredSyncAccount(final Context context, final LoginCallback callback) {
+    public void loadStoredSyncAccount(final Context context, @NonNull final LoginCallback callback) {
+        if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null."); }
+
         final FirefoxAccount account = new FirefoxAccountDevelopmentStore(context).loadFirefoxAccount();
         if (account == null) {
-            callback.onFailure(new LoginSyncException(LoginSyncException.FailureReason.UNABLE_TO_LOAD_ACCOUNT));
+            callback.onFailure(new LoginSyncException(FailureReason.UNKNOWN)); // todo
             return;
         }
 
-        final FirefoxSyncClient syncClient = new FirefoxSyncClientImpl(account);
+        final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(account);
         callback.onSuccess(syncClient);
     }
 

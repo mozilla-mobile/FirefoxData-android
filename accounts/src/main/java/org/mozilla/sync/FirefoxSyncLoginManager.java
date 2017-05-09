@@ -7,21 +7,23 @@ package org.mozilla.sync;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
  * TODO:
  */
 public interface FirefoxSyncLoginManager {
-    // TODO: method names; docs.
-    void promptLogin(final Activity activity, String callerName, LoginCallback callback);
-    void loadStoredSyncAccount(final Context context, LoginCallback callback);
+    // TODO: method names; docs. which thread callbacks called from?
+    void promptLogin(final Activity activity, String callerName, @NonNull LoginCallback callback);
+    void loadStoredSyncAccount(final Context context, @NonNull LoginCallback callback);
     void signOut();
 
-    void onActivityResult(int requestCode, int resultCode, Intent data);
+    void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
     interface LoginCallback {
         void onSuccess(FirefoxSyncClient syncClient);
         void onFailure(LoginSyncException e);
-        // TODO: onCancel?
+        void onUserCancel();
     }
 }

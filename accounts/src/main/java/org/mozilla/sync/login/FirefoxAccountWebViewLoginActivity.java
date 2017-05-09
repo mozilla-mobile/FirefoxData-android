@@ -16,10 +16,10 @@ import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.sync.FirefoxAccount;
-import org.mozilla.sync.FirefoxAccountDevelopmentStore;
 import org.mozilla.sync.FirefoxAccountEndpointConfig;
 import org.mozilla.sync.FirefoxAccountShared;
 import org.mozilla.gecko.R;
+import org.mozilla.sync.LoginSyncException;
 import org.mozilla.util.ResourcesUtil;
 import org.mozilla.util.WebViewUtil;
 
@@ -38,16 +38,20 @@ import org.mozilla.util.WebViewUtil;
  *  - prefill username & password when stored & needs verification.
  *  - how does Android *currently* handle unverified accounts? How does it know to go back to verified?
  *  - how do we update the verified state on disk?
+ *  - rename FirefoxSyncWebViewLoginActivity?
  */
 public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
-    public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
-    public static final String EXTRA_ACCOUNT_CONFIG = "org.mozilla.sync.config";
+    // Input values.
+    public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.extra.debug-account-config"; // TODO: prefix?
 
-    public static final String ACTION_RETURN_FIREFOX_ACCOUNT = "org.mozilla.sync.ACTION.return-firefox-account";
-    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.account"; // TODO: prefix.
+    // Return values.
+    public static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.action.web-view-login-return";
+    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.extra.account";
+    public static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.extra.failure-reason";
+    public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
 
@@ -56,8 +60,6 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private FirefoxAccountEndpointConfig endpointConfig;
     private String webViewURL;
-
-    private boolean hasLoggedIn = false;
 
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
@@ -78,8 +80,10 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private void initFromIntent() {
         final Intent intent = getIntent();
-        endpointConfig = intent.getParcelableExtra(EXTRA_ACCOUNT_CONFIG);
-        if (endpointConfig == null) { throw new IllegalArgumentException("Expected EXTRA_ACCOUNT_CONFIG with intent."); }
+        endpointConfig = intent.getParcelableExtra(EXTRA_DEBUG_ACCOUNT_CONFIG);
+        if (endpointConfig == null) {
+            endpointConfig = FirefoxAccountEndpointConfig.getProduction();
+        }
 
         webViewURL = endpointConfig.signInURL.toString();
     }
@@ -107,7 +111,7 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        if (!hasLoggedIn) { setResult(RESULT_CANCELED); } // Don't overwrite a login result code.
+        // If we set a result, that value will be returned. Otherwise, RESULT_CANCELED is used.
         onBackPressed();
         return true;
     }
@@ -139,33 +143,32 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private void onSessionStatus() {
         // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
-        // TODO: how handle? iOS doesn't.
         injectMessage("error");
+        setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        finish();
     }
 
     private void onSignOut() {
         // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
-        // TODO: how handle? iOS doesn't.
         injectMessage("error");
+        setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        finish();
     }
 
     private void onLogin(@Nullable final String data) {
         // The user has signed in to a Firefox Account. We're done!
         injectMessage("login");
 
-        // TODO: Should we error out before we inject the login message?
+        // TODO: Should we inject "error" like `onSignOut`?
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
-            // TODO: Should we display an error to the user or rely on the Activity who started the WebView flow?
-            // TODO: inject "error"? like onSignOut/onSessionStatus. Maybe instead of "login".
             Log.w(LOGTAG, "Could not create account. Returning from login...");
-            setResult(RESULT_ERROR);
+            setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_INVALID_ACCOUNT);
             finish();
             return;
         }
 
-        hasLoggedIn = true;
-        final Intent resultIntent = new Intent(ACTION_RETURN_FIREFOX_ACCOUNT);
+        final Intent resultIntent = new Intent(ACTION_WEB_VIEW_LOGIN_RETURN);
         resultIntent.putExtra(EXTRA_ACCOUNT, account);
         setResult(RESULT_OK, resultIntent);
 
@@ -218,5 +221,11 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
             throw new IllegalStateException("Failed to create injected JSON object", e);
         }
         return obj.toString();
+    }
+
+    private void setResultForFailureReason(final LoginSyncException.FailureReason reason) {
+        final Intent resultIntent = new Intent(ACTION_WEB_VIEW_LOGIN_RETURN);
+        resultIntent.putExtra(EXTRA_FAILURE_REASON, reason.name());
+        setResult(RESULT_ERROR, resultIntent);
     }
 }

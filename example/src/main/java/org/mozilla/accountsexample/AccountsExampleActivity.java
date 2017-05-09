@@ -45,7 +45,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
                 /*
         final Intent intent = new Intent(this, FirefoxAccountWebViewLoginActivity.class);
-        intent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
+        intent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
         startActivityForResult(intent, 10); // TODO: request code.
         */
     }
