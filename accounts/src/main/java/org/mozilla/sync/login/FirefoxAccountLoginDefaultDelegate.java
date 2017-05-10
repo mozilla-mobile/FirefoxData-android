@@ -34,6 +34,7 @@ abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLoginState
 
     @Override
     public FxAccountClient getClient() {
+        // TODO: Set user agent in account client to proposed value https://github.com/mozilla/fxa-auth-server/issues/1889
         return new FxAccountClient20(account.endpointConfig.authServerURL.toString(), networkExecutor);
     }
 

@@ -81,7 +81,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
 
         // Keep references because they'll be nulled before the async call completes.
-        final String requestCallerName = this.requestCallerName;
+        final String requestCallerName = this.requestCallerName; // TODO: use in user agent.
         final LoginCallback requestLoginCallback = this.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
@@ -90,7 +90,6 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
                 accountStore.saveFirefoxAccount(updatedAccount);
-                // TODO: update device name. Block before returning sync client so user doesn't have mystery device.
 
                 final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(updatedAccount);
                 requestLoginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
