@@ -38,7 +38,7 @@ import org.mozilla.util.WebViewUtil;
  *  - how do we update the verified state on disk?
  *  - rename FirefoxSyncWebViewLoginActivity?
  */
-class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
+public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 

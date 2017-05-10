@@ -5,7 +5,7 @@
 package org.mozilla.sync;
 
 import android.content.Context;
-import org.mozilla.sync.login.FirefoxSyncLoginManagerFactory;
+import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
 
 /**
  * A collection of static functions with entry points to Firefox Sync operations.
@@ -16,6 +16,6 @@ public class FirefoxSync {
     // todo: name.
     // tODO: singleton or new instance?
     public static FirefoxSyncLoginManager getLoginManager(final Context context) {
-        return FirefoxSyncLoginManagerFactory.getLoginManager(context);
+        return InternalFirefoxSyncLoginManagerFactory.internalGetLoginManager(context);
     }
 }
