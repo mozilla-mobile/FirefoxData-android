@@ -35,6 +35,12 @@ public class AccountsExampleActivity extends AppCompatActivity {
             public void onSuccess(final FirefoxSyncClient syncClient) {
                 Log.d(LOGTAG, "On success!");
 
+                final List history = syncClient.getHistory(); // todo: type.
+                /*
+                for (final HistoryRecord record : receivedRecords) {
+                    Log.d(LOGTAG, record.title + ": " + record.histURI);
+                }
+                */
             }
 
             @Override
@@ -47,12 +53,6 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 Log.d(LOGTAG, "onUserCancel: ");
             }
         });
-
-                /*
-        final Intent intent = new Intent(this, FirefoxAccountWebViewLoginActivity.class);
-        intent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getProduction());
-        startActivityForResult(intent, 10); // TODO: request code.
-        */
     }
 
     @Override

@@ -12,10 +12,11 @@ import android.support.annotation.Nullable;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.FirefoxSyncFirefoxAccountClient;
+import org.mozilla.sync.sync.FirefoxSyncFirefoxAccountClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.LoginSyncException;
 import org.mozilla.sync.LoginSyncException.FailureReason;
+import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -91,7 +92,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
                 accountStore.saveFirefoxAccount(updatedAccount);
 
-                final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(updatedAccount);
+                final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(updatedAccount);
                 requestLoginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
             }
 
@@ -129,7 +130,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
         final FirefoxAccount account = accountStore.loadFirefoxAccount();
         if (account == null) {
-            callback.onFailure(new LoginSyncException(FailureReason.UNKNOWN)); // todo
+            callback.onFailure(new LoginSyncException(FailureReason.UNKNOWN)); // todo: can we get more specific errors?
             return;
         }
 
