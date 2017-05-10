@@ -15,8 +15,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.sync.FirefoxAccount;
-import org.mozilla.sync.FirefoxAccountEndpointConfig;
 import org.mozilla.sync.FirefoxAccountShared;
 import org.mozilla.gecko.R;
 import org.mozilla.sync.LoginSyncException;
@@ -40,7 +38,7 @@ import org.mozilla.util.WebViewUtil;
  *  - how do we update the verified state on disk?
  *  - rename FirefoxSyncWebViewLoginActivity?
  */
-public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
+class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 

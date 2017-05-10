@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,8 +11,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
+import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.FirefoxSyncFirefoxAccountClient;
+import org.mozilla.sync.FirefoxSyncLoginManager;
+import org.mozilla.sync.LoginSyncException;
 import org.mozilla.sync.LoginSyncException.FailureReason;
-import org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

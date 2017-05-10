@@ -8,16 +8,17 @@ package org.mozilla.sync;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
+import org.mozilla.sync.login.FirefoxAccount;
 
 import java.util.List;
 
 /**
  * TODO:
  */
-class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
+public class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient { // todo: visibility.
     private final FirefoxAccount firefoxAccount;
 
-    FirefoxSyncFirefoxAccountClient(final FirefoxAccount firefoxAccount) {
+    public FirefoxSyncFirefoxAccountClient(final FirefoxAccount firefoxAccount) {
         this.firefoxAccount = firefoxAccount;
     }
 

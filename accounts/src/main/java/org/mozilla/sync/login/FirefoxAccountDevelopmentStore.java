@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,6 +12,7 @@ import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
+import org.mozilla.sync.FirefoxAccountShared;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -28,7 +29,7 @@ import java.security.spec.InvalidKeySpecException;
  * TODO: replace me. See rules ^.
  * Note: iOS is encrypted with iOS keystore (uses pin from phone login) but Android is not.
  */
-public class FirefoxAccountDevelopmentStore {
+class FirefoxAccountDevelopmentStore {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 

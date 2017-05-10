@@ -4,9 +4,9 @@
 
 package org.mozilla.sync.sync;
 
-import org.mozilla.sync.FirefoxAccount;
+import org.mozilla.sync.login.FirefoxAccount;
 import org.mozilla.sync.FirefoxAccountShared;
-import org.mozilla.sync.FirefoxAccountUtils;
+import org.mozilla.sync.login.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;

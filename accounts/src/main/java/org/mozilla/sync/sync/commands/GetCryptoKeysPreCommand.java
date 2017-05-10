@@ -5,7 +5,7 @@
 package org.mozilla.sync.sync.commands;
 
 import android.util.Log;
-import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.login.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;

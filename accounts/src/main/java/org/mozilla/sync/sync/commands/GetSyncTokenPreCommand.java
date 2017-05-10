@@ -4,7 +4,7 @@
 
 package org.mozilla.sync.sync.commands;
 
-import org.mozilla.sync.sync.FirefoxAccountSyncConfig;
+import org.mozilla.sync.login.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncTokenAccessor;
 import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;

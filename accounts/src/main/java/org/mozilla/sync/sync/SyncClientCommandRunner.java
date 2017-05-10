@@ -5,7 +5,8 @@
 package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
-import org.mozilla.sync.sync.commands.AdvanceToMarriagePreCommand;
+import org.mozilla.sync.login.FirefoxAccountSyncConfig;
+//import org.mozilla.sync.sync.commands.AdvanceToMarriagePreCommand;
 import org.mozilla.sync.sync.commands.GetCryptoKeysPreCommand;
 import org.mozilla.sync.sync.commands.GetSyncTokenPreCommand;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
@@ -46,7 +47,7 @@ class SyncClientCommandRunner {
     private List<? extends SyncClientAsyncPreCommand> getPreCommands() {
         return Collections.unmodifiableList(Arrays.asList(
                 // The order matters: these commands may rely on results from the previous operations.
-                new AdvanceToMarriagePreCommand(),
+                //new AdvanceToMarriagePreCommand(), // TODO: done already in new API.
                 new GetSyncTokenPreCommand(),
                 new GetCryptoKeysPreCommand()
         ));

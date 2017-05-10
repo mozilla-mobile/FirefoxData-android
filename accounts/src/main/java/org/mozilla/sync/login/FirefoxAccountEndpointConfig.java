@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import org.mozilla.sync.Sync15EndpointConfig;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,7 +17,7 @@ import java.net.URISyntaxException;
  * Inspired by iOS' FirefoxAccountConfiguration:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/748e137dfd5b020b56fc481b25e0d2366acb3df2/Account/FirefoxAccountConfiguration.swift
  */
-public class FirefoxAccountEndpointConfig implements Parcelable {
+public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visibility?
 
     private static final String CONTEXT = "fx_ios_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
 

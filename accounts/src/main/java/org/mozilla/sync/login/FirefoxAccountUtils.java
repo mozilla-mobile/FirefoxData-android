@@ -2,25 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
-import android.support.annotation.WorkerThread;
-import org.mozilla.gecko.background.fxa.FxAccountClient;
-import org.mozilla.gecko.browserid.BrowserIDKeyPair;
 import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
-import org.mozilla.gecko.fxa.login.FxAccountLoginTransition;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
-import org.mozilla.sync.login.FirefoxAccountLoginDefaultDelegate;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 
 /**
  * A collection of functions for operating on a FirefoxAccount.
  */
-public class FirefoxAccountUtils {
+public class FirefoxAccountUtils { // TODO: visibility?
     private FirefoxAccountUtils() {}
 
     public static boolean isMarried(final State accountState) {

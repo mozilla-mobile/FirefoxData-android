@@ -5,7 +5,6 @@
 package org.mozilla.sync.login;
 
 import android.util.Log;
-import org.mozilla.sync.FirefoxAccount;
 import org.mozilla.sync.FirefoxAccountShared;
 import org.mozilla.gecko.background.fxa.FxAccountClient;
 import org.mozilla.gecko.background.fxa.FxAccountClient20;
@@ -21,14 +20,14 @@ import java.util.concurrent.Executor;
 /**
  * A login state machine delegate that provides a default configuration and stores an updated account configuration.
  */
-public abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLoginStateMachine.LoginStateMachineDelegate {
+abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLoginStateMachine.LoginStateMachineDelegate {
 
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     protected final FirefoxAccount account;
     private final Executor networkExecutor;
 
-    public FirefoxAccountLoginDefaultDelegate(final FirefoxAccount account, final Executor networkExecutor) {
+    FirefoxAccountLoginDefaultDelegate(final FirefoxAccount account, final Executor networkExecutor) {
         this.account = account;
         this.networkExecutor = networkExecutor;
     }
