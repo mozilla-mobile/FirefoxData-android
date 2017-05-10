@@ -4,6 +4,8 @@
 
 package org.mozilla.sync;
 
+import android.content.Context;
+
 /**
  * A collection of static functions with entry points to Firefox Sync operations.
  */
@@ -12,7 +14,7 @@ public class FirefoxSync {
 
     // todo: name.
     // tODO: singleton or new instance?
-    public static FirefoxSyncLoginManager getLoginManager() {
-        return new FirefoxSyncWebViewLoginManager();
+    public static FirefoxSyncLoginManager getLoginManager(final Context context) {
+        return new FirefoxSyncWebViewLoginManager(context);
     }
 }

@@ -29,7 +29,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // TODO: bad b/c store context. but short-lived... if onActivityResult.
-        loginManager = FirefoxSync.getLoginManager();
+        loginManager = FirefoxSync.getLoginManager(this);
         loginManager.promptLogin(this, "AccountsExample", new FirefoxSyncLoginManager.LoginCallback() {
             @Override
             public void onSuccess(final FirefoxSyncClient syncClient) {

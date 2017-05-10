@@ -16,7 +16,7 @@ import android.support.annotation.Nullable;
 public interface FirefoxSyncLoginManager {
     // TODO: method names; docs. which thread callbacks called from?
     void promptLogin(final Activity activity, String callerName, @NonNull LoginCallback callback);
-    void loadStoredSyncAccount(final Context context, @NonNull LoginCallback callback);
+    void loadStoredSyncAccount(@NonNull LoginCallback callback);
     void signOut();
 
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);

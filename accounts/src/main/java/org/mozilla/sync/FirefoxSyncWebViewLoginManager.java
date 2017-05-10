@@ -24,10 +24,15 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
 
     private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+    private final FirefoxAccountDevelopmentStore accountStore;
 
     // Values stored between the login call & `onActivityResult` so we can execute the given callback.
     private String requestCallerName;
     private LoginCallback requestLoginCallback;
+
+    FirefoxSyncWebViewLoginManager(final Context context) {
+        this.accountStore = new FirefoxAccountDevelopmentStore(context);
+    }
 
     @Override
     public void promptLogin(final Activity activity, final String callerName, @NonNull final LoginCallback callback) {
@@ -81,7 +86,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             @Override
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
-                // TODO persist account.
+                accountStore.saveFirefoxAccount(updatedAccount);
                 // TODO: update device name. Block before returning sync client so user doesn't have mystery device.
 
                 final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(updatedAccount);
@@ -117,10 +122,10 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     @Override
-    public void loadStoredSyncAccount(final Context context, @NonNull final LoginCallback callback) {
+    public void loadStoredSyncAccount(@NonNull final LoginCallback callback) {
         if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null."); }
 
-        final FirefoxAccount account = new FirefoxAccountDevelopmentStore(context).loadFirefoxAccount();
+        final FirefoxAccount account = accountStore.loadFirefoxAccount();
         if (account == null) {
             callback.onFailure(new LoginSyncException(FailureReason.UNKNOWN)); // todo
             return;
