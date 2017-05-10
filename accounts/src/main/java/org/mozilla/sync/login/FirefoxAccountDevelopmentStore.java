@@ -12,7 +12,9 @@ import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
-import org.mozilla.sync.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -29,7 +31,7 @@ import java.security.spec.InvalidKeySpecException;
  * TODO: replace me. See rules ^.
  * Note: iOS is encrypted with iOS keystore (uses pin from phone login) but Android is not.
  */
-class FirefoxAccountDevelopmentStore {
+class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or FirefoxSyncSession.
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 

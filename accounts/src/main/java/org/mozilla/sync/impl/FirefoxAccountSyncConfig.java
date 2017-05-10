@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.login; // TODO: only here for access to FirefoxAccount.
+package org.mozilla.sync.impl; // TODO: only here for access to FirefoxAccount.
 
 import android.content.Context;
-import org.mozilla.sync.login.FirefoxAccount;
 import org.mozilla.sync.login.FirefoxAccountUtils;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.CollectionKeys;

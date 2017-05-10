@@ -5,7 +5,7 @@
 package org.mozilla.sync.sync.commands;
 
 import android.util.Log;
-import org.mozilla.sync.login.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
@@ -26,7 +26,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.mozilla.sync.FirefoxAccountShared.LOGTAG;
+import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
 /** A command to get the crypto keys necessary to begin a sync. */
 public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {

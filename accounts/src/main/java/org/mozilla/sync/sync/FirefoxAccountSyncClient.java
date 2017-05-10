@@ -5,8 +5,8 @@
 package org.mozilla.sync.sync;
 
 import android.content.Context;
-import org.mozilla.sync.login.FirefoxAccount;
-import org.mozilla.sync.login.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
 import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;

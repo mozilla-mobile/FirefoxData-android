@@ -5,7 +5,7 @@
 package org.mozilla.sync.sync;
 
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.login.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxAccount;
 
 /**
  * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.sync.FirefoxSync} instead. This class is used to escalate

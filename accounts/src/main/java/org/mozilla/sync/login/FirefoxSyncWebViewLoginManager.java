@@ -12,7 +12,7 @@ import android.support.annotation.Nullable;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.sync.FirefoxSyncFirefoxAccountClient;
+import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.LoginSyncException;
 import org.mozilla.sync.LoginSyncException.FailureReason;
@@ -50,7 +50,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         requestLoginCallback = callback;
 
         final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
-        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // todo: RM me for non-debug.
+        //loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // todo: RM me for non-debug.
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
@@ -134,7 +134,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             return;
         }
 
-        final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(account);
+        final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(account);
         callback.onSuccess(syncClient);
     }
 

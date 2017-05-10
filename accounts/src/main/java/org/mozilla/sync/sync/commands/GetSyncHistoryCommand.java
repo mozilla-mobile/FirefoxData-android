@@ -6,7 +6,7 @@ package org.mozilla.sync.sync.commands;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
-import org.mozilla.sync.login.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;

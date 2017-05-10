@@ -5,7 +5,7 @@
 package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
-import org.mozilla.sync.login.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 //import org.mozilla.sync.sync.commands.AdvanceToMarriagePreCommand;
 import org.mozilla.sync.sync.commands.GetCryptoKeysPreCommand;
 import org.mozilla.sync.sync.commands.GetSyncTokenPreCommand;

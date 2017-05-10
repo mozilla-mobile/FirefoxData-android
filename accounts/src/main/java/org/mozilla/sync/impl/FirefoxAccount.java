@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.login;
+package org.mozilla.sync.impl;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -17,7 +17,6 @@ import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.Utils;
-import org.mozilla.sync.FirefoxAccountShared;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;

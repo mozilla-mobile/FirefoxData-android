@@ -10,9 +10,8 @@ import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.login.FirefoxAccount;
-import org.mozilla.sync.login.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
+import org.mozilla.sync.impl.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
 
 import java.util.List;
@@ -36,17 +35,20 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @Override
     public List<HistoryRecord> getHistory() {
-        commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
+        //commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
+        return null;
     }
 
     @Override
     public List<PasswordRecord> getPasswords() {
         //commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
+        return null;
     }
 
     @Override
     public List<BookmarkRecord> getBookmarks() {
         //commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(callback), getInitialSyncConfig(context));
+        return null;
     }
 
     @Override

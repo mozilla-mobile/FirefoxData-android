@@ -8,13 +8,14 @@ import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
+import org.mozilla.sync.impl.FirefoxAccount;
 
 import java.util.concurrent.Executor;
 
 /**
  * A collection of functions for operating on a FirefoxAccount.
  */
-public class FirefoxAccountUtils { // TODO: visibility?
+public class FirefoxAccountUtils { // TODO: visibility? Maybe move to impl?
     private FirefoxAccountUtils() {}
 
     public static boolean isMarried(final State accountState) {
