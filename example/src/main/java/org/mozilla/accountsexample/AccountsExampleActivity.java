@@ -41,6 +41,11 @@ public class AccountsExampleActivity extends AppCompatActivity {
             public void onFailure(final LoginSyncException e) {
                 Log.d(LOGTAG, "onFailure: ", e);
             }
+
+            @Override
+            public void onUserCancel() {
+                Log.d(LOGTAG, "onUserCancel: ");
+            }
         });
 
                 /*

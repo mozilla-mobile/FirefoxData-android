@@ -9,8 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import org.mozilla.gecko.fxa.login.Married;
+import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.LoginSyncException.FailureReason;
 import org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * TODO: docs.
@@ -18,27 +23,33 @@ import org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity;
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
 
-    // TODO: explain.
-    private String requestCallerName; // TODO: who sends? Client or LoginManager?
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+
+    // Values stored between the login call & `onActivityResult` so we can execute the given callback.
+    private String requestCallerName;
     private LoginCallback requestLoginCallback;
 
     @Override
     public void promptLogin(final Activity activity, final String callerName, @NonNull final LoginCallback callback) {
         if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null"); }
+        if (requestCallerName != null) {
+            throw new IllegalStateException("promptLogin unexpectedly called twice before the result was returned. " +
+                    "Did you call onActivityResult?");
+        }
 
-        // TODO: ensure not called already.
         requestCallerName = callerName;
         requestLoginCallback = callback;
 
         final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
-        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage());
+        loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // todo: RM me for non-debug.
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
-    // TODO: test verification state.
     @Override
-    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) { // todo: BOOLEAN TO HANDLE?
+    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
         if (!isActivityResultOurs(requestCode, data)) { return; }
+        // TODO: can onActivityResult be called multiple times? If so, we should keep {requestCode:callback} instead of throwing.
+        if (requestCallerName == null) { throw new IllegalStateException("onActivityResult unexpectedly called more than once for one promptLogin call (or promptLogin was never called)."); }
 
         switch (resultCode) {
             case FirefoxAccountWebViewLoginActivity.RESULT_OK:
@@ -60,11 +71,34 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     private void onActivityResultOK(@NonNull final Intent data) {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
-        // TODO: when married? When set caller name?
-        // TODO: verrified?
-        // TODO: persist account or whole sync client?
-        final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(firefoxAccount);
-        requestLoginCallback.onSuccess(syncClient);
+
+        // Keep references because they'll be nulled before the async call completes.
+        final String requestCallerName = this.requestCallerName;
+        final LoginCallback requestLoginCallback = this.requestLoginCallback;
+
+        // Account must be married to do anything useful with Sync.
+        FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, backgroundExecutor, new FirefoxAccountUtils.MarriedLoginCallback() {
+            @Override
+            public void onMarried(final Married marriedState) {
+                final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
+                // TODO persist account.
+                // TODO: update device name. Block before returning sync client so user doesn't have mystery device.
+
+                final FirefoxSyncClient syncClient = new FirefoxSyncFirefoxAccountClient(updatedAccount);
+                requestLoginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
+            }
+
+            @Override
+            public void onNotMarried(final State notMarriedState) {
+                final FailureReason failureReason;
+                if (!notMarriedState.verified) {
+                    failureReason = FailureReason.ACCOUNT_NOT_VERIFIED;
+                } else {
+                    failureReason = FailureReason.UNKNOWN; // Unfortunately, we can't figure out why an advance failed. :(
+                }
+                requestLoginCallback.onFailure(new LoginSyncException(failureReason));
+            }
+        });
     }
 
     private void onActivityResultError(@NonNull final Intent data) {

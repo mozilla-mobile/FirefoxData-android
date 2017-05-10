@@ -17,6 +17,7 @@ public class LoginSyncException extends FirefoxSyncException {
     public FailureReason getFailureReason() { return failureReason; }
 
     public enum FailureReason {
+        ACCOUNT_NOT_VERIFIED,
         SERVER_SENT_UNEXPECTED_MESSAGE,
         SERVER_SENT_INVALID_ACCOUNT,
         UNKNOWN,

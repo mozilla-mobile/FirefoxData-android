@@ -11,6 +11,7 @@ public class FirefoxSync {
     private FirefoxSync() {}
 
     // todo: name.
+    // tODO: singleton or new instance?
     public static FirefoxSyncLoginManager getLoginManager() {
         return new FirefoxSyncWebViewLoginManager();
     }
