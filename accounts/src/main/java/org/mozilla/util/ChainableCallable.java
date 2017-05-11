@@ -28,17 +28,18 @@ import java.util.concurrent.Future;
  *       result = executor.submit(callable);
  *   }
  *
- *   The result from the final callable can be accessed via the returned Future, which will
- *   return the result or throw a cascaded Exception. If the final callable uses a callback,
- *   {@link ChainableCallableWithCallback} is recommended instead.
+ *   result.get(); // The final result, or an Exception which can cascade from a previous Callable.
  * </pre>
+ *
+ * @param <I> Type of the argument to this Callable.
+ * @param <O> Return type of this Callable.
  */
-public abstract class ChainableCallable<V> implements Callable {
-    private Future<V> futureDependency;
-    public final void setFutureDependency(final Future<V> futureDependency) { this.futureDependency = futureDependency; }
+public abstract class ChainableCallable<I, O> implements Callable {
+    private Future<I> futureDependency;
+    public final void setFutureDependency(final Future<I> futureDependency) { this.futureDependency = futureDependency; }
 
     @Override
-    public final V call() throws Exception {
+    public final O call() throws Exception {
         return call(futureDependency.get()); // thrown exceptions are expected to cascade through all ChainableCallable.
     }
 
@@ -46,34 +47,36 @@ public abstract class ChainableCallable<V> implements Callable {
      * Computes a result, or throws an Exception if it is unable to do so.
      * @param value The return value from the previous Callable in the chain.
      */
-    public abstract V call(final V value) throws Exception;
+    public abstract O call(final I value) throws Exception;
 
     /**
-     * A {@link ChainableCallable} that does not allow the user to accidentally suppress errors
-     * by throwing during `call`: any thrown exceptions will call the error handler of the
-     * given callback.
+     * A {@link ChainableCallable} for async calls: it will block until the async call completes, allowing async calls
+     * to occur in an executor.
+     *
+     * @param <I> Type of the argument to this Callable.
+     * @param <O> Return type of this Callable.
      */
-    public static abstract class ChainableCallableWithCallback<V> extends ChainableCallable<V> {
-        private ChainableCallableCallback callback;
-        public ChainableCallableWithCallback(final ChainableCallableCallback callback) { this.callback = callback; }
+    public static abstract class AsyncChainableCallable<I, O> extends ChainableCallable<I, O> {
+        private final long timeoutMillis;
 
-        // TODO: If .get() throws, this method won't be called. :(
-        @Override
-        public final V call(final V value) throws Exception {
-            try {
-                callWithCallback(value);
-            } catch (final Exception e) {
-                callback.onError(e);
-            }
-            return null; // This is expected to end in a callback so we don't care for result.
-        }
+        protected AsyncChainableCallable(final long timeoutMillis) { this.timeoutMillis = timeoutMillis; }
 
         /**
-         * Computes a result or throws an Exception if it is unable to do so. All Exceptions will
-         * call the `onError` handler of the given callback.
+         * Begins the async call and calls a function of `onComplete`
+         *
+         * @param input The return value from the previous Callable in the chain.
+         * @param onComplete The callback that should be called when the async call completes.
          */
-        public abstract void callWithCallback(final V value) throws Exception;
-    }
+        public abstract void initAsyncCall(final I input, final IOUtil.OnAsyncCallComplete<O> onComplete);
 
-    public interface ChainableCallableCallback { void onError(Exception e); }
+        @Override
+        public O call(final I input) throws Exception {
+            return IOUtil.makeSync(timeoutMillis, new IOUtil.AsyncCall<O>() {
+                @Override
+                public void initAsyncCall(final IOUtil.OnAsyncCallComplete<O> onComplete) {
+                    AsyncChainableCallable.this.initAsyncCall(input, onComplete);
+                }
+            });
+        }
+    }
 }
