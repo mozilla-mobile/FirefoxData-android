@@ -5,21 +5,18 @@
 package org.mozilla.sync;
 
 /**
- * TODO:
+ * TODO: name?
  */
-public class LoginSyncException extends FirefoxSyncException {
+public class FirefoxSyncGetCollectionException extends FirefoxSyncException {
     private final FailureReason failureReason;
 
-    public LoginSyncException(final FailureReason failureReason) {
+    public FirefoxSyncGetCollectionException(final FailureReason failureReason) {
         this.failureReason = failureReason;
     }
 
     public FailureReason getFailureReason() { return failureReason; }
 
     public enum FailureReason {
-        ACCOUNT_NOT_VERIFIED,
-        SERVER_SENT_UNEXPECTED_MESSAGE,
-        SERVER_SENT_INVALID_ACCOUNT,
-        UNKNOWN,
+
     }
 }

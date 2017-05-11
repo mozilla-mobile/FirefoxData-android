@@ -5,18 +5,21 @@
 package org.mozilla.sync;
 
 /**
- * TODO: name?
+ * TODO:
  */
-public class GetCollectionSyncException extends FirefoxSyncException {
+public class FirefoxSyncLoginException extends FirefoxSyncException {
     private final FailureReason failureReason;
 
-    public GetCollectionSyncException(final FailureReason failureReason) {
+    public FirefoxSyncLoginException(final FailureReason failureReason) {
         this.failureReason = failureReason;
     }
 
     public FailureReason getFailureReason() { return failureReason; }
 
-    public enum FailureReason {
-
+    public enum FailureReason { // Some reasons: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#response-format
+        ACCOUNT_NOT_VERIFIED,
+        SERVER_SENT_UNEXPECTED_MESSAGE,
+        SERVER_SENT_INVALID_ACCOUNT,
+        UNKNOWN,
     }
 }

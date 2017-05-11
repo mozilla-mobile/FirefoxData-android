@@ -4,13 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.LoginSyncException;
-import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
+import org.mozilla.sync.FirefoxSyncLoginException;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 
 import java.util.List;
@@ -54,7 +51,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(final LoginSyncException e) {
+            public void onFailure(final FirefoxSyncLoginException e) {
                 Log.d(LOGTAG, "onFailure: ", e);
             }
 
