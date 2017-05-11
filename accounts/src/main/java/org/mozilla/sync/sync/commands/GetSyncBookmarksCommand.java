@@ -6,41 +6,46 @@ package org.mozilla.sync.sync.commands;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
+import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
+import org.mozilla.util.IOUtil;
+
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
+ */
 public class GetSyncBookmarksCommand extends SyncClientCollectionCommand<BookmarkRecord> {
 
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
 
-    public GetSyncBookmarksCommand(final SyncCollectionCallback<BookmarkRecord> callback) {
-        super(callback);
-    }
-
     @Override
-    public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, callback);
-        makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<BookmarkRecord>> onComplete) {
+        final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
+        try {
+            makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
+        } catch (final URISyntaxException e) {
+            onComplete.onError(e);
+        }
     }
 
     private static class SyncClientBookmarksResourceDelegate extends SyncClientBaseResourceDelegate<BookmarkRecord> {
-        public SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<BookmarkRecord> callback) {
+        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<BookmarkRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
         @Override
         public void handleResponse(final HttpResponse response, final String responseBody) {
             try {
-                callback.onReceive(responseBodyToRecords(responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory()));
+                onComplete.onSuccess(responseBodyToRecords(responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory()));
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                callback.onError(e);
+                onComplete.onError(e);
             }
         }
     }
 }
- */

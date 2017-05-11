@@ -12,7 +12,9 @@ import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
+import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
 import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 
 import java.util.List;
@@ -50,14 +52,24 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @Override
     public List<PasswordRecord> getPasswords() {
-        //commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
-        return null;
+        final Future<List<PasswordRecord>> future = commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(), getInitialSyncConfig());
+        try {
+            return future.get(); // todo: timeout.
+        } catch (final InterruptedException | ExecutionException e) {
+            e.printStackTrace(); // todo: what now?
+            return null;
+        }
     }
 
     @Override
     public List<BookmarkRecord> getBookmarks() {
-        //commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(callback), getInitialSyncConfig(context));
-        return null;
+        final Future<List<BookmarkRecord>> future = commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(), getInitialSyncConfig());
+        try {
+            return future.get(); // todo: timeout.
+        } catch (final InterruptedException | ExecutionException e) {
+            e.printStackTrace(); // todo: what now?
+            return null;
+        }
     }
 
     @Override

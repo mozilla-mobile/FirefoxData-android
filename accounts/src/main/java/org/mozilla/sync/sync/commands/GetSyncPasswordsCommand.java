@@ -11,38 +11,40 @@ import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCom
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
+import org.mozilla.util.IOUtil;
+
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
-/*
 public class GetSyncPasswordsCommand extends SyncClientCollectionCommand<PasswordRecord> {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
 
-    public GetSyncPasswordsCommand(final SyncCollectionCallback<PasswordRecord> callback) {
-        super(callback);
-    }
-
     @Override
-    public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, callback);
-        makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<PasswordRecord>> onComplete) {
+        final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
+        try {
+            makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
+        } catch (final URISyntaxException e) {
+            onComplete.onError(e);
+        }
     }
 
     private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<PasswordRecord> {
-        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<PasswordRecord> callback) {
+        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<PasswordRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
         @Override
         public void handleResponse(final HttpResponse response, final String responseBody) {
             try {
-                callback.onReceive(responseBodyToRecords(responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory()));
+                onComplete.onSuccess(responseBodyToRecords(responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory()));
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                callback.onError(e);
+                onComplete.onError(e);
             }
         }
     }
 }
-*/

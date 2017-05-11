@@ -35,9 +35,23 @@ public class AccountsExampleActivity extends AppCompatActivity {
             public void onSuccess(final FirefoxSyncClient syncClient) {
                 Log.d(LOGTAG, "On success!");
 
+                /*
                 final List<HistoryRecord> receivedRecords = syncClient.getHistory();
                 for (final HistoryRecord record : receivedRecords) {
                     Log.d(LOGTAG, record.title + ": " + record.histURI);
+                }
+                */
+
+                /*
+                final List<BookmarkRecord> receivedBookmarks = syncClient.getBookmarks();
+                for (final BookmarkRecord record : receivedBookmarks) {
+                    Log.d(LOGTAG, record.title + ": " + record.bookmarkURI);
+                }
+                */
+
+                final List<PasswordRecord> receivedPasswords = syncClient.getPasswords();
+                for (final PasswordRecord record : receivedPasswords) {
+                    Log.d(LOGTAG, record.encryptedPassword + ": " + record.encryptedUsername);
                 }
             }
 
@@ -57,61 +71,5 @@ public class AccountsExampleActivity extends AppCompatActivity {
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         loginManager.onActivityResult(requestCode, resultCode, data);
-
-        /*
-        if (resultCode == FirefoxAccountWebViewLoginActivity.RESULT_OK) {
-            final FirefoxAccount account = new FirefoxAccountDevelopmentStore(this).loadFirefoxAccount();
-            if (account == null) {
-                Log.d("lol", "Nothing.");
-            } else {
-                Log.d("lol", account.uid);
-                sync(account);
-            }
-        } else if (resultCode == FirefoxAccountWebViewLoginActivity.RESULT_CANCELED) {
-            Log.d("lol", "User canceled login");
-        } else {
-            Log.d("lol", "error!");
-        }
-        */
-    }
-
-    private void sync(final FirefoxAccount account) {
-        FirefoxAccountSyncClient client = new FirefoxAccountSyncClient(account);
-        // TODO: should not be anonymous if don't want to leak context.
-        client.getBookmarks(this, new SyncCollectionCallback<BookmarkRecord>() {
-            @Override
-            public void onReceive(final List<BookmarkRecord> receivedRecords) {
-                Log.e(LOGTAG, "onReceive: bookmarks!");
-                for (final BookmarkRecord record : receivedRecords) {
-                    Log.d(LOGTAG, record.title + ": " + record.bookmarkURI);
-                }
-            }
-
-            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
-        });
-
-        client.getHistory(this, 1000, new SyncCollectionCallback<HistoryRecord>() {
-            @Override
-            public void onReceive(final List<HistoryRecord> receivedRecords) {
-                Log.e(LOGTAG, "onReceive: history!");
-                for (final HistoryRecord record : receivedRecords) {
-                    Log.d(LOGTAG, record.title + ": " + record.histURI);
-                }
-            }
-
-            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
-        });
-
-        client.getPasswords(this, new SyncCollectionCallback<PasswordRecord>() {
-            @Override
-            public void onReceive(final List<PasswordRecord> receivedRecords) {
-                Log.e(LOGTAG, "onReceive: passwords!");
-                for (final PasswordRecord record : receivedRecords) {
-                    Log.d(LOGTAG, record.encryptedPassword + ": " + record.encryptedUsername);
-                }
-            }
-
-            @Override public void onError(final Exception e) { Log.e(LOGTAG, "onError: error!", e); }
-        });
     }
 }
