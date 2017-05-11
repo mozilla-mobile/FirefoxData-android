@@ -33,7 +33,7 @@
         <activity
                 android:theme="@style/Theme.AppCompat.NoActionBar"
                 android:label="@string/fxaccount_login_webview_label"
-                android:name="org.mozilla.accounts.login.FirefoxAccountLoginWebViewActivity"
+                android:name="org.mozilla.sync.login.FirefoxAccountWebViewLoginActivity"
                 android:exported="true"
         />
 
