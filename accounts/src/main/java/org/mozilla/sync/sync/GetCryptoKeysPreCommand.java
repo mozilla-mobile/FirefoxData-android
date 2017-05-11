@@ -2,12 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import android.util.Log;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
@@ -29,7 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
 /** A command to get the crypto keys necessary to begin a sync. */
-public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
+class GetCryptoKeysPreCommand extends SyncClientCommands.SyncClientAsyncPreCommand {
     private static final String CRYPTO_COLLECTION = "crypto";
     private static final String KEYS_ID = "keys";
 
@@ -43,7 +41,7 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
         final SyncStorageRecordRequest request;
         try {
             request = new SyncStorageRecordRequest(
-                    FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
+                    FirefoxSyncRequestUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
         } catch (final URISyntaxException e) {
             onComplete.onError(e);
             return;
@@ -80,7 +78,7 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
             @Override
             public AuthHeaderProvider getAuthHeaderProvider() {
                 try {
-                    return FirefoxAccountSyncUtils.getAuthHeaderProvider(syncConfig.token);
+                    return FirefoxSyncRequestUtils.getAuthHeaderProvider(syncConfig.token);
                 } catch (UnsupportedEncodingException | URISyntaxException e) {
                     Log.e(LOGTAG, "getAuthHeaderProvider: unable to get auth header.");
                     return null; // Oh well - we'll make the request we expect to fail and handle the failed request.

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -14,7 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
@@ -86,7 +85,7 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
     @Override public int socketTimeout() { return socketTimeoutInMillis; }
     @Override public AuthHeaderProvider getAuthHeaderProvider() {
         try {
-            return FirefoxAccountSyncUtils.getAuthHeaderProvider(syncConfig.token);
+            return FirefoxSyncRequestUtils.getAuthHeaderProvider(syncConfig.token);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             Log.e(LOGTAG, "getAuthHeaderProvider: unable to get auth header.");
             return null; // Oh well - we'll make the request we expect to fail and handle the failed request.

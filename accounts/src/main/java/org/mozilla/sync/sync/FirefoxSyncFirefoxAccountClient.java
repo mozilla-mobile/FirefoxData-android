@@ -5,19 +5,14 @@
 package org.mozilla.sync.sync;
 
 
-import android.content.Context;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
-import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
-import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

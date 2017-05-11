@@ -25,14 +25,14 @@ import java.security.GeneralSecurityException;
 /**
  * A static class that provides functions to retrieve sync tokens.
  */
-public class FirefoxAccountSyncTokenAccessor {
+class FirefoxSyncTokenAccessor {
 
-    public interface TokenCallback {
+    interface TokenCallback {
         void onError(Exception e);
         void onTokenReceived(TokenServerToken token);
     }
 
-    private FirefoxAccountSyncTokenAccessor() {}
+    private FirefoxSyncTokenAccessor() {}
 
     /**
      * Gets a Sync Token or returns an error through the provided callback. The given account
@@ -66,7 +66,7 @@ public class FirefoxAccountSyncTokenAccessor {
 
     private static class FirefoxAccountTokenServerClientDelegate implements TokenServerClientDelegate {
 
-        private final FirefoxAccountSyncTokenAccessor.TokenCallback callback;
+        private final FirefoxSyncTokenAccessor.TokenCallback callback;
 
         private FirefoxAccountTokenServerClientDelegate(final TokenCallback callback) {
             this.callback = callback;

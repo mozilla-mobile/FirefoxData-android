@@ -2,13 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
@@ -20,7 +18,7 @@ import java.util.List;
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
  */
-public class GetSyncBookmarksCommand extends SyncClientCollectionCommand<BookmarkRecord> {
+class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCommand<BookmarkRecord> {
 
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
 

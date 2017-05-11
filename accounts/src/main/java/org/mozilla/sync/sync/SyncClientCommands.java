@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.util.ChainableCallable;
 
 import java.net.URI;
@@ -18,15 +17,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Container file for SyncClientCommand classes. */
-public class SyncClientCommands {
+class SyncClientCommands {
     private SyncClientCommands() {}
 
     private static final long ASYNC_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
     /** A base-class for commands accessing collections from sync. */
-    public static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, List<T>> {
+    static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, List<T>> {
 
-        public SyncClientCollectionCommand() { super(ASYNC_TIMEOUT_MILLIS); }
+        SyncClientCollectionCommand() { super(ASYNC_TIMEOUT_MILLIS); }
 
         /**
          * Convenience method to make a get request to the given collection.
@@ -39,7 +38,7 @@ public class SyncClientCommands {
             final Map<String, String> allArgs = getDefaultArgs();
             if (collectionArgs != null) { allArgs.putAll(collectionArgs); }
 
-            final URI uri = FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, collectionName, null, allArgs);
+            final URI uri = FirefoxSyncRequestUtils.getCollectionURI(syncConfig.token, collectionName, null, allArgs);
             final BaseResource resource = new BaseResource(uri);
             resource.delegate = delegate;
             resource.get();
@@ -53,7 +52,7 @@ public class SyncClientCommands {
     }
 
     /** A helper for handling pre-commands that begin an async request and need to block until completion. */
-    public static abstract class SyncClientAsyncPreCommand extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, FirefoxAccountSyncConfig> {
-        protected SyncClientAsyncPreCommand() { super(ASYNC_TIMEOUT_MILLIS); }
+    static abstract class SyncClientAsyncPreCommand extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, FirefoxAccountSyncConfig> {
+        SyncClientAsyncPreCommand() { super(ASYNC_TIMEOUT_MILLIS); }
     }
 }

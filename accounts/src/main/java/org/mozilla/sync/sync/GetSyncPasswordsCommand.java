@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
-public class GetSyncPasswordsCommand extends SyncClientCollectionCommand<PasswordRecord> {
+class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<PasswordRecord> {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
 

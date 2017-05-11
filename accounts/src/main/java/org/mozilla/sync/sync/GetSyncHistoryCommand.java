@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync.commands;
+package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
@@ -21,13 +20,13 @@ import java.util.Map;
 /**
  * Gets the history for the associated account from Firefox Sync.
  */
-public class GetSyncHistoryCommand extends SyncClientCollectionCommand<HistoryRecord> {
+class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionCommand<HistoryRecord> {
 
     private static final String HISTORY_COLLECTION = "history";
 
     private final int itemLimit;
 
-    public GetSyncHistoryCommand(final int itemLimit) {
+    GetSyncHistoryCommand(final int itemLimit) {
         this.itemLimit = itemLimit;
     }
 

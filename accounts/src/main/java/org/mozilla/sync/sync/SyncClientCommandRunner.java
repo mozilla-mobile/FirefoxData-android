@@ -7,11 +7,8 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 //import org.mozilla.sync.sync.commands.AdvanceToMarriagePreCommand;
-import org.mozilla.sync.sync.commands.GetCryptoKeysPreCommand;
-import org.mozilla.sync.sync.commands.GetSyncTokenPreCommand;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
-import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCommand;
-import org.mozilla.util.ChainableCallable;
+import org.mozilla.sync.sync.SyncClientCommands.SyncClientAsyncPreCommand;
+import org.mozilla.sync.sync.SyncClientCommands.SyncClientCollectionCommand;
 
 import java.util.Arrays;
 import java.util.Collections;

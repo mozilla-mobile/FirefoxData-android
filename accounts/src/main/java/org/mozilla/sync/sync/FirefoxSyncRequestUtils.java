@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * A group of util functions for the Sync servers.
  */
-public class FirefoxAccountSyncUtils {
-    private FirefoxAccountSyncUtils() {}
+class FirefoxSyncRequestUtils {
+    private FirefoxSyncRequestUtils() {}
 
     // The URI methods wrap String methods so we can avoid allocating too many unnecessary objects when composing the methods.
     public static URI getServerURI(@NonNull final TokenServerToken token) throws URISyntaxException {
@@ -84,7 +84,7 @@ public class FirefoxAccountSyncUtils {
         // skew adjustment that the HawkAuthHeaderProvider uses to adjust its
         // timestamps. Eventually we might want this to adapt within the scope of a
         // global session.
-        final URI storageServerURI = FirefoxAccountSyncUtils.getServerURI(token);
+        final URI storageServerURI = FirefoxSyncRequestUtils.getServerURI(token);
         final String storageHostname = storageServerURI.getHost();
         final SkewHandler storageServerSkewHandler = SkewHandler.getSkewHandlerForHostname(storageHostname);
         final long storageServerSkew = storageServerSkewHandler.getSkewInSeconds();
