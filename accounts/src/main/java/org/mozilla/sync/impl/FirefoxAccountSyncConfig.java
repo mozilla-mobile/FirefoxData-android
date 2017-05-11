@@ -4,15 +4,12 @@
 
 package org.mozilla.sync.impl; // TODO: only here for access to FirefoxAccount.
 
-import android.content.Context;
-import org.mozilla.sync.login.FirefoxAccountUtils;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.crypto.KeyBundle;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;

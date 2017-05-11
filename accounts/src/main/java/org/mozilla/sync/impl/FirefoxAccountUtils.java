@@ -2,13 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.login;
+package org.mozilla.sync.impl;
 
 import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
-import org.mozilla.sync.impl.FirefoxAccount;
 
 import java.util.concurrent.Executor;
 
@@ -53,7 +52,7 @@ public class FirefoxAccountUtils { // TODO: visibility? Maybe move to impl?
         });
     }
 
-    interface MarriedLoginCallback {
+    public interface MarriedLoginCallback {
         void onMarried(Married marriedState);
         void onNotMarried(State notMarriedState);
     }

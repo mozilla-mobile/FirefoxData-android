@@ -68,7 +68,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @Override
     public String getEmail() {
-        return null;
+        return account.email; // todo: email/account can get updated.
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig() {
