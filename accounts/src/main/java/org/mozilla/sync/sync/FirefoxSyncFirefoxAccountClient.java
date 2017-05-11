@@ -15,7 +15,6 @@ import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
 import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
-import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

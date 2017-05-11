@@ -9,8 +9,6 @@ import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.LoginSyncException;
-import org.mozilla.sync.sync.FirefoxAccountSyncClient;
-import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;

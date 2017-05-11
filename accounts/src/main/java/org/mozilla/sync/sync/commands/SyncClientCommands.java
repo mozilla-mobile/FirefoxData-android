@@ -5,9 +5,9 @@
 package org.mozilla.sync.sync.commands;
 
 import android.support.annotation.Nullable;
+import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
-import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.util.ChainableCallable;
 
 import java.net.URI;
@@ -15,7 +15,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /** Container file for SyncClientCommand classes. */
