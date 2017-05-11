@@ -35,12 +35,10 @@ public class AccountsExampleActivity extends AppCompatActivity {
             public void onSuccess(final FirefoxSyncClient syncClient) {
                 Log.d(LOGTAG, "On success!");
 
-                final List history = syncClient.getHistory(); // todo: type.
-                /*
+                final List<HistoryRecord> receivedRecords = syncClient.getHistory();
                 for (final HistoryRecord record : receivedRecords) {
                     Log.d(LOGTAG, record.title + ": " + record.histURI);
                 }
-                */
             }
 
             @Override

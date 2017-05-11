@@ -9,11 +9,11 @@ import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.util.ChainableCallable;
-import org.mozilla.util.ChainableCallable.ChainableCallableWithCallback;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -22,14 +22,12 @@ import java.util.concurrent.TimeUnit;
 public class SyncClientCommands {
     private SyncClientCommands() {}
 
-    /** A base-class for commands accessing collections from sync  - these are expected to have callbacks. */
-    public static abstract class SyncClientCollectionCommand<R> extends ChainableCallableWithCallback<FirefoxAccountSyncConfig> {
-        protected final SyncCollectionCallback<R> callback;
+    private static final long ASYNC_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
-        protected SyncClientCollectionCommand(final SyncCollectionCallback<R> callback) {
-            super(callback);
-            this.callback = callback;
-        }
+    /** A base-class for commands accessing collections from sync. */
+    public static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, List<T>> {
+
+        public SyncClientCollectionCommand() { super(ASYNC_TIMEOUT_MILLIS); }
 
         /**
          * Convenience method to make a get request to the given collection.
@@ -56,48 +54,7 @@ public class SyncClientCommands {
     }
 
     /** A helper for handling pre-commands that begin an async request and need to block until completion. */
-    public static abstract class SyncClientAsyncPreCommand extends ChainableCallable<FirefoxAccountSyncConfig> {
-        private static final long ASYNC_TIMEOUT_SECONDS = 60;
-
-        @Override
-        public final FirefoxAccountSyncConfig call(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-            final CountDownLatch makeSynchronousLatch = new CountDownLatch(1);
-            final ReturnValueContainer returnValueContainer = new ReturnValueContainer();
-
-            initAsyncCall(syncConfig, new OnAsyncPreCommandComplete() {
-                @Override
-                public void onException(final Exception e) {
-                    returnValueContainer.exception = e;
-                    makeSynchronousLatch.countDown();
-                }
-
-                @Override
-                public void onSuccess(final FirefoxAccountSyncConfig updatedSyncConfig) {
-                    returnValueContainer.updatedSyncConfig = updatedSyncConfig;
-                    makeSynchronousLatch.countDown();
-                }
-            });
-
-            final boolean countDownReachedZero = makeSynchronousLatch.await(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS); // Await end of async operation.
-            if (!countDownReachedZero) { throw new Exception("Async command timed out."); }
-            else if (returnValueContainer.exception != null) { throw returnValueContainer.exception; }
-            return returnValueContainer.updatedSyncConfig;
-        }
-
-        /**
-         * Begins the async call associated with this pre-command.
-         * @param onComplete When the async call is completed, one of the methods should be called.
-         */
-        abstract void initAsyncCall(FirefoxAccountSyncConfig syncConfig, OnAsyncPreCommandComplete onComplete) throws Exception;
-
-        private static class ReturnValueContainer {
-            private Exception exception;
-            private FirefoxAccountSyncConfig updatedSyncConfig;
-        }
-    }
-
-    protected interface OnAsyncPreCommandComplete {
-        void onException(Exception e);
-        void onSuccess(FirefoxAccountSyncConfig updatedSyncConfig);
+    public static abstract class SyncClientAsyncPreCommand extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, FirefoxAccountSyncConfig> {
+        protected SyncClientAsyncPreCommand() { super(ASYNC_TIMEOUT_MILLIS); }
     }
 }

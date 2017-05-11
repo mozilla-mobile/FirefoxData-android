@@ -27,6 +27,7 @@ import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.util.FileUtil;
+import org.mozilla.util.IOUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,7 @@ import java.util.List;
  * Base implementation for requests made by {@see org.mozilla.accounts.sync.FirefoxAccountSyncClient}:
  * provides basic configuration and simplifies the error/response handling.
  */
-public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDelegate {
+abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
@@ -47,11 +48,11 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    protected final SyncCollectionCallback<R> callback;
+    protected final IOUtil.OnAsyncCallComplete<List<T>> onComplete;
 
-    public SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<R> callback) {
+    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<T>> onComplete) {
         this.syncConfig = syncConfig;
-        this.callback = callback;
+        this.onComplete = onComplete;
     }
 
     public abstract void handleResponse(final HttpResponse response, final String responseBody);
@@ -62,7 +63,7 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
         try {
             responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
-            callback.onError(e);
+            onComplete.onError(e);
             return;
         }
         handleResponse(response, responseBody);
@@ -72,9 +73,9 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
      * Handles any errors that happen in the request process. This can be overridden to have custom behavior; the
      * default implementation just forwards the exception to the callback.
      */
-    public void handleError(Exception e) { callback.onError(e); }
+    public void handleError(Exception e) { onComplete.onError(e); }
 
-    @Override public String getUserAgent() { return null; }
+    @Override public String getUserAgent() { return null; } // TODO: decide if necessary.
 
     // To keep things simple (for now), let's just set them all as errors.
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleError(e); }
@@ -95,16 +96,16 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
     @Override public void addHeaders(HttpRequestBase request, DefaultHttpClient client) { }
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
-    protected List<R> responseBodyToRecords(final String responseBody, final String collectionName,
+    protected List<T> responseBodyToRecords(final String responseBody, final String collectionName,
             final RecordFactory recordFactory) throws NoCollectionKeysSetException, JSONException {
         final KeyBundle keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
         final JSONArray recordArray = new JSONArray(responseBody);
 
-        final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());
+        final ArrayList<T> receivedRecords = new ArrayList<>(recordArray.length());
         for (int i = 0; i < recordArray.length(); ++i) {
             try {
                 final JSONObject jsonRecord = recordArray.getJSONObject(i);
-                final R record = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
+                final T record = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
                 receivedRecords.add(record);
             } catch (final IOException | JSONException | NonObjectJSONException | CryptoException e) {
                 Log.w(LOGTAG, "Unable to decrypt record", e); // Let's not log to avoid leaking user data.
@@ -113,13 +114,13 @@ public abstract class SyncClientBaseResourceDelegate<R> implements ResourceDeleg
         return receivedRecords;
     }
 
-    private R getAndDecryptRecord(final RecordFactory recordFactory, final KeyBundle keyBundle,
+    private T getAndDecryptRecord(final RecordFactory recordFactory, final KeyBundle keyBundle,
             final JSONObject json) throws NonObjectJSONException, IOException, CryptoException, JSONException {
         final Record recordToWrap = new HistoryRecord(json.getString("id")); // Not the most correct but this can be any record since we just init id.
         final CryptoRecord cryptoRecord = new CryptoRecord(recordToWrap);
         cryptoRecord.payload = new ExtendedJSONObject(json.getString("payload"));
         cryptoRecord.setKeyBundle(keyBundle);
         cryptoRecord.decrypt();
-        return (R) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
+        return (T) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
     }
 }

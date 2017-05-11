@@ -15,6 +15,7 @@ import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
+/*
 public class GetSyncPasswordsCommand extends SyncClientCollectionCommand<PasswordRecord> {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
@@ -31,7 +32,7 @@ public class GetSyncPasswordsCommand extends SyncClientCollectionCommand<Passwor
 
     private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<PasswordRecord> {
         private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<PasswordRecord> callback) {
-            super(syncConfig, callback);
+            super(syncConfig, onComplete);
         }
 
         @Override
@@ -44,3 +45,4 @@ public class GetSyncPasswordsCommand extends SyncClientCollectionCommand<Passwor
         }
     }
 }
+*/

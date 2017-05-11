@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutorService;
  * Data container for information necessary to sync.
  */
 public class FirefoxAccountSyncConfig {
-    public final WeakReference<Context> contextWeakReference;
     public final FirefoxAccount account;
     public final ExecutorService networkExecutor;
     public final TokenServerToken token;
@@ -29,18 +28,8 @@ public class FirefoxAccountSyncConfig {
 
     private KeyBundle keyBundleCache;
 
-    public FirefoxAccountSyncConfig(final Context context, final FirefoxAccount account,
-            final ExecutorService networkExecutor, final TokenServerToken token, final CollectionKeys collectionKeys) {
-        this.contextWeakReference = new WeakReference<Context>(context);
-        this.account = account;
-        this.networkExecutor = networkExecutor;
-        this.token = token;
-        this.collectionKeys = collectionKeys;
-    }
-
-    public FirefoxAccountSyncConfig(final WeakReference<Context> contextWeakReference, final FirefoxAccount account,
-            final ExecutorService networkExecutor, final TokenServerToken token, final CollectionKeys collectionKeys) {
-        this.contextWeakReference = contextWeakReference;
+    public FirefoxAccountSyncConfig(final FirefoxAccount account, final ExecutorService networkExecutor,
+            final TokenServerToken token, final CollectionKeys collectionKeys) {
         this.account = account;
         this.networkExecutor = networkExecutor;
         this.token = token;

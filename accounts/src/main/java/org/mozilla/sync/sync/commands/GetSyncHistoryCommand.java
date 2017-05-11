@@ -11,8 +11,11 @@ import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientCollectionCom
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
+import org.mozilla.util.IOUtil;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,15 +27,18 @@ public class GetSyncHistoryCommand extends SyncClientCollectionCommand<HistoryRe
 
     private final int itemLimit;
 
-    public GetSyncHistoryCommand(final int itemLimit, final SyncCollectionCallback<HistoryRecord> callback) {
-        super(callback);
+    public GetSyncHistoryCommand(final int itemLimit) {
         this.itemLimit = itemLimit;
     }
 
     @Override
-    public void callWithCallback(final FirefoxAccountSyncConfig syncConfig) throws Exception {
-        final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, callback);
-        makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<HistoryRecord>> onComplete) {
+        final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, onComplete);
+        try {
+            makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
+        } catch (final URISyntaxException e) {
+            onComplete.onError(e);
+        }
     }
 
     private Map<String, String> getArgs() {
@@ -42,16 +48,16 @@ public class GetSyncHistoryCommand extends SyncClientCollectionCommand<HistoryRe
     }
 
     private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate<HistoryRecord> {
-        public SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<HistoryRecord> callback) {
-            super(syncConfig, callback);
+        SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<HistoryRecord>> onComplete) {
+            super(syncConfig, onComplete);
         }
 
         @Override
         public void handleResponse(final HttpResponse response, final String responseBody) {
             try {
-                callback.onReceive(responseBodyToRecords(responseBody, HISTORY_COLLECTION, new HistoryRecordFactory()));
+                onComplete.onSuccess(responseBodyToRecords(responseBody, HISTORY_COLLECTION, new HistoryRecordFactory()));
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                callback.onError(e);
+                onComplete.onError(e);
             }
         }
     }

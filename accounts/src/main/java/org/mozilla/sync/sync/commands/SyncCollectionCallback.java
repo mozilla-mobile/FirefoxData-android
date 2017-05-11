@@ -4,11 +4,10 @@
 
 package org.mozilla.sync.sync.commands;
 
-import org.mozilla.util.ChainableCallable.ChainableCallableCallback;
-
 import java.util.List;
 
 /** A callback for a Sync command that returns the value of a collection. */
-public interface SyncCollectionCallback<R> extends ChainableCallableCallback {
+public interface SyncCollectionCallback<R> {
     void onReceive(List<R> records);
+    void onError(Exception e);
 }

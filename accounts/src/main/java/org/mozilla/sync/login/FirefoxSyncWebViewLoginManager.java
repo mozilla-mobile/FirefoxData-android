@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
 
-    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor?
     private final FirefoxAccountDevelopmentStore accountStore;
 
     // Values stored between the login call & `onActivityResult` so we can execute the given callback.

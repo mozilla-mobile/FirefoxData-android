@@ -7,7 +7,6 @@ package org.mozilla.sync.sync.commands;
 import android.util.Log;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxAccountSyncUtils;
-import org.mozilla.sync.sync.commands.SyncClientCommands.OnAsyncPreCommandComplete;
 import org.mozilla.sync.sync.commands.SyncClientCommands.SyncClientAsyncPreCommand;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.CryptoRecord;
@@ -19,6 +18,7 @@ import org.mozilla.gecko.sync.net.SyncStorageRecordRequest;
 import org.mozilla.gecko.sync.net.SyncStorageRequestDelegate;
 import org.mozilla.gecko.sync.net.SyncStorageResponse;
 import org.mozilla.gecko.sync.repositories.domain.RecordParseException;
+import org.mozilla.util.IOUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -34,14 +34,21 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
     private static final String KEYS_ID = "keys";
 
     @Override
-    void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final OnAsyncPreCommandComplete onComplete) throws Exception {
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<FirefoxAccountSyncConfig> onComplete) {
         if (syncConfig.token == null) {
-            onComplete.onException(new IllegalArgumentException("syncConfig.token unexpectedly null."));
+            onComplete.onError(new IllegalArgumentException("syncConfig.token unexpectedly null."));
             return;
         }
 
-        final SyncStorageRecordRequest request = new SyncStorageRecordRequest(
-                FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
+        final SyncStorageRecordRequest request;
+        try {
+            request = new SyncStorageRecordRequest(
+                    FirefoxAccountSyncUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
+        } catch (final URISyntaxException e) {
+            onComplete.onError(e);
+            return;
+        }
+
         request.delegate = new SyncStorageRequestDelegate() {
             @Override
             public void handleRequestSuccess(final SyncStorageResponse response) {
@@ -51,24 +58,24 @@ public class GetCryptoKeysPreCommand extends SyncClientAsyncPreCommand {
                     body = response.jsonObjectBody();
                     keys.setKeyPairsFromWBO(CryptoRecord.fromJSONRecord(body), syncConfig.getSyncKeyBundle());
                 } catch (final IOException | NonObjectJSONException | CryptoException | RecordParseException | NoSuchAlgorithmException | InvalidKeyException e) {
-                    onComplete.onException(e);
+                    onComplete.onError(e);
                     return;
                 }
 
                 // TODO: persist keys: see EnsureCrypto5KeysStage.
-                onComplete.onSuccess(new FirefoxAccountSyncConfig(syncConfig.contextWeakReference, syncConfig.account,
-                        syncConfig.networkExecutor, syncConfig.token, keys));
+                onComplete.onSuccess(new FirefoxAccountSyncConfig(syncConfig.account, syncConfig.networkExecutor,
+                        syncConfig.token, keys));
             }
 
             @Override
             public void handleRequestFailure(final SyncStorageResponse response) {
                 try {
-                    onComplete.onException(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
+                    onComplete.onError(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
                 } catch (final IOException e) {
-                    onComplete.onException(new Exception("Failed to retrieve crypto keys & its error", e));
+                    onComplete.onError(new Exception("Failed to retrieve crypto keys & its error", e));
                 }
             }
-            @Override public void handleRequestError(final Exception ex) { onComplete.onException(ex); }
+            @Override public void handleRequestError(final Exception ex) { onComplete.onError(ex); }
 
             @Override
             public AuthHeaderProvider getAuthHeaderProvider() {

@@ -14,7 +14,6 @@ import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
 
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
- */
 public class GetSyncBookmarksCommand extends SyncClientCollectionCommand<BookmarkRecord> {
 
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
@@ -31,7 +30,7 @@ public class GetSyncBookmarksCommand extends SyncClientCollectionCommand<Bookmar
 
     private static class SyncClientBookmarksResourceDelegate extends SyncClientBaseResourceDelegate<BookmarkRecord> {
         public SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncCollectionCallback<BookmarkRecord> callback) {
-            super(syncConfig, callback);
+            super(syncConfig, onComplete);
         }
 
         @Override
@@ -44,3 +43,4 @@ public class GetSyncBookmarksCommand extends SyncClientCollectionCommand<Bookmar
         }
     }
 }
+ */

@@ -130,7 +130,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visib
         }) {
             dest.writeString(uri.toString());
         }
-        dest.writeParcelable(syncConfig, flags);
+        syncConfig.writeToParcel(dest, flags);
     }
 
     public static final Parcelable.Creator<FirefoxAccountEndpointConfig> CREATOR = new Parcelable.Creator<FirefoxAccountEndpointConfig>() {

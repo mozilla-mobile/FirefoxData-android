@@ -13,10 +13,14 @@ import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
+import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * TODO:
@@ -24,7 +28,7 @@ import java.util.concurrent.Executors;
 class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     private final SyncClientCommandRunner commandRunner = new SyncClientCommandRunner();
-    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor? How do they stop/get GC'd?
 
     private final FirefoxAccount account;
 
@@ -35,8 +39,13 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @Override
     public List<HistoryRecord> getHistory() {
-        //commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
-        return null;
+        final Future<List<HistoryRecord>> future = commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(5000), getInitialSyncConfig());
+        try {
+            return future.get(); // todo: timeout.
+        } catch (final InterruptedException | ExecutionException e) {
+            e.printStackTrace(); // todo: what now?
+            return null;
+        }
     }
 
     @Override
@@ -56,7 +65,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return null;
     }
 
-    private FirefoxAccountSyncConfig getInitialSyncConfig(final Context context) {
-        return new FirefoxAccountSyncConfig(context, account, networkExecutor, null, null);
+    private FirefoxAccountSyncConfig getInitialSyncConfig() {
+        return new FirefoxAccountSyncConfig(account, networkExecutor, null, null);
     }
 }

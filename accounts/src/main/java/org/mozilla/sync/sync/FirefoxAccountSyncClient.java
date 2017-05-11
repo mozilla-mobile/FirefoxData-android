@@ -7,9 +7,9 @@ package org.mozilla.sync.sync;
 import android.content.Context;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
+//import org.mozilla.sync.sync.commands.GetSyncBookmarksCommand;
 import org.mozilla.sync.sync.commands.GetSyncHistoryCommand;
-import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
+//import org.mozilla.sync.sync.commands.GetSyncPasswordsCommand;
 import org.mozilla.sync.sync.commands.SyncCollectionCallback;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
@@ -37,18 +37,18 @@ public class FirefoxAccountSyncClient {
 
     public void getHistory(final Context context, final int itemLimit, final SyncCollectionCallback<HistoryRecord> callback) {
         // todo: assert logged in.
-        commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
+        //commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit, callback), getInitialSyncConfig(context));
     }
 
     public void getPasswords(final Context context, final SyncCollectionCallback<PasswordRecord> callback) {
-        commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
+        //commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(callback), getInitialSyncConfig(context));
     }
 
     public void getBookmarks(final Context context, final SyncCollectionCallback<BookmarkRecord> callback) {
-        commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(callback), getInitialSyncConfig(context));
+        //commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(callback), getInitialSyncConfig(context));
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig(final Context context) {
-        return new FirefoxAccountSyncConfig(context, account, networkExecutor, null, null);
+        return new FirefoxAccountSyncConfig(account, networkExecutor, null, null);
     }
 }

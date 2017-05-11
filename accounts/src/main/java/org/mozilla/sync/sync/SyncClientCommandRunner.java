@@ -47,7 +47,6 @@ class SyncClientCommandRunner {
     private List<? extends SyncClientAsyncPreCommand> getPreCommands() {
         return Collections.unmodifiableList(Arrays.asList(
                 // The order matters: these commands may rely on results from the previous operations.
-                //new AdvanceToMarriagePreCommand(), // TODO: done already in new API.
                 new GetSyncTokenPreCommand(),
                 new GetCryptoKeysPreCommand()
         ));
@@ -62,12 +61,12 @@ class SyncClientCommandRunner {
      * This function is thread-safe: it's synchronized to ensure items are added to the queue
      * serially.
      */
-    protected synchronized void queueAndRunCommand(final SyncClientCollectionCommand command,
+    protected synchronized Future queueAndRunCommand(final SyncClientCollectionCommand command,
             final FirefoxAccountSyncConfig initialSyncConfig) {
-        final List<? extends ChainableCallable<FirefoxAccountSyncConfig>> preCommands = getPreCommands();
+        final List<? extends SyncClientAsyncPreCommand> preCommands = getPreCommands();
 
         Future<FirefoxAccountSyncConfig> result = new ReturnInputFuture(initialSyncConfig); // hack: set initial input.
-        for (final ChainableCallable<FirefoxAccountSyncConfig> preCommand : preCommands) {
+        for (final SyncClientAsyncPreCommand preCommand : preCommands) {
             preCommand.setFutureDependency(result);
             result = commandExecutor.submit(preCommand);
         }
@@ -75,7 +74,7 @@ class SyncClientCommandRunner {
         // It'd be great to add this to preCommands and do it all in a loop but
         // I can't get the types right.
         command.setFutureDependency(result);
-        commandExecutor.submit(command);
+        return commandExecutor.submit(command);
     }
 
     /** A Future that immediately returns the given value (the future is now!). */
