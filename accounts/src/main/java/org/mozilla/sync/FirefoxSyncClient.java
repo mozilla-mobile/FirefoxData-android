@@ -4,9 +4,10 @@
 
 package org.mozilla.sync;
 
-import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
-import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
+import org.mozilla.sync.sync.BookmarkFolder;
+import org.mozilla.sync.sync.HistoryRecord;
+import org.mozilla.sync.sync.PasswordRecord;
+import org.mozilla.sync.sync.SyncCollectionResult;
 
 import java.util.List;
 
@@ -14,10 +15,15 @@ import java.util.List;
  * TODO:
  */
 public interface FirefoxSyncClient {
-    // TODO: return type.
-    List<HistoryRecord> getHistory();
-    List<PasswordRecord> getPasswords();
-    List<BookmarkRecord> getBookmarks();
+    // TODO: bookmarks return type.
+    SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException;
+    SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
-    String getEmail(); // TODO: verify with server has not changed.
+    SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException;
+    SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+
+    SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
+    SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+
+    String getEmail(); // TODO: verify with server has not changed; throws exception?
 }

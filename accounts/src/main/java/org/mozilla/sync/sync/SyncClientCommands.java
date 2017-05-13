@@ -12,7 +12,6 @@ import org.mozilla.util.ChainableCallable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +22,7 @@ class SyncClientCommands {
     private static final long ASYNC_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
     /** A base-class for commands accessing collections from sync. */
-    static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, List<T>> {
+    static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, SyncCollectionResult<T>> {
 
         SyncClientCollectionCommand() { super(ASYNC_TIMEOUT_MILLIS); }
 
