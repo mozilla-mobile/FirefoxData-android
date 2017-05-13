@@ -17,7 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.gecko.R;
-import org.mozilla.sync.LoginSyncException;
+import org.mozilla.sync.FirefoxSyncLoginException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 import org.mozilla.util.ResourcesUtil;
@@ -144,14 +144,14 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
     private void onSessionStatus() {
         // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
         injectMessage("error");
-        setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
         finish();
     }
 
     private void onSignOut() {
         // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
         injectMessage("error");
-        setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
         finish();
     }
 
@@ -163,7 +163,7 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             Log.w(LOGTAG, "Could not create account. Returning from login...");
-            setResultForFailureReason(LoginSyncException.FailureReason.SERVER_SENT_INVALID_ACCOUNT);
+            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_INVALID_ACCOUNT);
             finish();
             return;
         }
@@ -223,7 +223,7 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
         return obj.toString();
     }
 
-    private void setResultForFailureReason(final LoginSyncException.FailureReason reason) {
+    private void setResultForFailureReason(final FirefoxSyncLoginException.FailureReason reason) {
         final Intent resultIntent = new Intent(ACTION_WEB_VIEW_LOGIN_RETURN);
         resultIntent.putExtra(EXTRA_FAILURE_REASON, reason.name());
         setResult(RESULT_ERROR, resultIntent);

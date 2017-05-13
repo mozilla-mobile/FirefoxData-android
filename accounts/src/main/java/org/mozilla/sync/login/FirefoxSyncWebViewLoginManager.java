@@ -14,8 +14,8 @@ import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.LoginSyncException;
-import org.mozilla.sync.LoginSyncException.FailureReason;
+import org.mozilla.sync.FirefoxSyncLoginException;
+import org.mozilla.sync.FirefoxSyncLoginException.FailureReason;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
@@ -105,7 +105,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 } else {
                     failureReason = FailureReason.UNKNOWN; // Unfortunately, we can't figure out why an advance failed. :(
                 }
-                requestLoginCallback.onFailure(new LoginSyncException(failureReason));
+                requestLoginCallback.onFailure(new FirefoxSyncLoginException(failureReason));
             }
         });
     }
@@ -113,7 +113,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private void onActivityResultError(@NonNull final Intent data) {
         final String failureStr = data.getStringExtra(FirefoxAccountWebViewLoginActivity.EXTRA_FAILURE_REASON);
         final FailureReason failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
-        requestLoginCallback.onFailure(new LoginSyncException(failureReason));
+        requestLoginCallback.onFailure(new FirefoxSyncLoginException(failureReason));
     }
 
     private boolean isActivityResultOurs(final int requestCode, @Nullable final Intent data) {
@@ -131,7 +131,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
         final FirefoxAccount account = accountStore.loadFirefoxAccount();
         if (account == null) {
-            callback.onFailure(new LoginSyncException(FailureReason.UNKNOWN)); // todo: can we get more specific errors?
+            callback.onFailure(new FirefoxSyncLoginException(FailureReason.UNKNOWN)); // todo: can we get more specific errors?
             return;
         }
 

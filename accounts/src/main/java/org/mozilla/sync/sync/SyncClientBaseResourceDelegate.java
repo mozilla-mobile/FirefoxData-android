@@ -47,9 +47,9 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    protected final IOUtil.OnAsyncCallComplete<List<T>> onComplete;
+    protected final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete;
 
-    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<T>> onComplete) {
+    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }
@@ -95,16 +95,16 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
     @Override public void addHeaders(HttpRequestBase request, DefaultHttpClient client) { }
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
-    protected List<T> responseBodyToRecords(final String responseBody, final String collectionName,
-            final RecordFactory recordFactory) throws NoCollectionKeysSetException, JSONException {
+    protected static <R> List<R> responseBodyToRawRecords(final FirefoxAccountSyncConfig syncConfig, final String responseBody,
+            final String collectionName, final RecordFactory recordFactory) throws NoCollectionKeysSetException, JSONException {
         final KeyBundle keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
         final JSONArray recordArray = new JSONArray(responseBody);
 
-        final ArrayList<T> receivedRecords = new ArrayList<>(recordArray.length());
+        final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());
         for (int i = 0; i < recordArray.length(); ++i) {
             try {
                 final JSONObject jsonRecord = recordArray.getJSONObject(i);
-                final T record = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
+                final R record = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
                 receivedRecords.add(record);
             } catch (final IOException | JSONException | NonObjectJSONException | CryptoException e) {
                 Log.w(LOGTAG, "Unable to decrypt record", e); // Let's not log to avoid leaking user data.
@@ -113,13 +113,13 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
         return receivedRecords;
     }
 
-    private T getAndDecryptRecord(final RecordFactory recordFactory, final KeyBundle keyBundle,
+    private static <R> R getAndDecryptRecord(final RecordFactory recordFactory, final KeyBundle keyBundle,
             final JSONObject json) throws NonObjectJSONException, IOException, CryptoException, JSONException {
         final Record recordToWrap = new HistoryRecord(json.getString("id")); // Not the most correct but this can be any record since we just init id.
         final CryptoRecord cryptoRecord = new CryptoRecord(recordToWrap);
         cryptoRecord.payload = new ExtendedJSONObject(json.getString("payload"));
         cryptoRecord.setKeyBundle(keyBundle);
         cryptoRecord.decrypt();
-        return (T) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
+        return (R) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
     }
 }

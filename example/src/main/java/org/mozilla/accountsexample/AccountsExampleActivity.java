@@ -4,14 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.LoginSyncException;
-import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
-import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
-import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
+import org.mozilla.sync.FirefoxSyncLoginException;
+import org.mozilla.sync.sync.BookmarkFolder;
+import org.mozilla.sync.sync.BookmarkRecord;
+import org.mozilla.sync.sync.HistoryRecord;
+import org.mozilla.sync.sync.PasswordRecord;
 
 import java.util.List;
 
@@ -33,28 +34,35 @@ public class AccountsExampleActivity extends AppCompatActivity {
             public void onSuccess(final FirefoxSyncClient syncClient) {
                 Log.d(LOGTAG, "On success!");
 
-                /*
-                final List<HistoryRecord> receivedRecords = syncClient.getHistory();
-                for (final HistoryRecord record : receivedRecords) {
-                    Log.d(LOGTAG, record.title + ": " + record.histURI);
+                final List<HistoryRecord> receivedHistory;
+                final List<PasswordRecord> receivedPasswords;
+                final BookmarkFolder rootBookmark;
+                try {
+                    receivedHistory = syncClient.getAllHistory().getResult();
+                    receivedPasswords = syncClient.getAllPasswords().getResult();
+                    rootBookmark = syncClient.getAllBookmarks().getResult();
+                } catch (final FirefoxSyncGetCollectionException e) {
+                    e.printStackTrace();
+                    return;
                 }
-                */
 
-                /*
-                final List<BookmarkRecord> receivedBookmarks = syncClient.getBookmarks();
-                for (final BookmarkRecord record : receivedBookmarks) {
-                    Log.d(LOGTAG, record.title + ": " + record.bookmarkURI);
+                for (final HistoryRecord record : receivedHistory) {
+                    Log.d(LOGTAG, record.getTitle() + ": " + record.getURI());
                 }
-                */
-
-                final List<PasswordRecord> receivedPasswords = syncClient.getPasswords();
                 for (final PasswordRecord record : receivedPasswords) {
-                    Log.d(LOGTAG, record.encryptedPassword + ": " + record.encryptedUsername);
+                    Log.d(LOGTAG, record.getUsername() + ": " + record.getPassword());
+                }
+                Log.d(LOGTAG, rootBookmark.getTitle());
+                for (final BookmarkRecord record : rootBookmark.getBookmarks()) {
+                    Log.d(LOGTAG, "root child: " + record.getTitle() + ": " + record.getURI());
+                }
+                for (final BookmarkFolder folder : rootBookmark.getSubfolders()) {
+                    Log.d(LOGTAG, "root subfolder: " + folder.getTitle());
                 }
             }
 
             @Override
-            public void onFailure(final LoginSyncException e) {
+            public void onFailure(final FirefoxSyncLoginException e) {
                 Log.d(LOGTAG, "onFailure: ", e);
             }
 

@@ -5,7 +5,6 @@
 package org.mozilla.sync;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,7 +22,7 @@ public interface FirefoxSyncLoginManager {
 
     interface LoginCallback {
         void onSuccess(FirefoxSyncClient syncClient);
-        void onFailure(LoginSyncException e);
+        void onFailure(FirefoxSyncLoginException e);
         void onUserCancel();
     }
 }

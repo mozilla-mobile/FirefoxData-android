@@ -8,22 +8,22 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import org.json.JSONException;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
-import org.mozilla.gecko.sync.repositories.domain.PasswordRecord;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
 import org.mozilla.util.IOUtil;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
-class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<PasswordRecord> {
+class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<List<PasswordRecord>> {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
 
     @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<PasswordRecord>> onComplete) {
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
         final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
@@ -32,18 +32,33 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
         }
     }
 
-    private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<PasswordRecord> {
-        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<List<PasswordRecord>> onComplete) {
+    private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<List<PasswordRecord>> {
+        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
             super(syncConfig, onComplete);
         }
 
         @Override
         public void handleResponse(final HttpResponse response, final String responseBody) {
+            final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords;
             try {
-                onComplete.onSuccess(responseBodyToRecords(responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory()));
+                rawRecords = responseBodyToRawRecords(syncConfig, responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory());
             } catch (final NoCollectionKeysSetException | JSONException e) {
                 onComplete.onError(e);
+                return;
             }
+
+            final List<PasswordRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
+            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
+        }
+
+        private List<PasswordRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords) {
+            // Iterating over these a second time is inefficient (the first time creates the raw records list), but it
+            // makes for cleaner code: fix if there are perf issues.
+            final ArrayList<PasswordRecord> resultRecords = new ArrayList<>(rawRecords.size());
+            for (final org.mozilla.gecko.sync.repositories.domain.PasswordRecord rawRecord : rawRecords) {
+                resultRecords.add(new PasswordRecord(rawRecord));
+            }
+            return resultRecords;
         }
     }
 }
