@@ -4,18 +4,20 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.NonNull;
+import org.mozilla.util.StringUtils;
+
 // TODO: Class vs. interface. docs.
 public class HistoryRecord { // TODO: name: record?
 
-    private org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord;
+    private final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord;
 
-    public HistoryRecord(final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord) {
+    HistoryRecord(final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord) {
         this.underlyingRecord = underlyingRecord;
     }
 
-    // TODO: docs.
-    public String getTitle() { return underlyingRecord.title; }
-    public String getURI() { return underlyingRecord.histURI; }
+    @NonNull public String getTitle() { return StringUtils.emptyStrIfNull(underlyingRecord.title); }
+    @NonNull public String getURI() { return StringUtils.emptyStrIfNull(underlyingRecord.histURI); }
 
     // Additional fields we can add:
     // - visits array (date & type?)

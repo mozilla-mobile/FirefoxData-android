@@ -126,13 +126,13 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
                 final Map<String, BookmarkFolder> idToSeenFolders) {
             final BookmarkFolder rootFolder = BookmarkFolder.createRootFolder();
             for (final BookmarkRecord bookmark : idToSeenBookmarks.values()) {
-                if (bookmark.underlyingRecord.parentID.equals("places")) {
+                if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
                     rootFolder.getBookmarks().add(bookmark);
                 }
             }
 
             for (final BookmarkFolder folder : idToSeenFolders.values()) {
-                if (folder.underlyingRecord.parentID.equals("places")) {
+                if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
                     rootFolder.getSubfolders().add(folder);
                 }
             }

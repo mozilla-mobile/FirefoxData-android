@@ -4,6 +4,8 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,26 +15,30 @@ import java.util.List;
  */
 public class BookmarkFolder extends BookmarkBase {
 
+    static final String ROOT_FOLDER_GUID = "places";
+
     private List<BookmarkFolder> subfolders = new ArrayList<>(); // mutable for ease of creation.
     private List<BookmarkRecord> bookmarks = new ArrayList<>(); // mutable for ease of creation.
 
-    BookmarkFolder(final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord bookmarkRecord) {
+    BookmarkFolder(@NonNull final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord bookmarkRecord) {
         super(bookmarkRecord);
     }
 
+    @NonNull public List<BookmarkFolder> getSubfolders() { return subfolders; }
+    @NonNull public List<BookmarkRecord> getBookmarks() { return bookmarks; }
+
+    /** Mutates collections within this folder to immutable versions so they can be returned from the API. */
     void makeImmutable() {
         subfolders = Collections.unmodifiableList(subfolders);
         bookmarks = Collections.unmodifiableList(bookmarks);
     }
 
-    public List<BookmarkFolder> getSubfolders() { return subfolders; }
-    public List<BookmarkRecord> getBookmarks() { return bookmarks; }
-
+    /** @return a folder representing the root folder. */
     static BookmarkFolder createRootFolder() {
         // Rather than create an alternative implementation for Bookmark*, I make an underlying record for the root,
         // even though it's a little gross and easier to break.
         final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord rootRawRecord = new org.mozilla.gecko.sync.repositories.domain.BookmarkRecord(null);
-        rootRawRecord.guid = "places";
+        rootRawRecord.guid = ROOT_FOLDER_GUID;
         rootRawRecord.title = "Bookmarks Root Folder"; // TODO: names & stuff.
         rootRawRecord.description = "The root bookmark folder";
 

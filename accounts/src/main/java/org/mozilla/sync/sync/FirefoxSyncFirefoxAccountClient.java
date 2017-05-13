@@ -5,8 +5,10 @@
 package org.mozilla.sync.sync;
 
 
+import android.support.annotation.NonNull;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
@@ -32,16 +34,19 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         this.account = account;
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException {
         return getBookmarks(-1);
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
         return getBookmarks(itemLimit);
     }
 
+    @NonNull
     private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) {
         final Future<SyncCollectionResult<BookmarkFolder>> future = commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(), getInitialSyncConfig());
         try {
@@ -52,16 +57,19 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         }
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException {
         return getPasswords(-1);
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
         return getPasswords(itemLimit);
     }
 
+    @NonNull
     private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException {
         final Future<SyncCollectionResult<List<PasswordRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(), getInitialSyncConfig());
         try {
@@ -72,16 +80,19 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         }
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException {
         return getHistory(-1);
     }
 
+    @NonNull
     @Override
     public SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
         return getHistory(itemLimit);
     }
 
+    @NonNull
     private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncGetCollectionException {
         final Future<SyncCollectionResult<List<HistoryRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit), getInitialSyncConfig());
         try {
@@ -93,8 +104,9 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     }
 
+    @NonNull
     @Override
-    public String getEmail() {
+    public String getEmail() throws FirefoxSyncException {
         return account.email; // todo: email/account can get updated.
     }
 

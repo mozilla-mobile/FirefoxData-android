@@ -4,6 +4,8 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -12,9 +14,9 @@ import java.util.List;
 public class SyncCollectionResult<T> {
     private final T result;
 
-    public SyncCollectionResult(final T result) {
+    SyncCollectionResult(@NonNull final T result) {
         this.result = result;
     }
 
-    public T getResult() { return result; }
+    @NonNull public T getResult() { return result; }
 }

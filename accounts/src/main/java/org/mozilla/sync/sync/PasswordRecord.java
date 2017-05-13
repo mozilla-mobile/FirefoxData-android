@@ -4,19 +4,24 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.NonNull;
+import org.mozilla.util.StringUtils;
+
 /**
  * TODO:
  */
 public class PasswordRecord {
 
-    private org.mozilla.gecko.sync.repositories.domain.PasswordRecord underlyingRecord;
+    private final org.mozilla.gecko.sync.repositories.domain.PasswordRecord underlyingRecord;
 
-    public PasswordRecord(final org.mozilla.gecko.sync.repositories.domain.PasswordRecord underlyingRecord) {this.underlyingRecord = underlyingRecord;}
+    PasswordRecord(final org.mozilla.gecko.sync.repositories.domain.PasswordRecord underlyingRecord) {
+        this.underlyingRecord = underlyingRecord;
+    }
 
     // todo: docs.
-    public String getHostname() { return underlyingRecord.hostname; }
-    public String getUsername() { return underlyingRecord.encryptedUsername; /* not actually encrypted */ }
-    public String getPassword() { return underlyingRecord.encryptedPassword; /* not actually encrypted */ }
+    @NonNull public String getHostname() { return StringUtils.emptyStrIfNull(underlyingRecord.hostname); }
+    @NonNull public String getUsername() { return StringUtils.emptyStrIfNull(underlyingRecord.encryptedUsername); /* not actually encrypted */ }
+    @NonNull public String getPassword() { return StringUtils.emptyStrIfNull(underlyingRecord.encryptedPassword); /* not actually encrypted */ }
 
     // Additional fields we can add:
     // - formSubmitUrl

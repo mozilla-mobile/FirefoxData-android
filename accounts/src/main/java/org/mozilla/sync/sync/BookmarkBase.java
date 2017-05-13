@@ -4,11 +4,9 @@
 
 package org.mozilla.sync.sync;
 
-import org.json.simple.JSONArray;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import org.mozilla.util.StringUtils;
 
 /**
  * TODO: method docs. ignore query & separator.
@@ -19,23 +17,12 @@ class BookmarkBase {
 
     BookmarkFolder parentFolder; // mutable for ease of creation.
 
-    private final List<String> tags;
-
-    BookmarkBase(final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord underlyingRecord) {
+    BookmarkBase(@NonNull final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord underlyingRecord) {
         this.underlyingRecord = underlyingRecord;
-        tags = Collections.unmodifiableList(tagsJSONToList(underlyingRecord.tags));
     }
 
-    private static List<String> tagsJSONToList(final JSONArray tags) {
-        // TODO:
-        return new ArrayList<>();
-    }
+    @NonNull public String getTitle() { return StringUtils.emptyStrIfNull(underlyingRecord.title); }
+    @NonNull public String getDescription() { return StringUtils.emptyStrIfNull(underlyingRecord.description); }
 
-    // TODO: nullable?
-    public String getTitle() { return underlyingRecord.title; }
-    public String getDescription() { return underlyingRecord.description; }
-    public String getKeyword() { return underlyingRecord.keyword; } // todo: common to folder?
-    public List<String> getTags() { return tags; } // todo: common to folder?
-
-    public BookmarkFolder getParentFolder() { return parentFolder; }
+    @Nullable public BookmarkFolder getParentFolder() { return parentFolder; }
 }
