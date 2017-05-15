@@ -141,6 +141,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     @Override
     public void signOut() {
-        // TODO: clear development store, hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
+        accountStore.removeFirefoxAccount(); // todo: test me!
+        // TODO: hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
     }
 }

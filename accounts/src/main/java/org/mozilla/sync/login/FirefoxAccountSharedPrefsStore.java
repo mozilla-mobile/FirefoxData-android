@@ -36,6 +36,9 @@ import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STAGE;
  * Android where there is no default key. As such, I did not implement encryption. Applications' SharedPrefs
  * are sandboxed from one another so for all but rooted devices, this should be sufficient. Note that Firefox
  * for Android also does not encrypt these user credentials.
+ *
+ * This class is thread-safe in that no inconsistent data will be shown but call order (i.e. a load called
+ * before a save will return the data before the save) is not guaranteed.
  */
 class FirefoxAccountSharedPrefsStore {
 
@@ -44,6 +47,21 @@ class FirefoxAccountSharedPrefsStore {
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountSharedPrefsStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";
     private static final int STORE_VERSION = 1; // for wiggle room with potential future revisions.
+
+    private static final String KEY_VERSION = "version";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_UID = "uid";
+    private static final String KEY_STATE_LABEL = "state-label";
+    private static final String KEY_STATE_JSON = "state-json";
+    private static final String KEY_ENDPOINT_CONFIG_LABEL = "endpoint-config-label";
+    private static final String[] KEYS_TO_CLEAR_ON_ACCOUNT_REMOVAL = new String[] {
+            KEY_VERSION,
+            KEY_EMAIL,
+            KEY_UID,
+            KEY_STATE_LABEL,
+            KEY_STATE_JSON,
+            KEY_ENDPOINT_CONFIG_LABEL,
+    };
 
     private final SharedPreferences sharedPrefs;
 
@@ -57,19 +75,21 @@ class FirefoxAccountSharedPrefsStore {
         this.sharedPrefs = context.getSharedPreferences(getPrefsBranch(storeName), 0);
     }
 
+    private static String getPrefsBranch(final String storeName) { return PREFS_BRANCH_PREFIX + storeName; };
+
     /** Saves a FirefoxAccount to be restored with {@link #loadFirefoxAccount()}. */
     @AnyThread
     void saveFirefoxAccount(@NonNull final FirefoxAccount account) {
         sharedPrefs.edit()
-                .putInt("version", STORE_VERSION)
-                .putString("email", account.email)
-                .putString("uid", account.uid)
-                .putString("state-label", account.accountState.getStateLabel().name())
-                .putString("state-json", account.accountState.toJSONObject().toJSONString())
+                .putInt(KEY_VERSION, STORE_VERSION)
+                .putString(KEY_EMAIL, account.email)
+                .putString(KEY_UID, account.uid)
+                .putString(KEY_STATE_LABEL, account.accountState.getStateLabel().name())
+                .putString(KEY_STATE_JSON, account.accountState.toJSONObject().toJSONString())
 
                 // Future builds can change the endpoints in their config so we only store the label
                 // so we can pull in the latest endpoints.
-                .putString("config-label", account.endpointConfig.label)
+                .putString(KEY_ENDPOINT_CONFIG_LABEL, account.endpointConfig.label)
                 .apply();
     }
 
@@ -79,15 +99,15 @@ class FirefoxAccountSharedPrefsStore {
     FirefoxAccount loadFirefoxAccount() {
         final State state;
         try {
-            final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString("state-label", null));
-            final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString("state-json", null));
+            final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString(KEY_STATE_LABEL, null));
+            final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString(KEY_STATE_JSON, null));
             state = StateFactory.fromJSONObject(stateLabel, stateJSON);
         } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException | IllegalArgumentException e) {
             Log.w(LOGTAG, "Unable to restore account state.");
             return null;
         }
 
-        final String endpointConfigLabel = sharedPrefs.getString("config-label", "");
+        final String endpointConfigLabel = sharedPrefs.getString(KEY_ENDPOINT_CONFIG_LABEL, "");
         final FirefoxAccountEndpointConfig endpointConfig;
         switch (endpointConfigLabel) { // We should probably use enums over Strings, but it wasn't worth my time.
             case LABEL_STABLE_DEV: endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
@@ -97,11 +117,21 @@ class FirefoxAccountSharedPrefsStore {
             default: Log.w(LOGTAG, "Unable to restore endpoint config."); return null;
         }
 
-        final String email = sharedPrefs.getString("email", null);
-        final String uid = sharedPrefs.getString("uid", null);
+        final String email = sharedPrefs.getString(KEY_EMAIL, null);
+        final String uid = sharedPrefs.getString(KEY_UID, null);
 
         return new FirefoxAccount(email, uid, state, endpointConfig);
     }
 
-    private static String getPrefsBranch(final String storeName) { return PREFS_BRANCH_PREFIX + storeName; };
+    /** Removes any saved FirefoxAccounts. */
+    @AnyThread
+    void removeFirefoxAccount() {
+        // Alternatively, we could call `sharedPrefs.edit().clear()`, but that's dangerous if we
+        // started to store other metadata in here we wouldn't want to clear on account removal.
+        final SharedPreferences.Editor editor = sharedPrefs.edit();
+        for (final String key : KEYS_TO_CLEAR_ON_ACCOUNT_REMOVAL) {
+            editor.remove(key);
+        }
+        editor.apply();
+    }
 }
