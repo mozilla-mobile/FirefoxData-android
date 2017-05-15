@@ -93,18 +93,22 @@ class FirefoxAccountSharedPrefsStore {
                 .apply();
     }
 
-    /** @return a FirefoxAccount or null on error. */
-    @Nullable
+    /**
+     * @throws FailedToLoadAccountException if we're unable to load the account.
+     * @return a FirefoxAccount.
+     */
+    @NonNull
     @AnyThread
-    FirefoxAccount loadFirefoxAccount() {
+    FirefoxAccount loadFirefoxAccount() throws FailedToLoadAccountException {
+        if (sharedPrefs.getInt(KEY_VERSION, -1) < 0) { throw new FailedToLoadAccountException("account does not exist"); }
+
         final State state;
         try {
             final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString(KEY_STATE_LABEL, null));
             final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString(KEY_STATE_JSON, null));
             state = StateFactory.fromJSONObject(stateLabel, stateJSON);
         } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException | IllegalArgumentException e) {
-            Log.w(LOGTAG, "Unable to restore account state.");
-            return null;
+            throw new FailedToLoadAccountException("unable to restore account state", e);
         }
 
         final String endpointConfigLabel = sharedPrefs.getString(KEY_ENDPOINT_CONFIG_LABEL, "");
@@ -114,7 +118,7 @@ class FirefoxAccountSharedPrefsStore {
             case LABEL_LATEST_DEV: endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
             case LABEL_STAGE: endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
             case LABEL_PRODUCTION: endpointConfig = FirefoxAccountEndpointConfig.getProduction(); break;
-            default: Log.w(LOGTAG, "Unable to restore endpoint config."); return null;
+            default: throw new FailedToLoadAccountException("unable to restore account - unknown endpoint label: " + endpointConfigLabel);
         }
 
         final String email = sharedPrefs.getString(KEY_EMAIL, null);
@@ -123,15 +127,21 @@ class FirefoxAccountSharedPrefsStore {
         return new FirefoxAccount(email, uid, state, endpointConfig);
     }
 
-    /** Removes any saved FirefoxAccounts. */
+    /** Removes any saved FirefoxAccount. */
     @AnyThread
     void removeFirefoxAccount() {
-        // Alternatively, we could call `sharedPrefs.edit().clear()`, but that's dangerous if we
+        // Alternatively, we could call `sharedPrefs.edit().clear()`, but that's fragile, e.g. if we
         // started to store other metadata in here we wouldn't want to clear on account removal.
         final SharedPreferences.Editor editor = sharedPrefs.edit();
         for (final String key : KEYS_TO_CLEAR_ON_ACCOUNT_REMOVAL) {
             editor.remove(key);
         }
         editor.apply();
+    }
+
+    static class FailedToLoadAccountException extends Exception {
+        private static final String MESSAGE_PREFIX = "loadFirefoxAccount: ";
+        FailedToLoadAccountException(final String message) { super(MESSAGE_PREFIX + message); }
+        FailedToLoadAccountException(final String message, final Throwable cause) { super(MESSAGE_PREFIX + message, cause); }
     }
 }

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.FirefoxSyncClient;
@@ -21,6 +22,8 @@ import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
 /**
  * TODO: docs.
@@ -51,7 +54,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         requestLoginCallback = callback;
 
         final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
-        //loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // todo: RM me for non-debug.
+        //loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // Uncomment for dev purposes.
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
@@ -101,19 +104,25 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             public void onNotMarried(final State notMarriedState) {
                 final FailureReason failureReason;
                 if (!notMarriedState.verified) {
-                    failureReason = FailureReason.ACCOUNT_NOT_VERIFIED;
+                    failureReason = FailureReason.ACCOUNT_NEEDS_VERIFICATION;
                 } else {
-                    failureReason = FailureReason.UNKNOWN; // Unfortunately, we can't figure out why an advance failed. :(
+                    failureReason = FailureReason.UNKNOWN; // Unfortunately, we otherwise can't figure out why an advance failed. :(
                 }
-                requestLoginCallback.onFailure(new FirefoxSyncLoginException(failureReason));
+                requestLoginCallback.onFailure(new FirefoxSyncLoginException("Unable to move to Married account state", failureReason));
             }
         });
     }
 
     private void onActivityResultError(@NonNull final Intent data) {
         final String failureStr = data.getStringExtra(FirefoxAccountWebViewLoginActivity.EXTRA_FAILURE_REASON);
-        final FailureReason failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
-        requestLoginCallback.onFailure(new FirefoxSyncLoginException(failureReason));
+        FailureReason failureReason;
+        try {
+            failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
+        } catch (final IllegalArgumentException e) {
+            Log.e(LOGTAG, "onActivityResultError: WebViewLoginActivity returned invalid failure reason.");
+            failureReason = FailureReason.UNKNOWN;
+        }
+        requestLoginCallback.onFailure(new FirefoxSyncLoginException("WebViewLoginActivity returned failure", failureReason));
     }
 
     private boolean isActivityResultOurs(final int requestCode, @Nullable final Intent data) {
@@ -129,9 +138,11 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     public void loadStoredSyncAccount(@NonNull final LoginCallback callback) {
         if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null."); }
 
-        final FirefoxAccount account = accountStore.loadFirefoxAccount();
-        if (account == null) {
-            callback.onFailure(new FirefoxSyncLoginException(FailureReason.UNKNOWN)); // todo: can we get more specific errors? Or maybe just intended lib user action - Exception causes handle specifics.
+        final FirefoxAccount account;
+        try {
+            account = accountStore.loadFirefoxAccount();
+        } catch (final FirefoxAccountSharedPrefsStore.FailedToLoadAccountException e) {
+            callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT));
             return;
         }
 
