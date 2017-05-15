@@ -37,6 +37,7 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
 
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountDevelopmentStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";
+    private static final int STORE_VERSION = 1; // for wiggle room with potential future revisions.
 
     private final SharedPreferences sharedPrefs;
 
@@ -52,6 +53,7 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
 
     void saveFirefoxAccount(final FirefoxAccount account) {
         sharedPrefs.edit()
+                .putInt("version", STORE_VERSION)
                 .putString("email", account.email)
                 .putString("uid", account.uid)
                 .putString("state-label", account.accountState.getStateLabel().name())
