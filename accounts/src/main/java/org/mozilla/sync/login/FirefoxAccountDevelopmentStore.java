@@ -38,29 +38,20 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountDevelopmentStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";
 
-    private final String storeName;
-    private final WeakReference<Context> contextWeakReference;
+    private final SharedPreferences sharedPrefs;
 
     /** Create a FirefoxAccountDevelopmentStore with the default name. */
-    public FirefoxAccountDevelopmentStore(final Context context) {
+    FirefoxAccountDevelopmentStore(final Context context) {
         this(context, DEFAULT_STORE_NAME);
     }
 
-    public FirefoxAccountDevelopmentStore(final Context context, final String storeName) {
-        this.contextWeakReference = new WeakReference<Context>(context); // TODO: shared prefs instead.
-        this.storeName = storeName;
+    // Untested, but in theory this should allow support for multiple accounts.
+    private FirefoxAccountDevelopmentStore(final Context context, final String storeName) {
+        this.sharedPrefs = context.getSharedPreferences(getPrefsBranch(storeName), 0);
     }
 
-    public void saveFirefoxAccount(final FirefoxAccount account) {
-        final Context context = contextWeakReference.get();
-        if (context == null) {
-            // TODO: how handle? Can take application context instead?
-            Log.w(LOGTAG, "Context unexpectedly null when saving account.");
-            return;
-        }
-
-        final SharedPreferences prefs = context.getSharedPreferences(getPrefsBranch(), 0);
-        prefs.edit()
+    void saveFirefoxAccount(final FirefoxAccount account) {
+        sharedPrefs.edit()
                 .putString("email", account.email)
                 .putString("uid", account.uid)
                 .putString("state-label", account.accountState.getStateLabel().name())
@@ -76,29 +67,21 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
     }
 
     // TODO: docs, return null when empty.
-    public FirefoxAccount loadFirefoxAccount() {
-        final Context context = contextWeakReference.get();
-        if (context == null) {
-            // TODO: how handle?
-            return null;
-        }
-
-        final SharedPreferences prefs = context.getSharedPreferences(getPrefsBranch(), 0);
-
+    FirefoxAccount loadFirefoxAccount() {
         // TODO: helper method for readability.
         final State state;
         try {
-            final StateLabel stateLabel = State.StateLabel.valueOf(prefs.getString("state-label", null)); // TODO: will throw.
-            final ExtendedJSONObject stateJSON = new ExtendedJSONObject(prefs.getString("state-json", null));
+            final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString("state-label", null)); // TODO: will throw.
+            final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString("state-json", null));
             state = StateFactory.fromJSONObject(stateLabel, stateJSON);
-        } catch (NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException e) {
+        } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException e) {
             Log.w(LOGTAG, "Unable to restore account state.");
             return null;
         }
 
         // TODO: doc: we don't save all endpoints because individual ones can change in later build.
         // TODO: don't use Strings: StateFactory w/ enum or similar.
-        final String endpointConfigLabel = prefs.getString("config-label", null);
+        final String endpointConfigLabel = sharedPrefs.getString("config-label", null);
         final FirefoxAccountEndpointConfig endpointConfig;
         switch (endpointConfigLabel) {
             case "StableDev": endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
@@ -108,11 +91,11 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
             default: Log.w(LOGTAG, "Unable to restore endpoint config."); return null;
         }
 
-        final String email = prefs.getString("email", null);
-        final String uid = prefs.getString("uid", null);
+        final String email = sharedPrefs.getString("email", null);
+        final String uid = sharedPrefs.getString("uid", null);
 
         return new FirefoxAccount(email, uid, state, endpointConfig);
     }
 
-    private String getPrefsBranch() { return PREFS_BRANCH_PREFIX + storeName; };
+    private static String getPrefsBranch(final String storeName) { return PREFS_BRANCH_PREFIX + storeName; };
 }
