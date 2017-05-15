@@ -7,16 +7,18 @@ package org.mozilla.sync;
 /**
  * TODO: name?
  */
-public class FirefoxSyncGetCollectionException extends FirefoxSyncException {
+public class FirefoxSyncGetCollectionException extends Exception {
     private final FailureReason failureReason;
 
-    public FirefoxSyncGetCollectionException(final FailureReason failureReason) {
+    public FirefoxSyncGetCollectionException(final Throwable cause, final FailureReason failureReason) {
+        super(failureReason.toString(), cause);
         this.failureReason = failureReason;
     }
 
     public FailureReason getFailureReason() { return failureReason; }
 
-    public enum FailureReason {
-
+    public enum FailureReason { // TODO: To RecommendedAction?
+        REQUIRES_LOGIN_PROMPT, // TODO: should we be more specific? less specific so multiple ways to handle? Return more data?
+        UNKNOWN,
     }
 }

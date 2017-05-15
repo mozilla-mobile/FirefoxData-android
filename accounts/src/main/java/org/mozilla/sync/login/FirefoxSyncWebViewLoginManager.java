@@ -131,7 +131,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
         final FirefoxAccount account = accountStore.loadFirefoxAccount();
         if (account == null) {
-            callback.onFailure(new FirefoxSyncLoginException(FailureReason.UNKNOWN)); // todo: can we get more specific errors?
+            callback.onFailure(new FirefoxSyncLoginException(FailureReason.UNKNOWN)); // todo: can we get more specific errors? Or maybe just intended lib user action - Exception causes handle specifics.
             return;
         }
 

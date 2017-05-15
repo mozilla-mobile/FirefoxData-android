@@ -20,9 +20,9 @@ public interface FirefoxSyncLoginManager {
 
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
-    interface LoginCallback {
+    interface LoginCallback { // TODO: AccountLoginCallback & AccountCallback?
         void onSuccess(FirefoxSyncClient syncClient);
-        void onFailure(FirefoxSyncLoginException e);
+        void onFailure(FirefoxSyncLoginException e); // TODO: AccountException? SessionException?
         void onUserCancel();
     }
 }

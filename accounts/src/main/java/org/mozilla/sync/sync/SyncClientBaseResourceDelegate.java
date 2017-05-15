@@ -12,6 +12,7 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.gecko.sync.CryptoRecord;

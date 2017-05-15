@@ -7,11 +7,14 @@ package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
+import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.FirefoxSyncGetCollectionException;
+import org.mozilla.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -47,13 +50,12 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) {
+    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
         final Future<SyncCollectionResult<BookmarkFolder>> future = commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(), getInitialSyncConfig());
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
+            throw getGetCollectionException(e);
         }
     }
 
@@ -70,13 +72,12 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
         final Future<SyncCollectionResult<List<PasswordRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(), getInitialSyncConfig());
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
+            throw getGetCollectionException(e);
         }
     }
 
@@ -98,10 +99,19 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
+            throw getGetCollectionException(e);
         }
+    }
 
+    private FirefoxSyncGetCollectionException getGetCollectionException(final Throwable cause) {
+        final FailureReason failureReason;
+        final Throwable rootCause = ThrowableUtils.getRootCause(cause);
+        if (rootCause instanceof TokenServerException.TokenServerInvalidCredentialsException) {
+            failureReason = FailureReason.REQUIRES_LOGIN_PROMPT;
+        } else {
+            failureReason = FailureReason.UNKNOWN;
+        }
+        return new FirefoxSyncGetCollectionException(cause, failureReason);
     }
 
     @NonNull
