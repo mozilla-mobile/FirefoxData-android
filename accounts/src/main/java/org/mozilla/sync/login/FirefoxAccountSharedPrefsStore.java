@@ -20,7 +20,6 @@ import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -34,23 +33,23 @@ import java.security.spec.InvalidKeySpecException;
  * TODO: replace me. See rules ^.
  * Note: iOS is encrypted with iOS keystore (uses pin from phone login) but Android is not.
  */
-class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or FirefoxSyncSession.
+class FirefoxAccountSharedPrefsStore { //TODO: Maybe FirefoxAccountSession. Or FirefoxSyncSession.
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
-    private static final String DEFAULT_STORE_NAME = "FirefoxAccountDevelopmentStore";
+    private static final String DEFAULT_STORE_NAME = "FirefoxAccountSharedPrefsStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";
     private static final int STORE_VERSION = 1; // for wiggle room with potential future revisions.
 
     private final SharedPreferences sharedPrefs;
 
-    /** Create a FirefoxAccountDevelopmentStore with the default name. */
-    FirefoxAccountDevelopmentStore(final Context context) {
+    /** Create a FirefoxAccountSharedPrefsStore with the default name. */
+    FirefoxAccountSharedPrefsStore(final Context context) {
         this(context, DEFAULT_STORE_NAME);
     }
 
     // Untested, but in theory this should allow support for multiple accounts.
-    private FirefoxAccountDevelopmentStore(final Context context, final String storeName) {
+    private FirefoxAccountSharedPrefsStore(final Context context, final String storeName) {
         this.sharedPrefs = context.getSharedPreferences(getPrefsBranch(storeName), 0);
     }
 

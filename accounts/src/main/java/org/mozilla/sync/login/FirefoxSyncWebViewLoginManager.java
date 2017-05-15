@@ -29,14 +29,14 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
 
     private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor?
-    private final FirefoxAccountDevelopmentStore accountStore;
+    private final FirefoxAccountSharedPrefsStore accountStore;
 
     // Values stored between the login call & `onActivityResult` so we can execute the given callback.
     private String requestCallerName;
     private LoginCallback requestLoginCallback;
 
     FirefoxSyncWebViewLoginManager(final Context context) {
-        this.accountStore = new FirefoxAccountDevelopmentStore(context);
+        this.accountStore = new FirefoxAccountSharedPrefsStore(context);
     }
 
     @Override
