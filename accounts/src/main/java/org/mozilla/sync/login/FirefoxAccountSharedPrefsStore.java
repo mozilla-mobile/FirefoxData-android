@@ -23,6 +23,11 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
+import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_LATEST_DEV;
+import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_PRODUCTION;
+import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STABLE_DEV;
+import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STAGE;
+
 /**
  * A store for a {@link FirefoxAccount} based on {@link SharedPreferences}.
  *
@@ -85,10 +90,10 @@ class FirefoxAccountSharedPrefsStore {
         final String endpointConfigLabel = sharedPrefs.getString("config-label", "");
         final FirefoxAccountEndpointConfig endpointConfig;
         switch (endpointConfigLabel) { // We should probably use enums over Strings, but it wasn't worth my time.
-            case "StableDev": endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
-            case "LatestDev": endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
-            case "Stage": endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
-            case "Production": endpointConfig = FirefoxAccountEndpointConfig.getProduction(); break;
+            case LABEL_STABLE_DEV: endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
+            case LABEL_LATEST_DEV: endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
+            case LABEL_STAGE: endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
+            case LABEL_PRODUCTION: endpointConfig = FirefoxAccountEndpointConfig.getProduction(); break;
             default: Log.w(LOGTAG, "Unable to restore endpoint config."); return null;
         }
 

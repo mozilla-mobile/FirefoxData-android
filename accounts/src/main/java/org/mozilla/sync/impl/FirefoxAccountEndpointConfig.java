@@ -16,9 +16,14 @@ import java.net.URISyntaxException;
  * Inspired by iOS' FirefoxAccountConfiguration:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/748e137dfd5b020b56fc481b25e0d2366acb3df2/Account/FirefoxAccountConfiguration.swift
  */
-public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visibility?
+public class FirefoxAccountEndpointConfig implements Parcelable {
 
     private static final String CONTEXT = "fx_ios_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
+
+    public static final String LABEL_LATEST_DEV = "LatestDev";
+    public static final String LABEL_STAGE = "Stage";
+    public static final String LABEL_PRODUCTION = "Production";
+    public static final String LABEL_STABLE_DEV = "StableDev";
 
     public final String label;
 
@@ -55,7 +60,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visib
      */
     public static FirefoxAccountEndpointConfig getStableDev() {
         return new FirefoxAccountEndpointConfig(
-                /* label */ "StableDev",
+                /* label */ LABEL_STABLE_DEV,
                 /* authServer */ "https://stable.dev.lcip.org/auth/v1",
                 /* oauthServer */ "https://oauth-stable.dev.lcip.org",
                 /* profileServer */ "https://stable.dev.lcip.org/profile",
@@ -72,7 +77,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visib
      */
     public static FirefoxAccountEndpointConfig getLatestDev() {
         return new FirefoxAccountEndpointConfig(
-                /* label */ "LatestDev",
+                /* label */ LABEL_LATEST_DEV,
                 /* authServer */ "https://latest.dev.lcip.org/auth/v1",
                 /* oauthServer */ "https://oauth-latest.dev.lcip.org",
                 /* profileServer */ "https://latest.dev.lcip.org/profile",
@@ -85,7 +90,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visib
 
     public static FirefoxAccountEndpointConfig getStage() {
         return new FirefoxAccountEndpointConfig(
-                /* label */ "Stage",
+                /* label */ LABEL_STAGE,
                 /* authServer */ "https://api-accounts.stage.mozaws.net/v1",
                 /* oauthServer */ "https://oauth.stage.mozaws.net/v1",
                 /* profileServer */ "https://profile.stage.mozaws.net/v1",
@@ -98,7 +103,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable { // TODO: visib
 
     public static FirefoxAccountEndpointConfig getProduction() {
         return new FirefoxAccountEndpointConfig(
-                /* label */ "Production",
+                /* label */ LABEL_PRODUCTION,
                 /* authServer */ "https://api.accounts.firefox.com/v1",
                 /* oauthServer */ "https://oauth.accounts.firefox.com/v1",
                 /* profileServer */ "https://profile.accounts.firefox.com/v1",
