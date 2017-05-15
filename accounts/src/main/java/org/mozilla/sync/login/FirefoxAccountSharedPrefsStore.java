@@ -24,16 +24,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 /**
- * A store for a {@link FirefoxAccount}.
+ * A store for a {@link FirefoxAccount} based on {@link SharedPreferences}.
  *
- * This is a quick, temporary implementation to use for development. The real implementation should encrypt personal user
- * data, such as email, uid, and tokens. Also, the way the account is used may change the store & its API so I'm delaying
- * those decisions for now.
- *
- * TODO: replace me. See rules ^.
- * Note: iOS is encrypted with iOS keystore (uses pin from phone login) but Android is not.
+ * This store is <b>unencrypted</b>. Ideally, we'd encrypt personal user data, such as email, uid, and tokens.
+ * On iOS, we use the keystore (the user's phone pin/password is the key), however, this is less-trivial on
+ * Android where there is no default key. As such, I did not implement encryption. Applications' SharedPrefs
+ * are sandboxed from one another so for all but rooted devices, this should be sufficient. Note that Firefox
+ * for Android also does not encrypt these user credentials.
  */
-class FirefoxAccountSharedPrefsStore { //TODO: Maybe FirefoxAccountSession. Or FirefoxSyncSession.
+class FirefoxAccountSharedPrefsStore {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
@@ -73,20 +72,19 @@ class FirefoxAccountSharedPrefsStore { //TODO: Maybe FirefoxAccountSession. Or F
     @Nullable
     @AnyThread
     FirefoxAccount loadFirefoxAccount() {
-        // TODO: helper method for readability.
         final State state;
         try {
-            final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString("state-label", null)); // TODO: will throw.
+            final StateLabel stateLabel = State.StateLabel.valueOf(sharedPrefs.getString("state-label", null));
             final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString("state-json", null));
             state = StateFactory.fromJSONObject(stateLabel, stateJSON);
-        } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException e) {
+        } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException | IllegalArgumentException e) {
             Log.w(LOGTAG, "Unable to restore account state.");
             return null;
         }
 
         final String endpointConfigLabel = sharedPrefs.getString("config-label", "");
         final FirefoxAccountEndpointConfig endpointConfig;
-        switch (endpointConfigLabel) { // We should probably use enums over Strings, but it's not worth the time.
+        switch (endpointConfigLabel) { // We should probably use enums over Strings, but it wasn't worth my time.
             case "StableDev": endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
             case "LatestDev": endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
             case "Stage": endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
