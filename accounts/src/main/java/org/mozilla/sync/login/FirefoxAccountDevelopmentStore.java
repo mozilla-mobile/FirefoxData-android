@@ -6,6 +6,9 @@ package org.mozilla.sync.login;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.AnyThread;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
@@ -51,18 +54,25 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
         this.sharedPrefs = context.getSharedPreferences(getPrefsBranch(storeName), 0);
     }
 
-    void saveFirefoxAccount(final FirefoxAccount account) {
+    /** Saves a FirefoxAccount to be restored with {@link #loadFirefoxAccount()}. */
+    @AnyThread
+    void saveFirefoxAccount(@NonNull final FirefoxAccount account) {
         sharedPrefs.edit()
                 .putInt("version", STORE_VERSION)
                 .putString("email", account.email)
                 .putString("uid", account.uid)
                 .putString("state-label", account.accountState.getStateLabel().name())
                 .putString("state-json", account.accountState.toJSONObject().toJSONString())
+
+                // Future builds can change the endpoints in their config so we only store the label
+                // so we can pull in the latest endpoints.
                 .putString("config-label", account.endpointConfig.label)
                 .apply();
     }
 
-    // TODO: docs, return null when empty.
+    /** @return a FirefoxAccount or null on error. */
+    @Nullable
+    @AnyThread
     FirefoxAccount loadFirefoxAccount() {
         // TODO: helper method for readability.
         final State state;
@@ -75,11 +85,9 @@ class FirefoxAccountDevelopmentStore { //TODO: Maybe FirefoxAccountSession. Or F
             return null;
         }
 
-        // TODO: doc: we don't save all endpoints because individual ones can change in later build.
-        // TODO: don't use Strings: StateFactory w/ enum or similar.
-        final String endpointConfigLabel = sharedPrefs.getString("config-label", null);
+        final String endpointConfigLabel = sharedPrefs.getString("config-label", "");
         final FirefoxAccountEndpointConfig endpointConfig;
-        switch (endpointConfigLabel) {
+        switch (endpointConfigLabel) { // We should probably use enums over Strings, but it's not worth the time.
             case "StableDev": endpointConfig = FirefoxAccountEndpointConfig.getStableDev(); break;
             case "LatestDev": endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
             case "Stage": endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
