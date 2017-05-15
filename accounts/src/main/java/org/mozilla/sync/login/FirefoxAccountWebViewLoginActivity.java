@@ -162,7 +162,7 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
         // TODO: Should we inject "error" like `onSignOut`?
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
-            Log.w(LOGTAG, "Could not create account. Returning from login...");
+            Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
             setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
             finish();
             return;
