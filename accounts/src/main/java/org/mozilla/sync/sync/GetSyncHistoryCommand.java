@@ -37,7 +37,7 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
         try {
             makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
         } catch (final URISyntaxException e) {
-            onComplete.onError(e);
+            onComplete.onException(e);
         }
     }
 
@@ -60,12 +60,12 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, HISTORY_COLLECTION, new HistoryRecordFactory());
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                onComplete.onError(e);
+                onComplete.onException(e);
                 return;
             }
 
             final List<HistoryRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
+            onComplete.onComplete(new SyncCollectionResult<>(resultRecords));
         }
 
         private List<HistoryRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords) {

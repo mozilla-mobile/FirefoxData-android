@@ -34,7 +34,7 @@ class GetCryptoKeysPreCommand extends SyncClientCommands.SyncClientAsyncPreComma
     @Override
     public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<FirefoxAccountSyncConfig> onComplete) {
         if (syncConfig.token == null) {
-            onComplete.onError(new IllegalArgumentException("syncConfig.token unexpectedly null."));
+            onComplete.onException(new IllegalArgumentException("syncConfig.token unexpectedly null."));
             return;
         }
 
@@ -43,7 +43,7 @@ class GetCryptoKeysPreCommand extends SyncClientCommands.SyncClientAsyncPreComma
             request = new SyncStorageRecordRequest(
                     FirefoxSyncRequestUtils.getCollectionURI(syncConfig.token, CRYPTO_COLLECTION, KEYS_ID, null));
         } catch (final URISyntaxException e) {
-            onComplete.onError(e);
+            onComplete.onException(e);
             return;
         }
 
@@ -56,24 +56,24 @@ class GetCryptoKeysPreCommand extends SyncClientCommands.SyncClientAsyncPreComma
                     body = response.jsonObjectBody();
                     keys.setKeyPairsFromWBO(CryptoRecord.fromJSONRecord(body), syncConfig.getSyncKeyBundle());
                 } catch (final IOException | NonObjectJSONException | CryptoException | RecordParseException | NoSuchAlgorithmException | InvalidKeyException e) {
-                    onComplete.onError(e);
+                    onComplete.onException(e);
                     return;
                 }
 
                 // TODO: persist keys: see EnsureCrypto5KeysStage.
-                onComplete.onSuccess(new FirefoxAccountSyncConfig(syncConfig.account, syncConfig.networkExecutor,
+                onComplete.onComplete(new FirefoxAccountSyncConfig(syncConfig.account, syncConfig.networkExecutor,
                         syncConfig.token, keys));
             }
 
             @Override
             public void handleRequestFailure(final SyncStorageResponse response) {
                 try {
-                    onComplete.onError(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
+                    onComplete.onException(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
                 } catch (final IOException e) {
-                    onComplete.onError(new Exception("Failed to retrieve crypto keys & its error", e));
+                    onComplete.onException(new Exception("Failed to retrieve crypto keys & its error", e));
                 }
             }
-            @Override public void handleRequestError(final Exception ex) { onComplete.onError(ex); }
+            @Override public void handleRequestError(final Exception ex) { onComplete.onException(ex); }
 
             @Override
             public AuthHeaderProvider getAuthHeaderProvider() {

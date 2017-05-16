@@ -7,7 +7,9 @@ package org.mozilla.util;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class IOUtil {
 
@@ -21,36 +23,82 @@ public class IOUtil {
         } catch (IOException e) { }
     }
 
-    // TODO: explain how this should be used.
     /**
-     * Blocks until the given asynchronous call completes.
+     * Blocks until the given asynchronous call completes or the call times out.
+     *
+     * Callers should initiate their async request in their implementation of
+     * {@link AsyncCall#initAsyncCall(OnAsyncCallComplete)} and, when the call completes, call the appropriate
+     * method of {@link OnAsyncCallComplete}: {@link OnAsyncCallComplete#onException(Exception)} when an Exception
+     * is thrown during the async task and {@link OnAsyncCallComplete#onComplete(Object)} for other completions.
+     * For example:
+     *
+     * <pre>
+     *     final Integer result;
+     *     try {
+     *         result = makeSync(5000, new AsyncCall<Integer>() {
+     *             @Override
+     *             public void initAsyncCall(OnAsyncCallComplete<Integer> onComplete) {
+     *                 makeNetworkRequest(new Callback() {
+     *                     @Override public void onSuccess(Integer result) { onComplete.onComplete(result); }
+     *                     @Override public void onError(Exception e) { onComplete.onException(e); }
+     *                 }
+     *             }
+     *         };
+     *     } catch (ExecutionException e) {
+     *         // Do something with async exception...
+     *         return;
+     *     } catch (TimeoutException e) {
+     *         // Do something with time-out...
+     *         return;
+     *     }
+     *
+     *     // Do something with result...
+     * </pre>
+     *
+     * Exceptions that occur during the async task that are caught and passed back via {@code onException} will
+     * throw an {@code ExecutionException} while unchecked Exceptions during the async task are subject to the
+     * mechanism that the async call runs on (e.g. they can be ignored if they're in an Executor). Unchecked
+     * Exceptions that occur on the calling thread during {@code initAsyncCall} will be thrown from
+     * {@code initAsyncCall}.
      *
      * @param timeoutMillis The number of milliseconds until this call times out.
      * @param asyncCall An object whose method will begin the async call.
      * @param <T> Return type of the async call.
      * @return The result of the asynchronous call.
-     * @throws Exception An exception thrown during the async task.
+     *
+     * @throws ExecutionException thrown for any exception returned by the AsyncTask.
+     * @throws TimeoutException when the async call times out.
      */
-    public static <T> T makeSync(final long timeoutMillis, final AsyncCall<T> asyncCall) throws Exception { // TODO: ExecutionException.
+    public static <T> T makeSync(final long timeoutMillis, final AsyncCall<T> asyncCall) throws ExecutionException, TimeoutException {
         final CountDownLatch makeSyncLatch = new CountDownLatch(1);
         final AsyncReturnValueContainer<T> returnValueContainer = new AsyncReturnValueContainer<T>();
 
         asyncCall.initAsyncCall(new OnAsyncCallComplete<T>() {
             @Override
-            public void onSuccess(T returnValue) {
+            public void onComplete(final T returnValue) {
                 returnValueContainer.returnValue = returnValue;
                 makeSyncLatch.countDown();
             }
 
             @Override
-            public void onError(final Exception e) {
+            public void onException(final Exception e) {
                 returnValueContainer.exception = e;
                 makeSyncLatch.countDown();
             }
         });
 
-        makeSyncLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
-        if (returnValueContainer.exception != null) { throw returnValueContainer.exception; }
+        try {
+            final boolean didCountReachZero = makeSyncLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+            if (!didCountReachZero) {
+                throw new TimeoutException("makeSync: async operation timed out.");
+            }
+        } catch (final InterruptedException e) {
+            throw new ExecutionException("makeSync: thread interrupted while waiting for async call to complete.", e);
+        }
+
+        if (returnValueContainer.exception != null) {
+            throw new ExecutionException("makeSync: Exception thrown during async task.", returnValueContainer.exception);
+        }
         return returnValueContainer.returnValue;
     }
 
@@ -59,14 +107,24 @@ public class IOUtil {
         private T returnValue;
     }
 
-    // TODO: docs.
+    /**
+     * Allows a method who has an instance of an objecting implementing this interface to begin an async call
+     * and be notified upon its completion. See {@link #makeSync(long, AsyncCall)}.
+     */
     public interface AsyncCall<T> {
+        /** Begins an async call, calling a method of {@link OnAsyncCallComplete} when the call terminates. */
         void initAsyncCall(OnAsyncCallComplete<T> onComplete);
-    }
+     }
 
-    // todo: DOCS.
+
+    /*
+     * A class that implements this interface can be notified when an async call is complete.
+     * See {@link #makeSync(long, AsyncCall)}}.
+     */
     public interface OnAsyncCallComplete<T> {
-        void onError(Exception e);
-        void onSuccess(T returnValue);
+        /** Called when the async call completes by throwing an Exception. */
+        void onException(Exception e);
+        /** Called when the async call completes. */
+        void onComplete(T returnValue);
     }
 }

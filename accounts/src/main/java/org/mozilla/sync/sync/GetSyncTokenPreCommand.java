@@ -19,14 +19,14 @@ class GetSyncTokenPreCommand extends SyncClientCommands.SyncClientAsyncPreComman
         FirefoxSyncTokenAccessor.get(syncConfig.account, new FirefoxSyncTokenAccessor.TokenCallback() {
                 @Override
                 public void onError(final Exception e) {
-                    onComplete.onError(e);
+                    onComplete.onException(e);
                 }
 
                 @Override
                 public void onTokenReceived(final TokenServerToken token) {
                     final FirefoxAccountSyncConfig updatedSyncConfig = new FirefoxAccountSyncConfig(syncConfig.account,
                             syncConfig.networkExecutor, token, null);
-                    onComplete.onSuccess(updatedSyncConfig);
+                    onComplete.onComplete(updatedSyncConfig);
                 }
             });
     }

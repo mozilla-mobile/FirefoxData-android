@@ -63,7 +63,7 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
         try {
             responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
-            onComplete.onError(e);
+            onComplete.onException(e);
             return;
         }
         handleResponse(response, responseBody);
@@ -73,7 +73,7 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
      * Handles any errors that happen in the request process. This can be overridden to have custom behavior; the
      * default implementation just forwards the exception to the callback.
      */
-    public void handleError(Exception e) { onComplete.onError(e); }
+    public void handleError(Exception e) { onComplete.onException(e); }
 
     @Override public String getUserAgent() { return null; } // TODO: decide if necessary.
 

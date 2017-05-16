@@ -30,7 +30,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
         try {
             makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
         } catch (final URISyntaxException e) {
-            onComplete.onError(e);
+            onComplete.onException(e);
         }
     }
 
@@ -45,12 +45,12 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory());
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                onComplete.onError(e);
+                onComplete.onException(e);
                 return;
             }
 
             final BookmarkFolder rootBookmarkFolder = rawRecordsToBookmarksTree(rawRecords);
-            onComplete.onSuccess(new SyncCollectionResult<>(rootBookmarkFolder));
+            onComplete.onComplete(new SyncCollectionResult<>(rootBookmarkFolder));
         }
 
         private static BookmarkFolder rawRecordsToBookmarksTree(final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords) {

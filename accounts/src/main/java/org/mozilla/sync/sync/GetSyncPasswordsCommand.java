@@ -28,7 +28,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
         try {
             makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
         } catch (final URISyntaxException e) {
-            onComplete.onError(e);
+            onComplete.onException(e);
         }
     }
 
@@ -43,12 +43,12 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory());
             } catch (final NoCollectionKeysSetException | JSONException e) {
-                onComplete.onError(e);
+                onComplete.onException(e);
                 return;
             }
 
             final List<PasswordRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
+            onComplete.onComplete(new SyncCollectionResult<>(resultRecords));
         }
 
         private List<PasswordRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords) {
