@@ -29,7 +29,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
-        } catch (final URISyntaxException e) {
+        } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }

@@ -36,7 +36,7 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
         final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
-        } catch (final URISyntaxException e) {
+        } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }

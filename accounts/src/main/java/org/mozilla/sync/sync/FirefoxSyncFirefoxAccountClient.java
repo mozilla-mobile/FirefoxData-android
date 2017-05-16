@@ -116,8 +116,15 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         // opted not to.
         final FailureReason failureReason;
         final Throwable rootCause = ThrowableUtils.getRootCause(cause);
+
+        // TODO: maybe we should just find first FirefoxSyncGetCollectionException or something.
+        // Also, timeouts?
         if (rootCause instanceof TokenServerException.TokenServerInvalidCredentialsException) {
-            failureReason = FailureReason.REQUIRES_LOGIN_PROMPT;
+            failureReason = FailureReason.ACCOUNT_EXPIRED; // most likely the case though it could be our, or the server's, error.
+        } else if (rootCause instanceof TokenServerException) {
+            // Honestly, I'm not sure what all the TokenServerExceptions do, but they seem to be server-ish errors.
+            failureReason = FailureReason.SERVER_RESPONSE_UNEXPECTED;
+
         } else {
             failureReason = FailureReason.UNKNOWN;
         }

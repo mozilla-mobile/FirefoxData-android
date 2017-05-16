@@ -27,7 +27,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
         final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
-        } catch (final URISyntaxException e) {
+        } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }

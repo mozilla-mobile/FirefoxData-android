@@ -36,6 +36,6 @@ public class FirefoxSyncLoginException extends Exception {
         ACCOUNT_NEEDS_VERIFICATION, // TODO: how to document these for public use?
         FAILED_TO_LOAD_ACCOUNT,
         SERVER_RESPONSE_UNEXPECTED,
-        UNKNOWN,
+        UNKNOWN, // TODO: our programmer error vs. an error we don't know how to specify.
     }
 }

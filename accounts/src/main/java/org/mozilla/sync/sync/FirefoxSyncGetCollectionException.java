@@ -35,7 +35,9 @@ public class FirefoxSyncGetCollectionException extends Exception {
 
     // Some reasons: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#response-format
     public enum FailureReason {
-        REQUIRES_LOGIN_PROMPT, // TODO: should we be more specific? less specific so multiple ways to handle? Return more data?
+        ACCOUNT_EXPIRED, // TODO: should we be more specific? less specific so multiple ways to handle? Return more data?
+        ASSERTION_FAILURE,
+        SERVER_RESPONSE_UNEXPECTED,
         UNKNOWN,
     }
 }

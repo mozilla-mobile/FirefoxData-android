@@ -33,11 +33,20 @@ class SyncClientCommands {
          * @param delegate The callback for the request.
          */
         protected static void makeGetRequestForCollection(final FirefoxAccountSyncConfig syncConfig, final String collectionName,
-                @Nullable final Map<String, String> collectionArgs, final SyncClientBaseResourceDelegate delegate) throws URISyntaxException {
+                @Nullable final Map<String, String> collectionArgs, final SyncClientBaseResourceDelegate delegate) throws FirefoxSyncGetCollectionException {
             final Map<String, String> allArgs = getDefaultArgs();
             if (collectionArgs != null) { allArgs.putAll(collectionArgs); }
 
-            final URI uri = FirefoxSyncRequestUtils.getCollectionURI(syncConfig.token, collectionName, null, allArgs);
+            final URI uri;
+            try {
+                uri = FirefoxSyncRequestUtils.getCollectionURI(syncConfig.token, collectionName, null, allArgs);
+            } catch (final URISyntaxException e) {
+                // This is either programmer error (we incorrectly combined the components of the URI) or the
+                // server passed us an invalid uri (in the token). Given that if the code worked when we wrote it,
+                // it's most likely the latter, we provide that as the failure response.
+                throw new FirefoxSyncGetCollectionException("Unable to create valid collection URI for request",
+                        FirefoxSyncGetCollectionException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
+            }
             final BaseResource resource = new BaseResource(uri);
             resource.delegate = delegate;
             resource.get();
