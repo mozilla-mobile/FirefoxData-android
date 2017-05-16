@@ -15,13 +15,13 @@ public class FirefoxSyncLoginException extends Exception {
     private final FailureReason failureReason;
 
     FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
-        super(message);
+        super(message + ". " + failureReason.toString());
         this.failureReason = failureReason;
     }
 
     FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
-        super(cause);
-        this.failureReason = failureReason; // TODO: add message?
+        super(failureReason.toString(), cause);
+        this.failureReason = failureReason;
     }
 
     /**
