@@ -15,8 +15,7 @@ import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.FirefoxSyncLoginException;
-import org.mozilla.sync.FirefoxSyncLoginException.FailureReason;
+import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 

@@ -9,7 +9,7 @@ import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.FirefoxSyncLoginException;
+import org.mozilla.sync.login.FirefoxSyncLoginException;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
 import org.mozilla.sync.sync.HistoryRecord;

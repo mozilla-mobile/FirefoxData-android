@@ -2,20 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
 /**
- * TODO:
+ * A Exception that occurs while a user tries to log in to, or access their Firefox Sync account.
+ *
+ * Note that the exceptions returned by {@link #getCause()} may include user info like email addresses
+ * so be careful how you log them.
+ * todo: ^ do we want to strip the stuff ourselves?
  */
 public class FirefoxSyncLoginException extends Exception {
     private final FailureReason failureReason;
 
-    public FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
+    FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
         super(message);
         this.failureReason = failureReason;
     }
 
-    public FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
+    FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
         super(cause);
         this.failureReason = failureReason; // TODO: add message?
     }
@@ -28,7 +32,7 @@ public class FirefoxSyncLoginException extends Exception {
      */
     public FailureReason getFailureReason() { return failureReason; }
 
-    public enum FailureReason { // Some reasons: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#response-format
+    public enum FailureReason {
         ACCOUNT_NEEDS_VERIFICATION, // TODO: how to document these for public use?
         FAILED_TO_LOAD_ACCOUNT,
         SERVER_RESPONSE_UNEXPECTED,

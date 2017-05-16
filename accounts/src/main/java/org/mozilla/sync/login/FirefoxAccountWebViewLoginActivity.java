@@ -17,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.gecko.R;
-import org.mozilla.sync.FirefoxSyncLoginException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 import org.mozilla.util.ResourcesUtil;
