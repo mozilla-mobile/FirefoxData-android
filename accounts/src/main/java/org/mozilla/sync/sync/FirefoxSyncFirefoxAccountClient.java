@@ -103,6 +103,17 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     /** Creates the appropriate exception, in particular identifying its FailureReason, from the given cause. */
     private static FirefoxSyncGetCollectionException newGetCollectionException(final Throwable cause) {
+        // Here's our Exception handling strategy: GetSync*Commands run in a queue (in SyncClientCommandRunner)
+        // and any Exceptions thrown in the queue will cascade to be thrown by the final `Future.get()`. These
+        // thrown Exceptions should appear in this function.
+        //
+        // When the Exceptions are initially thrown, given that they're the best place to know the specific reasons
+        // for throwing, we catch them and wrap them in FirefoxSyncGetCollectionExceptions with a FailureReason so
+        // that the library user can act on them. However, these Exceptions may get wrapped in subsequent Exceptions
+        // (in particular, ExecutionExceptions as they cascade through the queue) so we go through the list of
+        // wrapped Exceptions to find our FirefoxSyncGetCollectionException and rewrap it at the top level.
+        // We *could* strip the upper Exceptions to clean it up but then we lose a little bit of the history so I
+        // opted not to.
         final FailureReason failureReason;
         final Throwable rootCause = ThrowableUtils.getRootCause(cause);
         if (rootCause instanceof TokenServerException.TokenServerInvalidCredentialsException) {
