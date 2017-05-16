@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.sync;
 
 /**
  * A Exception that occurs while a user tries to get data located in one of their Sync collections,
@@ -15,12 +15,12 @@ package org.mozilla.sync;
 public class FirefoxSyncGetCollectionException extends Exception {
     private final FailureReason failureReason;
 
-    public FirefoxSyncGetCollectionException(final String message, final FailureReason failureReason) {
+    FirefoxSyncGetCollectionException(final String message, final FailureReason failureReason) {
         super(message + ". " + failureReason.toString());
         this.failureReason = failureReason;
     }
 
-    public FirefoxSyncGetCollectionException(final Throwable cause, final FailureReason failureReason) {
+    FirefoxSyncGetCollectionException(final Throwable cause, final FailureReason failureReason) {
         super(failureReason.toString(), cause);
         this.failureReason = failureReason;
     }

@@ -6,12 +6,10 @@ package org.mozilla.sync.sync;
 
 
 import android.support.annotation.NonNull;
-import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
-import org.mozilla.sync.FirefoxSyncGetCollectionException;
-import org.mozilla.sync.FirefoxSyncGetCollectionException.FailureReason;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.util.ThrowableUtils;
