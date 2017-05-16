@@ -72,7 +72,7 @@ public abstract class ChainableCallable<I, O> implements Callable {
         public abstract void initAsyncCall(final I input, final IOUtil.OnAsyncCallComplete<O> onComplete);
 
         @Override
-        public O call(final I input) throws ExecutionException, TimeoutException {
+        public final O call(final I input) throws ExecutionException, TimeoutException {
             return IOUtil.makeSync(timeoutMillis, new IOUtil.AsyncCall<O>() {
                 @Override
                 public void initAsyncCall(final IOUtil.OnAsyncCallComplete<O> onComplete) {

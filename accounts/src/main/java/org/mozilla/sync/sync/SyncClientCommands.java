@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.util.ChainableCallable;
+import org.mozilla.util.IOUtil;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,16 +16,39 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/** Container file for SyncClientCommand classes. */
+/**
+ * Container file for SyncClientCommand classes.
+ */
 class SyncClientCommands {
     private SyncClientCommands() {}
 
     private static final long ASYNC_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
+    /**
+     * A call pass-through of {@link org.mozilla.util.IOUtil.OnAsyncCallComplete} where onException is typed.
+     * This will help ensure developers wrap their Exceptions in FirefoxSyncGetCollectionExceptions, which will
+     * allow us to give the library user more actionable FailureReasons (see the Exception handling strategy in
+     * `FirefoxSyncFirefoxAccountClient.newGetCollectionException`).
+     */
+    static class SyncOnAsyncCallComplete <T> {
+        private final IOUtil.OnAsyncCallComplete<T> onComplete;
+        private SyncOnAsyncCallComplete(final IOUtil.OnAsyncCallComplete<T> onComplete) { this.onComplete = onComplete; }
+
+        void onException(final FirefoxSyncGetCollectionException e) { onComplete.onException(e); }
+        void onComplete(final T returnValue) { onComplete.onComplete(returnValue); }
+    }
+
     /** A base-class for commands accessing collections from sync. */
     static abstract class SyncClientCollectionCommand<T> extends ChainableCallable.AsyncChainableCallable<FirefoxAccountSyncConfig, SyncCollectionResult<T>> {
 
         SyncClientCollectionCommand() { super(ASYNC_TIMEOUT_MILLIS); }
+
+        @Override
+        public final void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+            initAsyncCall(syncConfig, new SyncOnAsyncCallComplete<>(onComplete));
+        }
+
+        public abstract void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncOnAsyncCallComplete<SyncCollectionResult<T>> onComplete);
 
         /**
          * Convenience method to make a get request to the given collection.

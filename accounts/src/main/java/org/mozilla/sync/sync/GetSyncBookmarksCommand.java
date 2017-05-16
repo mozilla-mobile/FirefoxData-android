@@ -6,13 +6,9 @@ package org.mozilla.sync.sync;
 
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
-import org.json.JSONException;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
-import org.mozilla.util.IOUtil;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +21,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
 
     @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
@@ -35,7 +31,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
     }
 
     private static class SyncClientBookmarksResourceDelegate extends SyncClientBaseResourceDelegate<BookmarkFolder> {
-        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
+        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -44,7 +40,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
             final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory());
-            } catch (final NoCollectionKeysSetException | JSONException e) {
+            } catch (final FirefoxSyncGetCollectionException e) {
                 onComplete.onException(e);
                 return;
             }

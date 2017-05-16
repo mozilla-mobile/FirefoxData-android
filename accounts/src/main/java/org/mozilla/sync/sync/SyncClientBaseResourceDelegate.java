@@ -12,9 +12,6 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.sync.impl.FirefoxAccountShared;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
@@ -26,8 +23,11 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
+import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
+import org.mozilla.sync.sync.SyncClientCommands.SyncOnAsyncCallComplete;
 import org.mozilla.util.FileUtil;
-import org.mozilla.util.IOUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -48,9 +48,9 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    protected final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete;
+    protected final SyncOnAsyncCallComplete<SyncCollectionResult<T>> onComplete;
 
-    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncOnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }
@@ -100,9 +100,15 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
     protected static <R> List<R> responseBodyToRawRecords(final FirefoxAccountSyncConfig syncConfig, final String responseBody,
-            final String collectionName, final RecordFactory recordFactory) throws NoCollectionKeysSetException, JSONException {
-        final KeyBundle keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
-        final JSONArray recordArray = new JSONArray(responseBody);
+            final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncGetCollectionException {
+        final KeyBundle keyBundle;
+        final JSONArray recordArray;
+        try {
+            keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
+            recordArray = new JSONArray(responseBody);
+        } catch (final NoCollectionKeysSetException | JSONException e) {
+            throw new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_RESPONSE_UNEXPECTED);
+        }
 
         final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());
         for (int i = 0; i < recordArray.length(); ++i) {

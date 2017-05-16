@@ -32,7 +32,7 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
     }
 
     @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
         final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
@@ -49,8 +49,8 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
         return args;
     }
 
-    private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate<List<HistoryRecord>> {
-        SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
+private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate<List<HistoryRecord>> {
+        SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -59,7 +59,7 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
             final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, HISTORY_COLLECTION, new HistoryRecordFactory());
-            } catch (final NoCollectionKeysSetException | JSONException e) {
+            } catch (final FirefoxSyncGetCollectionException e) {
                 onComplete.onException(e);
                 return;
             }

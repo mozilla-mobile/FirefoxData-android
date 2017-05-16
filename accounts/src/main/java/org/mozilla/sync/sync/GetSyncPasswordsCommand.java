@@ -5,13 +5,9 @@
 package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
-import org.json.JSONException;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
-import org.mozilla.util.IOUtil;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +19,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
     private static final String PASSWORDS_COLLECTION = "passwords";
 
     @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
+    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
         final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
@@ -33,7 +29,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
     }
 
     private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<List<PasswordRecord>> {
-        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
+        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -42,7 +38,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
             final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory());
-            } catch (final NoCollectionKeysSetException | JSONException e) {
+            } catch (final FirefoxSyncGetCollectionException e) {
                 onComplete.onException(e);
                 return;
             }

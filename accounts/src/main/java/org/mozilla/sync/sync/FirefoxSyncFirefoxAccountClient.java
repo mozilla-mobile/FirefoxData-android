@@ -125,8 +125,10 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         // FirefoxSyncGetCollectionException is not present and we have to analyze the wrapped Exceptions to figure
         // out what went wrong. This *tightly couples us* to the implementation. :( For examples we can't catch,
         // see the implementation below.
-        // - When the implementation changes, it's pretty easy for someone to throw a
-        // non-FirefoxSyncGetCollectionException. :(
+        // - When the implementation changes, it can be pretty easy for someone to throw a
+        // non-FirefoxSyncGetCollectionException. :( I use `SyncOnAsyncCallComplete` in our queue commands
+        // (see SyncClientCommands) but it's possible for someone to create a new type on the queue that won't
+        // be blocked by `SyncOnAsyncCallComplete`.
         FailureReason failureReason = null;
         final List<Throwable> causes = ThrowableUtils.getRootCauseToTopThrowable(cause);
         for (final Throwable currentCause : causes) {
