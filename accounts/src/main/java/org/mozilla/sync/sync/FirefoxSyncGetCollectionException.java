@@ -37,7 +37,9 @@ public class FirefoxSyncGetCollectionException extends Exception {
     public enum FailureReason {
         ACCOUNT_EXPIRED, // TODO: should we be more specific? less specific so multiple ways to handle? Return more data?
         ASSERTION_FAILURE,
+        NETWORK_ERROR,
         SERVER_RESPONSE_UNEXPECTED,
+        TIMED_OUT,
         UNKNOWN,
     }
 }
