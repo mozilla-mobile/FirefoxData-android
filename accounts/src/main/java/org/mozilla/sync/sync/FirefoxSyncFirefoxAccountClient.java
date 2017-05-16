@@ -53,7 +53,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            throw getGetCollectionException(e);
+            throw newGetCollectionException(e);
         }
     }
 
@@ -75,7 +75,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            throw getGetCollectionException(e);
+            throw newGetCollectionException(e);
         }
     }
 
@@ -97,11 +97,12 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
-            throw getGetCollectionException(e);
+            throw newGetCollectionException(e);
         }
     }
 
-    private FirefoxSyncGetCollectionException getGetCollectionException(final Throwable cause) {
+    /** Creates the appropriate exception, in particular identifying its FailureReason, from the given cause. */
+    private static FirefoxSyncGetCollectionException newGetCollectionException(final Throwable cause) {
         final FailureReason failureReason;
         final Throwable rootCause = ThrowableUtils.getRootCause(cause);
         if (rootCause instanceof TokenServerException.TokenServerInvalidCredentialsException) {
