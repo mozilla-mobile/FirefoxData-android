@@ -44,7 +44,6 @@ class SyncClientCommandRunner {
     private List<? extends SyncClientAsyncPreCommand> getPreCommands() {
         return Collections.unmodifiableList(Arrays.asList(
                 // The order matters: these commands may rely on results from the previous operations.
-                new GetSyncTokenPreCommand(),
                 new GetCryptoKeysPreCommand()
         ));
     }

@@ -7,6 +7,7 @@ package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
 import org.mozilla.gecko.tokenserver.TokenServerException;
+import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
@@ -30,10 +31,12 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor? How do they stop/get GC'd?
 
     private final FirefoxAccount account;
+    private final TokenServerToken token;
 
-    public FirefoxSyncFirefoxAccountClient(final FirefoxAccount account) {
+    FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token) {
         // todo: assert logged in?
         this.account = account;
+        this.token = token;
     }
 
     @NonNull
@@ -163,6 +166,6 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig() {
-        return new FirefoxAccountSyncConfig(account, networkExecutor, null, null);
+        return new FirefoxAccountSyncConfig(account, networkExecutor, token, null);
     }
 }
