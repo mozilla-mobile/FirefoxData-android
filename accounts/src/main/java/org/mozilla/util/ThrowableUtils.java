@@ -8,6 +8,9 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Utility functions for {@link Throwable}.
  */
@@ -21,6 +24,7 @@ public class ThrowableUtils {
      * @param throwableToGetRootCauseOf The Throwable to find the root cause of.
      * @return The Throwable at the bottom of the {@code getCause} chain, or the parameter if the first getCause is null.
      */
+    @NonNull
     @CheckResult
     public static Throwable getRootCause(@NonNull final Throwable throwableToGetRootCauseOf) {
         Throwable bottommostCause = throwableToGetRootCauseOf.getCause();
@@ -32,5 +36,21 @@ public class ThrowableUtils {
             bottommostCause = nonNullCause.getCause();
         } while (bottommostCause != null);
         return nonNullCause;
+    }
+
+    /**
+     * Returns a sequence from the bottom-most Throwable from calling {@link java.lang.Throwable#getCause()}
+     * repeatedly, then the Throwable one level above, etc., to the given Throwable, which is included in the list.
+     */
+    @NonNull
+    @CheckResult
+    public static List<Throwable> getRootCauseToTopThrowable(final Throwable topThrowable) {
+        final LinkedList<Throwable> throwables = new LinkedList<>();
+        Throwable currentThrowable = topThrowable;
+        while (currentThrowable != null) {
+            throwables.addFirst(currentThrowable);
+            currentThrowable = currentThrowable.getCause();
+        }
+        return throwables;
     }
 }
