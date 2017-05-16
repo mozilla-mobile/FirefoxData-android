@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import org.mozilla.gecko.background.common.log.writers.LogWriter;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncGetCollectionException;
@@ -42,6 +41,16 @@ public class AccountsExampleActivity extends AppCompatActivity {
             @Override
             public void onFailure(final FirefoxSyncLoginException e) {
                 Log.d(LOGTAG, "onFailure: load stored account", e);
+                switch (e.getFailureReason()) {
+                    case ACCOUNT_NEEDS_VERIFICATION: // TODO: failure reasons are different for login & loading a stored account - do we want them to know that?
+                    case FAILED_TO_LOAD_ACCOUNT:
+                    case SERVER_RESPONSE_UNEXPECTED:
+                        // todo: try again later
+                        break;
+
+                    case UNKNOWN:
+                        // TODO: uh oh! try again later.
+                }
             }
 
             @Override // TODO: rm me!
