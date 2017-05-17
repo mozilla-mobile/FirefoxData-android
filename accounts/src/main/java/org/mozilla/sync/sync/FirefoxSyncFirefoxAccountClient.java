@@ -159,50 +159,22 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     /** Creates the appropriate exception, in particular identifying its FailureReason, from the given cause. */
-    private static FirefoxSyncGetCollectionException newGetCollectionException(final Throwable cause) {
+    private static FirefoxSyncGetCollectionException newGetCollectionException(final ExecutionException cause) {
         // TODO: maybe we should strip PII in non-debug mode?
-        // Here's our Exception handling strategy: GetSync*Commands run in a queue (in SyncClientCommandRunner)
-        // and any Exceptions thrown in the queue will cascade to be thrown by the final `Future.get()`. These
-        // thrown Exceptions should appear in this function.
+        // We want to throw a FirefoxSyncGetCollectionException to the user of the lib but those
+        // FirefoxSyncGetCollectionExceptions thrown by the get collection calls are wrapped in ExecutionExceptions
+        // because we make them sync. As such, we have to dig through the Exception's causes to return a
+        // GetCollectionException with the same FailureReason as the initially thrown Exception. We wrap the given
+        // Exception, rather than returning the first exception, in order to maintain the Exception history.
         //
-        // When the Exceptions are initially thrown, given that they're the best place to know the specific reasons
-        // for throwing, we catch them and wrap them in FirefoxSyncGetCollectionExceptions with a FailureReason so
-        // that the library user can act on them. However, these Exceptions may get wrapped in subsequent Exceptions
-        // (in particular, ExecutionExceptions as they cascade through the queue) so we go through the list of
-        // wrapped Exceptions to find our FirefoxSyncGetCollectionException and rewrap it at the top level.
-        // We *could* strip the upper Exceptions to clean it up but then we lose a little bit of the history so I
-        // opted not to.
-        //
-        // Notes:
-        // - We iterate on the list of wrapped Exceptions from the bottom-most first so that if we accidentally
+        // Note: We iterate on the list of wrapped Exceptions from the bottom-most first so that if we accidentally
         // wrap a FirefoxSyncGetCollectionException in a FirefoxSyncGetCollectionException, we use the FailureReason
-        // closest to the location it occurred as ithas more information.
-        // - The implementation doesn't let us catch all relevant Exceptions and wrap them so sometimes a
-        // FirefoxSyncGetCollectionException is not present and we have to analyze the wrapped Exceptions to figure
-        // out what went wrong. This *tightly couples us* to the implementation. :( For examples we can't catch,
-        // see the implementation below.
-        // - When the implementation changes, it can be pretty easy for someone to throw a
-        // non-FirefoxSyncGetCollectionException. :( I use `SyncOnAsyncCallComplete` in our queue commands
-        // (see FirefoxSyncUtils) but it's possible for someone to create a new type on the queue that won't
-        // be blocked by `SyncOnAsyncCallComplete`.
+        // closest to the location it occurred as it has more information.
         FailureReason failureReason = null;
         final List<Throwable> causes = ThrowableUtils.getRootCauseToTopThrowable(cause);
         for (final Throwable currentCause : causes) {
             if (currentCause instanceof FirefoxSyncGetCollectionException) {
                 failureReason = ((FirefoxSyncGetCollectionException) currentCause).getFailureReason();
-            }
-
-            // This is where we become tightly coupled to our implementation (see above). :(
-            else if (currentCause instanceof TimeoutException) {
-                // AsyncChainableCallable, via makeSync, will throw these if an async call takes too long.
-                failureReason = FailureReason.TIMED_OUT;
-
-            } else if (currentCause instanceof TokenServerException.TokenServerInvalidCredentialsException) {
-                // todo: really?
-                failureReason = FailureReason.ACCOUNT_EXPIRED; // most likely the case though it could be our, or the server's, error.
-            } else if (currentCause instanceof TokenServerException) {
-                // Honestly, I'm not sure what all the TokenServerExceptions do, but they seem to be server-ish errors.
-                failureReason = FailureReason.SERVER_RESPONSE_UNEXPECTED;
             }
 
             if (failureReason != null) { break; } // Return the first match.
