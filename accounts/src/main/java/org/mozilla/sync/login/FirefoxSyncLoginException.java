@@ -12,19 +12,22 @@ package org.mozilla.sync.login;
  * todo: ^ do we want to strip the stuff ourselves?
  */
 public class FirefoxSyncLoginException extends Exception {
+
+    private static final int DEFAULT_BACKOFF_SECONDS = 0;
+
     private final FailureReason failureReason;
     private final int backoffSeconds;
 
     FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
         super(message + ". " + failureReason.toString());
         this.failureReason = failureReason;
-        backoffSeconds = -1;
+        backoffSeconds = DEFAULT_BACKOFF_SECONDS;
     }
 
     FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
         super(failureReason.toString(), cause);
         this.failureReason = failureReason;
-        backoffSeconds = -1;
+        backoffSeconds = DEFAULT_BACKOFF_SECONDS;
     }
 
     private FirefoxSyncLoginException(final int backoffSeconds) {
