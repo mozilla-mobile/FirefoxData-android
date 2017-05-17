@@ -14,7 +14,9 @@ import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
+import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
+import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSyncLoginManager;
@@ -116,9 +118,9 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     @WorkerThread // calls to network.
     private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
         // todo: assert married?
-        FirefoxSyncTokenAccessor.get(marriedAccount, new FirefoxSyncTokenAccessor.TokenCallback() {
+        FirefoxSyncTokenAccessor.get(marriedAccount, new FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate() {
             @Override
-            public void onTokenReceived(final TokenServerToken token) {
+            public void handleSuccess(final TokenServerToken token) {
                 FirefoxSyncCryptoKeysAccessor.get(marriedAccount, token, new FirefoxSyncCryptoKeysAccessor.CollectionKeysCallback() {
                     @Override
                     public void onKeysReceived(final CollectionKeys collectionKeys) {
@@ -128,14 +130,43 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onException(final Exception e) {
-                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT)); // todo more specific.
+                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT)); // todo more specific.
                     }
                 });
             }
 
             @Override
-            public void onError(final Exception e) {
-                loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT)); // todo more specific?
+            public void handleFailure(final TokenServerException e) { // Received response but unable to obtain taken.
+                final FailureReason failureReason;
+                if (e instanceof TokenServerException.TokenServerMalformedRequestException ||
+                        e instanceof TokenServerException.TokenServerMalformedResponseException) {
+                    failureReason = FailureReason.ASSERTION_FAILURE;
+                } else if (e instanceof TokenServerException.TokenServerUnknownServiceException) {
+                    // 404 from TokenServer: this could be programmer error or server error.
+                    failureReason = FailureReason.SERVER_ERROR;
+                } else if (e instanceof TokenServerException.TokenServerInvalidCredentialsException) {
+                    failureReason = FailureReason.REQUIRES_LOGIN_PROMPT;
+                } else {
+                    // TODO: I don't know what TokenServerConditionsRequiredException is and the base TokenServerException
+                    // should never be thrown.
+                    failureReason = FailureReason.UNKNOWN;
+                }
+                loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
+            }
+
+            @Override
+            public void handleError(final Exception e) { // Error connecting.
+                if (e instanceof FirefoxSyncAssertionException) {
+                    // We have to reach inside the implementation to know that it gives AssertionExceptions, which is fragile.
+                    loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.ASSERTION_FAILURE));
+                } else {
+                    loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.NETWORK_ERROR));
+                }
+            }
+
+            @Override
+            public void handleBackoff(final int backoffSeconds) {
+                loginCallback.onFailure(FirefoxSyncLoginException.newForBackoffSeconds(backoffSeconds));
             }
         });
     }
@@ -169,7 +200,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         try {
             account = accountStore.loadFirefoxAccount();
         } catch (final FirefoxAccountSharedPrefsStore.FailedToLoadAccountException e) {
-            callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT));
+            callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT));
             return;
         }
 

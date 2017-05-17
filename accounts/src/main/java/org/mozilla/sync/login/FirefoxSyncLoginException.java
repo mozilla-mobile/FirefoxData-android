@@ -13,16 +13,36 @@ package org.mozilla.sync.login;
  */
 public class FirefoxSyncLoginException extends Exception {
     private final FailureReason failureReason;
+    private final int backoffSeconds;
 
     FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
         super(message + ". " + failureReason.toString());
         this.failureReason = failureReason;
+        backoffSeconds = -1;
     }
 
     FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
         super(failureReason.toString(), cause);
         this.failureReason = failureReason;
+        backoffSeconds = -1;
     }
+
+    private FirefoxSyncLoginException(final int backoffSeconds) {
+        super("Requires backoff of " + backoffSeconds);
+        failureReason = FailureReason.REQUIRES_BACKOFF;
+        this.backoffSeconds = backoffSeconds;
+    }
+
+    static FirefoxSyncLoginException newForBackoffSeconds(final int backoffSeconds) {
+        return new FirefoxSyncLoginException(backoffSeconds);
+    }
+
+    /**
+     * Get the number of seconds the login request should wait before retrying.
+     *
+     * @return the number of seconds the login request should wait before retrying; 0 if there is no backoff request.
+     */
+    public int getBackoffSeconds() { return backoffSeconds; }
 
     /**
      * Gets the reason this exception was thrown. Normally, this would be handled by the type of the exception thrown
@@ -34,8 +54,14 @@ public class FirefoxSyncLoginException extends Exception {
 
     public enum FailureReason {
         ACCOUNT_NEEDS_VERIFICATION, // TODO: how to document these for public use?
-        FAILED_TO_LOAD_ACCOUNT,
-        SERVER_RESPONSE_UNEXPECTED,
-        UNKNOWN, // TODO: our programmer error vs. an error we don't know how to specify.
+        REQUIRES_BACKOFF,
+        REQUIRES_LOGIN_PROMPT,
+
+        NETWORK_ERROR,
+        SERVER_ERROR,
+
+        ASSERTION_FAILURE,
+
+        UNKNOWN,
     }
 }

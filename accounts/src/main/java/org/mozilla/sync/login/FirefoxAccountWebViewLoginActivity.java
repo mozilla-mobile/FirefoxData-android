@@ -143,14 +143,14 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
     private void onSessionStatus() {
         // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
         injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
         finish();
     }
 
     private void onSignOut() {
         // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
         injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
         finish();
     }
 
@@ -162,7 +162,7 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
-            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
+            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
             finish();
             return;
         }

@@ -43,8 +43,8 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 Log.d(LOGTAG, "onFailure: load stored account", e);
                 switch (e.getFailureReason()) {
                     case ACCOUNT_NEEDS_VERIFICATION: // TODO: failure reasons are different for login & loading a stored account - do we want them to know that?
-                    case FAILED_TO_LOAD_ACCOUNT:
-                    case SERVER_RESPONSE_UNEXPECTED:
+                    case REQUIRES_LOGIN_PROMPT:
+                    case SERVER_ERROR:
                         // todo: try again later
                         break;
 
