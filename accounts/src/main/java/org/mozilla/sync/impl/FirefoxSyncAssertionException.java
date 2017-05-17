@@ -9,4 +9,5 @@ package org.mozilla.sync.impl;
  */
 public class FirefoxSyncAssertionException extends Exception {
     public FirefoxSyncAssertionException(final String message) { super(message); }
+    public FirefoxSyncAssertionException(final String message, final Throwable cause) { super(message, cause); }
 }

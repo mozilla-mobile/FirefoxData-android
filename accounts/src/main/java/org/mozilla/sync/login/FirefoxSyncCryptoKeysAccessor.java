@@ -21,6 +21,7 @@ import org.mozilla.gecko.sync.repositories.domain.RecordParseException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
+import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 
 import java.io.IOException;
@@ -31,9 +32,7 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
-/**
- * TODO:
- */
+/** A container for static functions to get the crypto keys for a Firefox account. */
 class FirefoxSyncCryptoKeysAccessor {
 
     private static final String CRYPTO_COLLECTION = "crypto";
@@ -41,17 +40,28 @@ class FirefoxSyncCryptoKeysAccessor {
 
     private FirefoxSyncCryptoKeysAccessor() {}
 
-    interface CollectionKeysCallback { // todo
+    /** A callback for a crypto keys request. */
+    interface CollectionKeysCallback {
         void onKeysReceived(CollectionKeys collectionKeys);
-        void onException(Exception e);
+        /** Called when the server response denies us the crypto keys, or the response is invalid. */
+        void onRequestFailure(Exception e);
+        /** Called when we're unable to get a response from the server. */
+        void onError(Exception e);
     }
 
+    // todo: callback threads.
+    /**
+     * Gets the crypto keys for the given account & sync token.
+     *
+     * {@code onComplete}'s {@link CollectionKeysCallback#onError(Exception)} will be passed a
+     * {@link FirefoxSyncAssertionException} in the event that some assertion we make fails.
+     */
     static void get(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
         final SyncStorageRecordRequest request;
         try {
             request = new SyncStorageRecordRequest(FirefoxSyncRequestUtils.getCollectionURI(token, CRYPTO_COLLECTION, KEYS_ID, null));
         } catch (final URISyntaxException e) {
-            onComplete.onException(e);
+            onComplete.onError(new FirefoxSyncAssertionException("Could not create crypto keys request URI", e));
             return;
         }
 
@@ -64,7 +74,7 @@ class FirefoxSyncCryptoKeysAccessor {
                     body = response.jsonObjectBody();
                     keys.setKeyPairsFromWBO(CryptoRecord.fromJSONRecord(body), getSyncKeyBundle(marriedAccount));
                 } catch (final IOException | NonObjectJSONException | CryptoException | RecordParseException | NoSuchAlgorithmException | InvalidKeyException e) {
-                    onComplete.onException(e);
+                    onComplete.onRequestFailure(e);
                     return;
                 }
 
@@ -75,12 +85,12 @@ class FirefoxSyncCryptoKeysAccessor {
             @Override
             public void handleRequestFailure(final SyncStorageResponse response) {
                 try {
-                    onComplete.onException(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
+                    onComplete.onRequestFailure(new Exception("Failed to retrieve crypto keys: " + response.getErrorMessage()));
                 } catch (final IOException e) {
-                    onComplete.onException(new Exception("Failed to retrieve crypto keys & its error", e));
+                    onComplete.onRequestFailure(new Exception("Failed to retrieve crypto keys & its error", e));
                 }
             }
-            @Override public void handleRequestError(final Exception ex) { onComplete.onException(ex); }
+            @Override public void handleRequestError(final Exception ex) { onComplete.onError(ex); }
 
             @Override
             public AuthHeaderProvider getAuthHeaderProvider() {

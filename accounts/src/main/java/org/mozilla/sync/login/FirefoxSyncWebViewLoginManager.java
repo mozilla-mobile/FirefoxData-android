@@ -129,8 +129,15 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     }
 
                     @Override
-                    public void onException(final Exception e) {
-                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT)); // todo more specific.
+                    public void onRequestFailure(final Exception e) {
+                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.SERVER_ERROR));
+                    }
+
+                    @Override
+                    public void onError(final Exception e) {
+                        final FailureReason failureReason = (e instanceof FirefoxSyncAssertionException) ?
+                                FailureReason.ASSERTION_FAILURE : FailureReason.NETWORK_ERROR;
+                        loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
                     }
                 });
             }
@@ -156,12 +163,9 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
             @Override
             public void handleError(final Exception e) { // Error connecting.
-                if (e instanceof FirefoxSyncAssertionException) {
-                    // We have to reach inside the implementation to know that it gives AssertionExceptions, which is fragile.
-                    loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.ASSERTION_FAILURE));
-                } else {
-                    loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.NETWORK_ERROR));
-                }
+                final FailureReason failureReason = (e instanceof FirefoxSyncAssertionException) ?
+                        FailureReason.ASSERTION_FAILURE : FailureReason.NETWORK_ERROR;
+                loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
             }
 
             @Override
