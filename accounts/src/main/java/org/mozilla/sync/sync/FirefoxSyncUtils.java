@@ -40,7 +40,7 @@ class FirefoxSyncUtils {
             // server passed us an invalid uri (in the token). Given that if the code worked when we wrote it,
             // it's most likely the latter, we provide that as the failure response.
             throw new FirefoxSyncGetCollectionException("Unable to create valid collection URI for request",
-                    FirefoxSyncGetCollectionException.FailureReason.SERVER_RESPONSE_UNEXPECTED);
+                    FirefoxSyncGetCollectionException.FailureReason.SERVER_ERROR);
         }
         final BaseResource resource = new BaseResource(uri);
         resource.delegate = delegate;

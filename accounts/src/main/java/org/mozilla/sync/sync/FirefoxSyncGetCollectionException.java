@@ -35,11 +35,13 @@ public class FirefoxSyncGetCollectionException extends Exception {
 
     // Some reasons: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#response-format
     public enum FailureReason {
-        ACCOUNT_EXPIRED, // TODO: should we be more specific? less specific so multiple ways to handle? Return more data?
-        ASSERTION_FAILURE,
-        NETWORK_ERROR,
-        SERVER_RESPONSE_UNEXPECTED,
         TIMED_OUT,
+
+        NETWORK_ERROR,
+        SERVER_ERROR,
+
+        ASSERTION_FAILURE, // currently unused, but good to have people handle it if we add it later.
+
         UNKNOWN,
     }
 }
