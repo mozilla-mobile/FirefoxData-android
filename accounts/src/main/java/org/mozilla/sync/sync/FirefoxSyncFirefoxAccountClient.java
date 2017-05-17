@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
  * TODO:
  */
 class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
+
+    private static final long REQUEST_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
     private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor? How do they stop/get GC'd?
 
@@ -57,7 +59,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     @NonNull
     private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
         try {
-            return IOUtil.makeSync(5000, new IOUtil.AsyncCall<SyncCollectionResult<BookmarkFolder>>() {
+            return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<BookmarkFolder>>() {
                 @Override
                 public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
                     FirefoxSyncBookmarks.get(getInitialSyncConfig(), itemLimit, new OnSyncComplete<BookmarkFolder>() {
@@ -74,7 +76,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
                 }
             });
         } catch (final ExecutionException e) {
-            throw newGetCollectionException(e); // todo: this kinda sucks.
+            throw newGetCollectionException(e);
         } catch (final TimeoutException e) {
             throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
         }
@@ -95,7 +97,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     @NonNull
     private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
         try {
-            return IOUtil.makeSync(5000, new IOUtil.AsyncCall<SyncCollectionResult<List<PasswordRecord>>>() {
+            return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<List<PasswordRecord>>>() {
                 @Override
                 public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
                     FirefoxSyncPasswords.get(getInitialSyncConfig(), itemLimit, new OnSyncComplete<List<PasswordRecord>>() {
@@ -112,7 +114,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
                 }
             });
         } catch (final ExecutionException e) {
-            throw newGetCollectionException(e); // todo: this kinda sucks.
+            throw newGetCollectionException(e);
         } catch (final TimeoutException e) {
             throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
         }
@@ -133,7 +135,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     @NonNull
     private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncGetCollectionException {
         try {
-            return IOUtil.makeSync(5000, new IOUtil.AsyncCall<SyncCollectionResult<List<HistoryRecord>>>() {
+            return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<List<HistoryRecord>>>() {
                 @Override
                 public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
                     FirefoxSyncHistory.get(getInitialSyncConfig(), itemLimit, new OnSyncComplete<List<HistoryRecord>>() {
@@ -150,7 +152,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
                 }
             });
         } catch (final ExecutionException e) {
-            throw newGetCollectionException(e); // todo: this kinda sucks.
+            throw newGetCollectionException(e);
         } catch (final TimeoutException e) {
             throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
         }
