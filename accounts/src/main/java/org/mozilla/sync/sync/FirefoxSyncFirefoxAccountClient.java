@@ -14,6 +14,7 @@ import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
+import org.mozilla.util.IOUtil;
 import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
@@ -56,12 +57,15 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+        /*
         final Future<SyncCollectionResult<BookmarkFolder>> future = commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(), getInitialSyncConfig());
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
             throw newGetCollectionException(e);
         }
+        */
+        return null;
     }
 
     @NonNull
@@ -78,12 +82,15 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+        /*
         final Future<SyncCollectionResult<List<PasswordRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(), getInitialSyncConfig());
         try {
             return future.get(); // todo: timeout.
         } catch (final InterruptedException | ExecutionException e) {
             throw newGetCollectionException(e);
         }
+        */
+        return null;
     }
 
     @NonNull
@@ -100,11 +107,27 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncGetCollectionException {
-        final Future<SyncCollectionResult<List<HistoryRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit), getInitialSyncConfig());
         try {
-            return future.get(); // todo: timeout.
-        } catch (final InterruptedException | ExecutionException e) {
-            throw newGetCollectionException(e);
+            return IOUtil.makeSync(5000, new IOUtil.AsyncCall<SyncCollectionResult<List<HistoryRecord>>>() {
+                @Override
+                public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
+                    FirefoxSyncHistory.get(getInitialSyncConfig(), itemLimit, new OnSyncComplete<List<HistoryRecord>>() {
+                        @Override
+                        public void onSuccess(final SyncCollectionResult<List<HistoryRecord>> result) {
+                            onComplete.onComplete(result);
+                        }
+
+                        @Override
+                        public void onException(final FirefoxSyncGetCollectionException e) {
+                            onComplete.onException(e);
+                        }
+                    });
+                }
+            });
+        } catch (final ExecutionException e) {
+            throw newGetCollectionException(e); // todo: this kinda sucks.
+        } catch (final TimeoutException e) {
+            throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
         }
     }
 

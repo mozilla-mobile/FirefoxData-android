@@ -42,6 +42,7 @@ import java.util.List;
  * provides basic configuration and simplifies the error/response handling.
  */
 abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
+
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
@@ -49,9 +50,9 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    protected final SyncOnAsyncCallComplete<SyncCollectionResult<T>> onComplete;
+    protected final OnSyncComplete<T> onComplete;
 
-    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncOnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }

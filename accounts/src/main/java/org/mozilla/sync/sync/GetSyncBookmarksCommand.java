@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
  */
+/*
 class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCommand<BookmarkFolder> {
 
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
@@ -144,3 +145,4 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
         }
     }
 }
+*/

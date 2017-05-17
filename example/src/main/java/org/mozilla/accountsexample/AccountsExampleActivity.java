@@ -86,8 +86,8 @@ public class AccountsExampleActivity extends AppCompatActivity {
         final BookmarkFolder rootBookmark;
         try {
             receivedHistory = syncClient.getAllHistory().getResult();
-            receivedPasswords = syncClient.getAllPasswords().getResult();
-            rootBookmark = syncClient.getAllBookmarks().getResult();
+            //receivedPasswords = syncClient.getAllPasswords().getResult();
+            //rootBookmark = syncClient.getAllBookmarks().getResult();
         } catch (final FirefoxSyncGetCollectionException e) {
             Log.w(LOGTAG, "testSync: failure to receive! " + e.getFailureReason(), e); // TODO: print failure reason when printing exception? strip non-root Exceptions?
             return;
@@ -96,6 +96,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         for (final HistoryRecord record : receivedHistory) {
             Log.d(LOGTAG, record.getTitle() + ": " + record.getURI());
         }
+        /*
         for (final PasswordRecord record : receivedPasswords) {
             Log.d(LOGTAG, record.getUsername() + ": " + record.getPassword());
         }
@@ -106,6 +107,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
         for (final BookmarkFolder folder : rootBookmark.getSubfolders()) {
             Log.d(LOGTAG, "root subfolder: " + folder.getTitle());
         }
+        */
     }
 
     @Override

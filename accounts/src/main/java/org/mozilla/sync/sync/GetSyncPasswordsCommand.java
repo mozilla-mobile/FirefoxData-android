@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
+/*
 class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<List<PasswordRecord>> {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
@@ -58,3 +59,4 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
         }
     }
 }
+*/

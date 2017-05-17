@@ -5,43 +5,36 @@
 package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
-import org.json.JSONException;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
-import org.mozilla.util.IOUtil;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mozilla.sync.sync.SyncClientCommands.SyncClientCollectionCommand.makeGetRequestForCollection;
+
 /**
  * Gets the history for the associated account from Firefox Sync.
  */
-class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionCommand<List<HistoryRecord>> {
+class FirefoxSyncHistory {
 
     private static final String HISTORY_COLLECTION = "history";
 
-    private final int itemLimit;
+    private FirefoxSyncHistory() {}
 
-    GetSyncHistoryCommand(final int itemLimit) {
-        this.itemLimit = itemLimit;
-    }
-
-    @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
-        final SyncClientHistoryResourceDelegate resourceDelegate = new SyncClientHistoryResourceDelegate(syncConfig, onComplete);
+    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+        final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
-            makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(), resourceDelegate);
+            makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }
 
-    private Map<String, String> getArgs() {
+    private static Map<String, String> getArgs(final int itemLimit) {
         if (itemLimit < 0) return Collections.emptyMap(); // TODO: fix or document.
 
         final Map<String, String> args = new HashMap<>(1);
@@ -49,8 +42,8 @@ class GetSyncHistoryCommand extends SyncClientCommands.SyncClientCollectionComma
         return args;
     }
 
-private static class SyncClientHistoryResourceDelegate extends SyncClientBaseResourceDelegate<List<HistoryRecord>> {
-        SyncClientHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<HistoryRecord>>> onComplete) {
+    private static class SyncHistoryResourceDelegate extends SyncClientBaseResourceDelegate<List<HistoryRecord>> {
+        SyncHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -65,7 +58,7 @@ private static class SyncClientHistoryResourceDelegate extends SyncClientBaseRes
             }
 
             final List<HistoryRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onComplete(new SyncCollectionResult<>(resultRecords));
+            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
         }
 
         private List<HistoryRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords) {

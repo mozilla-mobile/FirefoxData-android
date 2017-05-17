@@ -32,13 +32,4 @@ public class FirefoxAccountSyncConfig {
         this.token = token;
         this.collectionKeys = collectionKeys;
     }
-
-    /** Convenience method to get the sync key bundle. Assumes the account in the config is in the Married state. */
-    public KeyBundle getSyncKeyBundle() throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        if (keyBundleCache == null) {
-            final Married married = FirefoxAccountUtils.getMarried(account.accountState);
-            keyBundleCache = married.getSyncKeyBundle();
-        }
-        return keyBundleCache;
-    }
 }
