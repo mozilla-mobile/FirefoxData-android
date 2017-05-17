@@ -7,6 +7,7 @@ package org.mozilla.sync.sync;
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.util.ChainableCallable;
 import org.mozilla.util.IOUtil;
 

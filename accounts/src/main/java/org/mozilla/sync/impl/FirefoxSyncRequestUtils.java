@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync.sync;
+package org.mozilla.sync.impl;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * A group of util functions for the Sync servers.
  */
-class FirefoxSyncRequestUtils {
+public class FirefoxSyncRequestUtils {
     private FirefoxSyncRequestUtils() {}
 
     // The URI methods wrap String methods so we can avoid allocating too many unnecessary objects when composing the methods.

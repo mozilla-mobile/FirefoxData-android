@@ -42,10 +42,7 @@ class SyncClientCommandRunner {
     private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
 
     private List<? extends SyncClientAsyncPreCommand> getPreCommands() {
-        return Collections.unmodifiableList(Arrays.asList(
-                // The order matters: these commands may rely on results from the previous operations.
-                new GetCryptoKeysPreCommand()
-        ));
+        return Collections.EMPTY_LIST;
     }
 
     /**

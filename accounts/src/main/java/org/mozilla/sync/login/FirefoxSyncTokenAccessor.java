@@ -34,6 +34,7 @@ class FirefoxSyncTokenAccessor {
 
     private FirefoxSyncTokenAccessor() {}
 
+    // todo: document threading.
     /**
      * Gets a Sync Token or returns an error through the provided callback. The given account
      * <b>must</b> be in the Married state.

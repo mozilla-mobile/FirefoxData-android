@@ -9,9 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
+import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
@@ -111,18 +113,29 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         });
     }
 
+    @WorkerThread // calls to network.
     private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
         // todo: assert married?
         FirefoxSyncTokenAccessor.get(marriedAccount, new FirefoxSyncTokenAccessor.TokenCallback() {
             @Override
-            public void onError(final Exception e) {
-                loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT)); // todo more specific?
+            public void onTokenReceived(final TokenServerToken token) {
+                FirefoxSyncCryptoKeysAccessor.get(marriedAccount, token, new FirefoxSyncCryptoKeysAccessor.CollectionKeysCallback() {
+                    @Override
+                    public void onKeysReceived(final CollectionKeys collectionKeys) {
+                        final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(marriedAccount, token, collectionKeys);
+                        loginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
+                    }
+
+                    @Override
+                    public void onException(final Exception e) {
+                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT)); // todo more specific.
+                    }
+                });
             }
 
             @Override
-            public void onTokenReceived(final TokenServerToken token) {
-                final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(marriedAccount, token);
-                loginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
+            public void onError(final Exception e) {
+                loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.FAILED_TO_LOAD_ACCOUNT)); // todo more specific?
             }
         });
     }
@@ -160,7 +173,12 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             return;
         }
 
-        prepareSyncClientAndCallback(account, callback);
+        backgroundExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                prepareSyncClientAndCallback(account, callback);
+            }
+        });
     }
 
     @Override

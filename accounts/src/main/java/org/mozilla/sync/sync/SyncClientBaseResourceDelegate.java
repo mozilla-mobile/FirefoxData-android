@@ -25,6 +25,7 @@ import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.sync.sync.SyncClientCommands.SyncOnAsyncCallComplete;
 import org.mozilla.util.FileUtil;

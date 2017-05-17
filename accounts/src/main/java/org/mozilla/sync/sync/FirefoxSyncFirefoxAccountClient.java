@@ -6,6 +6,7 @@ package org.mozilla.sync.sync;
 
 
 import android.support.annotation.NonNull;
+import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
@@ -32,11 +33,13 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     private final FirefoxAccount account;
     private final TokenServerToken token;
+    private final CollectionKeys collectionKeys;
 
-    FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token) {
+    FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token, final CollectionKeys collectionKeys) {
         // todo: assert logged in?
         this.account = account;
         this.token = token;
+        this.collectionKeys = collectionKeys;
     }
 
     @NonNull
@@ -166,6 +169,6 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig() {
-        return new FirefoxAccountSyncConfig(account, networkExecutor, token, null);
+        return new FirefoxAccountSyncConfig(account, networkExecutor, token, collectionKeys);
     }
 }
