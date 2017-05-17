@@ -13,26 +13,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mozilla.sync.sync.FirefoxSyncUtils.makeGetRequestForCollection;
+
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
  */
-/*
-class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCommand<BookmarkFolder> {
+class FirefoxSyncBookmarks {
 
     private static final String BOOKMARKS_COLLECTION = "bookmarks";
 
-    @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
+    private FirefoxSyncBookmarks() {}
+
+    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
-            makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }
 
-    private static class SyncClientBookmarksResourceDelegate extends SyncClientBaseResourceDelegate<BookmarkFolder> {
-        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<BookmarkFolder>> onComplete) {
+    private static class SyncClientBookmarksResourceDelegate extends SyncBaseResourceDelegate<BookmarkFolder> {
+        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<BookmarkFolder> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -47,7 +49,7 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
             }
 
             final BookmarkFolder rootBookmarkFolder = rawRecordsToBookmarksTree(rawRecords);
-            onComplete.onComplete(new SyncCollectionResult<>(rootBookmarkFolder));
+            onComplete.onSuccess(new SyncCollectionResult<>(rootBookmarkFolder));
         }
 
         private static BookmarkFolder rawRecordsToBookmarksTree(final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords) {
@@ -145,4 +147,3 @@ class GetSyncBookmarksCommand extends SyncClientCommands.SyncClientCollectionCom
         }
     }
 }
-*/

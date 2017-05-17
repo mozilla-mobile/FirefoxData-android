@@ -27,7 +27,6 @@ import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
-import org.mozilla.sync.sync.SyncClientCommands.SyncOnAsyncCallComplete;
 import org.mozilla.util.FileUtil;
 
 import java.io.IOException;
@@ -41,7 +40,7 @@ import java.util.List;
  * Base implementation for requests made by {@see org.mozilla.accounts.sync.FirefoxAccountSyncClient}:
  * provides basic configuration and simplifies the error/response handling.
  */
-abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
+abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
@@ -52,7 +51,7 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
     protected final FirefoxAccountSyncConfig syncConfig;
     protected final OnSyncComplete<T> onComplete;
 
-    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
+    SyncBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }

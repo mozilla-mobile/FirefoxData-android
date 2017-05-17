@@ -14,23 +14,23 @@ import java.util.List;
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
-/*
-class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<List<PasswordRecord>> {
+class FirefoxSyncPasswords {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
 
-    @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
-        final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
+    private FirefoxSyncPasswords() {}
+
+    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
+        final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
-            makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
     }
 
-    private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<List<PasswordRecord>> {
-        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final SyncClientCommands.SyncOnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
+    private static class SyncPasswordsResourceDelegate extends SyncBaseResourceDelegate<List<PasswordRecord>> {
+        private SyncPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<PasswordRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -45,7 +45,7 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
             }
 
             final List<PasswordRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onComplete(new SyncCollectionResult<>(resultRecords));
+            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
         }
 
         private List<PasswordRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords) {
@@ -59,4 +59,3 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
         }
     }
 }
-*/

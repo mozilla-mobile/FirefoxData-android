@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mozilla.sync.sync.SyncClientCommands.SyncClientCollectionCommand.makeGetRequestForCollection;
+import static org.mozilla.sync.sync.FirefoxSyncUtils.makeGetRequestForCollection;
 
 /**
  * Gets the history for the associated account from Firefox Sync.
@@ -28,7 +28,7 @@ class FirefoxSyncHistory {
     static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
-            makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
@@ -42,7 +42,7 @@ class FirefoxSyncHistory {
         return args;
     }
 
-    private static class SyncHistoryResourceDelegate extends SyncClientBaseResourceDelegate<List<HistoryRecord>> {
+    private static class SyncHistoryResourceDelegate extends SyncBaseResourceDelegate<List<HistoryRecord>> {
         SyncHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
