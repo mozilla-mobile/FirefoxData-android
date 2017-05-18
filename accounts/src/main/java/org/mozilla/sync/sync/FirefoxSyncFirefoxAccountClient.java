@@ -17,7 +17,6 @@ import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -29,17 +28,14 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     private static final long REQUEST_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
 
-    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor? How do they stop/get GC'd?
-
     private final FirefoxAccount account;
-    private final TokenServerToken token;
-    private final CollectionKeys collectionKeys;
+    private final FirefoxSyncConfig syncConfig;
 
     FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token, final CollectionKeys collectionKeys) {
         // todo: assert logged in?
         this.account = account;
-        this.token = token;
-        this.collectionKeys = collectionKeys;
+        // TODO: use shared executor? How do they stop/get GC'd?
+        this.syncConfig = new FirefoxSyncConfig(account, Executors.newSingleThreadExecutor(), token, collectionKeys);
     }
 
     @NonNull
@@ -59,7 +55,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
-                FirefoxSyncBookmarks.get(getInitialSyncConfig(), itemLimit, onComplete);
+                FirefoxSyncBookmarks.get(syncConfig, itemLimit, onComplete);
             }
         });
     }
@@ -81,7 +77,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {
-                FirefoxSyncPasswords.get(getInitialSyncConfig(), itemLimit, onComplete);
+                FirefoxSyncPasswords.get(syncConfig, itemLimit, onComplete);
             }
         });
     }
@@ -103,7 +99,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<List<HistoryRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<HistoryRecord>> onComplete) {
-                FirefoxSyncHistory.get(getInitialSyncConfig(), itemLimit, onComplete);
+                FirefoxSyncHistory.get(syncConfig, itemLimit, onComplete);
             }
         });
     }
@@ -157,10 +153,6 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     @Override
     public String getEmail() throws FirefoxSyncException {
         return account.email; // todo: email/account can get updated.
-    }
-
-    private FirefoxSyncConfig getInitialSyncConfig() {
-        return new FirefoxSyncConfig(account, networkExecutor, token, collectionKeys);
     }
 
     private interface GetCollectionCall<T> {
