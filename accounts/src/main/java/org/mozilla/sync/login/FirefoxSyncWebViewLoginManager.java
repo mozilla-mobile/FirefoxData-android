@@ -57,8 +57,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         requestCallerName = callerName;
         requestLoginCallback = callback;
 
-        final Intent loginIntent = new Intent(activity, FirefoxAccountWebViewLoginActivity.class);
-        //loginIntent.putExtra(FirefoxAccountWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // Uncomment for dev purposes.
+        final Intent loginIntent = new Intent(activity, FirefoxSyncWebViewLoginActivity.class);
+        //loginIntent.putExtra(FirefoxSyncWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // Uncomment for dev purposes.
         activity.startActivityForResult(loginIntent, REQUEST_CODE);
     }
 
@@ -69,15 +69,15 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         if (requestCallerName == null) { throw new IllegalStateException("onActivityResult unexpectedly called more than once for one promptLogin call (or promptLogin was never called)."); }
 
         switch (resultCode) {
-            case FirefoxAccountWebViewLoginActivity.RESULT_OK:
+            case FirefoxSyncWebViewLoginActivity.RESULT_OK:
                 onActivityResultOK(data);
                 break;
 
-            case FirefoxAccountWebViewLoginActivity.RESULT_ERROR:
+            case FirefoxSyncWebViewLoginActivity.RESULT_ERROR:
                 onActivityResultError(data);
                 break;
 
-            case FirefoxAccountWebViewLoginActivity.RESULT_CANCELED:
+            case FirefoxSyncWebViewLoginActivity.RESULT_CANCELED:
                 requestLoginCallback.onUserCancel();
                 break;
         }
@@ -87,7 +87,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     private void onActivityResultOK(@NonNull final Intent data) {
-        final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxAccountWebViewLoginActivity.EXTRA_ACCOUNT);
+        final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
         // Keep references because they'll be nulled before the async call completes.
         final String requestCallerName = this.requestCallerName; // TODO: use in user agent.
@@ -176,7 +176,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     private void onActivityResultError(@NonNull final Intent data) {
-        final String failureStr = data.getStringExtra(FirefoxAccountWebViewLoginActivity.EXTRA_FAILURE_REASON);
+        final String failureStr = data.getStringExtra(FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON);
         FailureReason failureReason;
         try {
             failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
@@ -193,7 +193,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         return (requestCode == REQUEST_CODE &&
                 action != null &&
                 // Another Activity can use the same request code so we verify the Intent data too.
-                action.equals(FirefoxAccountWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN));
+                action.equals(FirefoxSyncWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN));
     }
 
     @Override
