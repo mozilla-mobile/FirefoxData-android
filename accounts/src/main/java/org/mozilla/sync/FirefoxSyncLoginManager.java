@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import org.mozilla.sync.login.FirefoxSyncLoginException;
 
 /**
  * TODO:
@@ -20,9 +21,9 @@ public interface FirefoxSyncLoginManager {
 
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
-    interface LoginCallback {
+    interface LoginCallback { // TODO: AccountLoginCallback & AccountCallback?
         void onSuccess(FirefoxSyncClient syncClient);
-        void onFailure(FirefoxSyncLoginException e);
+        void onFailure(FirefoxSyncLoginException e); // TODO: AccountException? SessionException?
         void onUserCancel();
     }
 }

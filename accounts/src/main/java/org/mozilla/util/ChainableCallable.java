@@ -5,7 +5,9 @@
 package org.mozilla.util;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Callable that can be chained to wait for other Callables to complete before running.
@@ -70,7 +72,7 @@ public abstract class ChainableCallable<I, O> implements Callable {
         public abstract void initAsyncCall(final I input, final IOUtil.OnAsyncCallComplete<O> onComplete);
 
         @Override
-        public O call(final I input) throws Exception {
+        public final O call(final I input) throws ExecutionException, TimeoutException {
             return IOUtil.makeSync(timeoutMillis, new IOUtil.AsyncCall<O>() {
                 @Override
                 public void initAsyncCall(final IOUtil.OnAsyncCallComplete<O> onComplete) {

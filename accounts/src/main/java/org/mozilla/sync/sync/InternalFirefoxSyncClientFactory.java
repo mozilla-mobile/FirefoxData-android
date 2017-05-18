@@ -4,6 +4,8 @@
 
 package org.mozilla.sync.sync;
 
+import org.mozilla.gecko.sync.CollectionKeys;
+import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 
@@ -15,7 +17,8 @@ public class InternalFirefoxSyncClientFactory {
     private InternalFirefoxSyncClientFactory() {}
 
     /** Please don't use directly. */
-    public static FirefoxSyncClient getSyncClient(final FirefoxAccount account) {
-        return new FirefoxSyncFirefoxAccountClient(account);
+    public static FirefoxSyncClient getSyncClient(final FirefoxAccount account, final TokenServerToken token,
+            final CollectionKeys collectionKeys) {
+        return new FirefoxSyncFirefoxAccountClient(account, token, collectionKeys);
     }
 }

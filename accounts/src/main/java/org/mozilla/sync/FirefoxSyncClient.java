@@ -6,6 +6,7 @@ package org.mozilla.sync;
 
 import android.support.annotation.NonNull;
 import org.mozilla.sync.sync.BookmarkFolder;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.sync.HistoryRecord;
 import org.mozilla.sync.sync.PasswordRecord;
 import org.mozilla.sync.sync.SyncCollectionResult;

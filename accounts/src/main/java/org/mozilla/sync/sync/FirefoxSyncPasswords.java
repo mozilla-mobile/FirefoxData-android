@@ -5,35 +5,32 @@
 package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
-import org.json.JSONException;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
-import org.mozilla.gecko.sync.NoCollectionKeysSetException;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
-import org.mozilla.util.IOUtil;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
  */
-class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCommand<List<PasswordRecord>> {
+class FirefoxSyncPasswords {
 
     private static final String PASSWORDS_COLLECTION = "passwords";
 
-    @Override
-    public void initAsyncCall(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
-        final SyncClientPasswordsResourceDelegate resourceDelegate = new SyncClientPasswordsResourceDelegate(syncConfig, onComplete);
+    private FirefoxSyncPasswords() {}
+
+    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
+        final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
-            makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
-        } catch (final URISyntaxException e) {
-            onComplete.onError(e);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
+        } catch (final FirefoxSyncGetCollectionException e) {
+            onComplete.onException(e);
         }
     }
 
-    private static class SyncClientPasswordsResourceDelegate extends SyncClientBaseResourceDelegate<List<PasswordRecord>> {
-        private SyncClientPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<List<PasswordRecord>>> onComplete) {
+    private static class SyncPasswordsResourceDelegate extends SyncBaseResourceDelegate<List<PasswordRecord>> {
+        private SyncPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<PasswordRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -42,8 +39,8 @@ class GetSyncPasswordsCommand extends SyncClientCommands.SyncClientCollectionCom
             final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory());
-            } catch (final NoCollectionKeysSetException | JSONException e) {
-                onComplete.onError(e);
+            } catch (final FirefoxSyncGetCollectionException e) {
+                onComplete.onException(e);
                 return;
             }
 

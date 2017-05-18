@@ -6,8 +6,6 @@ package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
 
-import java.util.List;
-
 /**
  * TODO: we use container to expand API later (e.g. last modified)
  */

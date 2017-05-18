@@ -17,40 +17,50 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.gecko.R;
-import org.mozilla.sync.FirefoxSyncLoginException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 import org.mozilla.util.ResourcesUtil;
 import org.mozilla.util.WebViewUtil;
 
 /**
- * An Activity that starts a web view and allows the user to log into their Firefox Account.
+ * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no
+ * knowledge of existing Firefox Account state: if you start it, it attempt to prompt the user to log in.
+ *
+ * At the time of writing, the login page maintains browser local storage and will pre-fill a previously entered
+ * account email.
+ *
+ * Input Intent args:
+ * <ul>
+ *     <li>{@link #EXTRA_DEBUG_ACCOUNT_CONFIG}: Pass in an alternative {@link FirefoxAccountEndpointConfig} to point
+ *     to non-production servers.</li>
+ * </ul>
+ *
+ * The {@code resultCode} can be {@link #RESULT_ERROR}, or the standard {@link #RESULT_OK} & {@link #RESULT_CANCELED}.
+ * The returned Intent will have the action {@link #ACTION_WEB_VIEW_LOGIN_RETURN}.
+ *
+ * Output Intent args:
+ * <ul>
+ *     <li>{@link #EXTRA_ACCOUNT}: on success, the returned account. This can be verified or unverified.</li>
+ *     <li>{@link #EXTRA_FAILURE_REASON}: on error, a {@link FirefoxSyncLoginException.FailureReason#name()}</li>
+ * </ul>
  *
  * The previous implementation, FxAccountWebFlowActivity & friends, are heavily dependent on Gecko, so we rewrote it.
  * This implementation is heavily inspired by Firefox for iOS's FxAContentViewController:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/02467f8015e5936425dfc7355c290f94c56ea57a/Client/Frontend/Settings/FxAContentViewController.swift
  *
- * TODO:
- *  - add loading timeout
- *  - assumes never used when user already logged in.
- *  - test more complex flows, like verification, failed password.
- *  - add docs on how class should be used.
- *  - prefill username & password when stored & needs verification.
- *  - how does Android *currently* handle unverified accounts? How does it know to go back to verified?
- *  - how do we update the verified state on disk?
- *  - rename FirefoxSyncWebViewLoginActivity?
+ * TODO: add loading timeout + docs.
  */
-public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
+public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
     private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     // Input values.
-    public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.extra.debug-account-config"; // TODO: prefix?
+    public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
 
     // Return values.
-    public static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.action.web-view-login-return";
-    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.extra.account";
-    public static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.extra.failure-reason";
+    public static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
+    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.login.extra.account";
+    public static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.login.extra.failure-reason";
     public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
@@ -144,14 +154,14 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
     private void onSessionStatus() {
         // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
         injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
         finish();
     }
 
     private void onSignOut() {
         // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
         injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_UNEXPECTED_MESSAGE);
+        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
         finish();
     }
 
@@ -162,8 +172,8 @@ public class FirefoxAccountWebViewLoginActivity extends AppCompatActivity {
         // TODO: Should we inject "error" like `onSignOut`?
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
-            Log.w(LOGTAG, "Could not create account. Returning from login...");
-            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_SENT_INVALID_ACCOUNT);
+            Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
+            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
             finish();
             return;
         }

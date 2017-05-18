@@ -6,9 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.FirefoxSyncGetCollectionException;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.FirefoxSyncLoginException;
+import org.mozilla.sync.login.FirefoxSyncLoginException;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
 import org.mozilla.sync.sync.HistoryRecord;
@@ -20,7 +20,7 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "AccountsExampleActivity";
 
-    FirefoxSyncLoginManager loginManager;
+    private FirefoxSyncLoginManager loginManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,36 +29,42 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
         // TODO: bad b/c store context. but short-lived... if onActivityResult.
         loginManager = FirefoxSync.getLoginManager(this);
+        loginManager.loadStoredSyncAccount(new FirefoxSyncLoginManager.LoginCallback() {
+        //loginManager.promptLogin(this, "AccountsExample", new FirefoxSyncLoginManager.LoginCallback() {
+            @Override
+            public void onSuccess(final FirefoxSyncClient syncClient) {
+                // TODO: maybe we should make sure the account is valid before returning here (sync token).
+                Log.d(LOGTAG, "onSuccess: load stored account.");
+                testSync(syncClient);
+            }
+
+            @Override
+            public void onFailure(final FirefoxSyncLoginException e) {
+                Log.d(LOGTAG, "onFailure: load stored account", e);
+                switch (e.getFailureReason()) {
+                    case ACCOUNT_NEEDS_VERIFICATION: // TODO: failure reasons are different for login & loading a stored account - do we want them to know that?
+                    case REQUIRES_LOGIN_PROMPT:
+                    case SERVER_ERROR:
+                        // todo: try again later
+                        break;
+
+                    case UNKNOWN:
+                        // TODO: uh oh! try again later.
+                }
+            }
+
+            @Override // TODO: rm me!
+            public void onUserCancel() { // TODO: rm me!
+                Log.d(LOGTAG, "onUserCancel: load stored account");
+            }
+        });
+
+        /*
         loginManager.promptLogin(this, "AccountsExample", new FirefoxSyncLoginManager.LoginCallback() {
             @Override
             public void onSuccess(final FirefoxSyncClient syncClient) {
                 Log.d(LOGTAG, "On success!");
-
-                final List<HistoryRecord> receivedHistory;
-                final List<PasswordRecord> receivedPasswords;
-                final BookmarkFolder rootBookmark;
-                try {
-                    receivedHistory = syncClient.getAllHistory().getResult();
-                    receivedPasswords = syncClient.getAllPasswords().getResult();
-                    rootBookmark = syncClient.getAllBookmarks().getResult();
-                } catch (final FirefoxSyncGetCollectionException e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                for (final HistoryRecord record : receivedHistory) {
-                    Log.d(LOGTAG, record.getTitle() + ": " + record.getURI());
-                }
-                for (final PasswordRecord record : receivedPasswords) {
-                    Log.d(LOGTAG, record.getUsername() + ": " + record.getPassword());
-                }
-                Log.d(LOGTAG, rootBookmark.getTitle());
-                for (final BookmarkRecord record : rootBookmark.getBookmarks()) {
-                    Log.d(LOGTAG, "root child: " + record.getTitle() + ": " + record.getURI());
-                }
-                for (final BookmarkFolder folder : rootBookmark.getSubfolders()) {
-                    Log.d(LOGTAG, "root subfolder: " + folder.getTitle());
-                }
+                testSync(syncClient);
             }
 
             @Override
@@ -71,6 +77,35 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 Log.d(LOGTAG, "onUserCancel: ");
             }
         });
+        */
+    }
+    
+    private void testSync(final FirefoxSyncClient syncClient) {
+        final List<HistoryRecord> receivedHistory;
+        final List<PasswordRecord> receivedPasswords;
+        final BookmarkFolder rootBookmark;
+        try {
+            receivedHistory = syncClient.getAllHistory().getResult();
+            receivedPasswords = syncClient.getAllPasswords().getResult();
+            rootBookmark = syncClient.getAllBookmarks().getResult();
+        } catch (final FirefoxSyncGetCollectionException e) {
+            Log.w(LOGTAG, "testSync: failure to receive! " + e.getFailureReason(), e); // TODO: print failure reason when printing exception? strip non-root Exceptions?
+            return;
+        }
+
+        for (final HistoryRecord record : receivedHistory) {
+            Log.d(LOGTAG, record.getTitle() + ": " + record.getURI());
+        }
+        for (final PasswordRecord record : receivedPasswords) {
+            Log.d(LOGTAG, record.getUsername() + ": " + record.getPassword());
+        }
+        Log.d(LOGTAG, rootBookmark.getTitle());
+        for (final BookmarkRecord record : rootBookmark.getBookmarks()) {
+            Log.d(LOGTAG, "root child: " + record.getTitle() + ": " + record.getURI());
+        }
+        for (final BookmarkFolder folder : rootBookmark.getSubfolders()) {
+            Log.d(LOGTAG, "root subfolder: " + folder.getTitle());
+        }
     }
 
     @Override

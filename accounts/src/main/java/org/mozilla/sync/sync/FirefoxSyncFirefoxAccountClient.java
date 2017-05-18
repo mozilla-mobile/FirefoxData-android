@@ -6,32 +6,41 @@ package org.mozilla.sync.sync;
 
 
 import android.support.annotation.NonNull;
-import org.mozilla.gecko.sync.repositories.domain.BookmarkRecord;
+import org.mozilla.gecko.sync.CollectionKeys;
+import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
-import org.mozilla.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
+import org.mozilla.util.IOUtil;
+import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * TODO:
  */
 class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
-    private final SyncClientCommandRunner commandRunner = new SyncClientCommandRunner();
+    private static final long REQUEST_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60); // todo
+
     private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor? How do they stop/get GC'd?
 
     private final FirefoxAccount account;
+    private final TokenServerToken token;
+    private final CollectionKeys collectionKeys;
 
-    public FirefoxSyncFirefoxAccountClient(final FirefoxAccount account) {
+    FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token, final CollectionKeys collectionKeys) {
         // todo: assert logged in?
         this.account = account;
+        this.token = token;
+        this.collectionKeys = collectionKeys;
     }
 
     @NonNull
@@ -47,14 +56,13 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) {
-        final Future<SyncCollectionResult<BookmarkFolder>> future = commandRunner.queueAndRunCommand(new GetSyncBookmarksCommand(), getInitialSyncConfig());
-        try {
-            return future.get(); // todo: timeout.
-        } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
-        }
+    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+        return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
+            @Override
+            public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
+                FirefoxSyncBookmarks.get(getInitialSyncConfig(), itemLimit, onComplete);
+            }
+        });
     }
 
     @NonNull
@@ -70,14 +78,13 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException {
-        final Future<SyncCollectionResult<List<PasswordRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncPasswordsCommand(), getInitialSyncConfig());
-        try {
-            return future.get(); // todo: timeout.
-        } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
-        }
+    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+        return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
+            @Override
+            public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {
+                FirefoxSyncPasswords.get(getInitialSyncConfig(), itemLimit, onComplete);
+            }
+        });
     }
 
     @NonNull
@@ -94,14 +101,57 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncGetCollectionException {
-        final Future<SyncCollectionResult<List<HistoryRecord>>> future = commandRunner.queueAndRunCommand(new GetSyncHistoryCommand(itemLimit), getInitialSyncConfig());
+        return getCollectionSync(new GetCollectionCall<List<HistoryRecord>>() {
+            @Override
+            public void getCollectionAsync(final OnSyncComplete<List<HistoryRecord>> onComplete) {
+                FirefoxSyncHistory.get(getInitialSyncConfig(), itemLimit, onComplete);
+            }
+        });
+    }
+
+    /** Convenience method to share the code to turn the async get collection calls into synchronous calls & handle errors. */
+    private <T> SyncCollectionResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxSyncGetCollectionException {
         try {
-            return future.get(); // todo: timeout.
-        } catch (final InterruptedException | ExecutionException e) {
-            e.printStackTrace(); // todo: what now?
-            return null;
+            return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<T>>() {
+                @Override
+                public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+                    getCollectionCall.getCollectionAsync(new OnSyncComplete<T>() {
+                        @Override public void onSuccess(final SyncCollectionResult<T> result) { onComplete.onComplete(result); }
+                        @Override public void onException(final FirefoxSyncGetCollectionException e) { onComplete.onException(e); }
+                    });
+                }
+            });
+        } catch (final ExecutionException e) {
+            throw newGetCollectionException(e);
+        } catch (final TimeoutException e) {
+            throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
+        }
+    }
+
+    /** Creates the appropriate exception, in particular identifying its FailureReason, from the given cause. */
+    private static FirefoxSyncGetCollectionException newGetCollectionException(final ExecutionException cause) {
+        // TODO: maybe we should strip PII in non-debug mode?
+        // We want to throw a FirefoxSyncGetCollectionException to the user of the lib but those
+        // FirefoxSyncGetCollectionExceptions thrown by the get collection calls are wrapped in ExecutionExceptions
+        // because we make them sync. As such, we have to dig through the Exception's causes to return a
+        // GetCollectionException with the same FailureReason as the initially thrown Exception. We wrap the given
+        // Exception, rather than returning the first exception, in order to maintain the Exception history.
+        //
+        // Note: We iterate on the list of wrapped Exceptions from the bottom-most first so that if we accidentally
+        // wrap a FirefoxSyncGetCollectionException in a FirefoxSyncGetCollectionException, we use the FailureReason
+        // closest to the location it occurred as it has more information.
+        FailureReason failureReason = null;
+        final List<Throwable> causes = ThrowableUtils.getRootCauseToTopThrowable(cause);
+        for (final Throwable currentCause : causes) {
+            if (currentCause instanceof FirefoxSyncGetCollectionException) {
+                failureReason = ((FirefoxSyncGetCollectionException) currentCause).getFailureReason();
+            }
+
+            if (failureReason != null) { break; } // Return the first match.
         }
 
+        if (failureReason == null) { /* no matches in list. */ failureReason = FailureReason.UNKNOWN; }
+        return new FirefoxSyncGetCollectionException(cause, failureReason);
     }
 
     @NonNull
@@ -111,6 +161,10 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     private FirefoxAccountSyncConfig getInitialSyncConfig() {
-        return new FirefoxAccountSyncConfig(account, networkExecutor, null, null);
+        return new FirefoxAccountSyncConfig(account, networkExecutor, token, collectionKeys);
+    }
+
+    private interface GetCollectionCall<T> {
+        void getCollectionAsync(final OnSyncComplete<T> onComplete);
     }
 }

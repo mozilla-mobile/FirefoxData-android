@@ -12,8 +12,6 @@ import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.sync.impl.FirefoxAccountShared;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.gecko.sync.CryptoRecord;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NoCollectionKeysSetException;
@@ -25,8 +23,11 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
+import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
+import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
+import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.FileUtil;
-import org.mozilla.util.IOUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,8 @@ import java.util.List;
  * Base implementation for requests made by {@see org.mozilla.accounts.sync.FirefoxAccountSyncClient}:
  * provides basic configuration and simplifies the error/response handling.
  */
-abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
+abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
+
     protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
@@ -47,9 +49,9 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** The sync config associated with the request. */
     protected final FirefoxAccountSyncConfig syncConfig;
-    protected final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete;
+    protected final OnSyncComplete<T> onComplete;
 
-    SyncClientBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+    SyncBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }
@@ -62,33 +64,36 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
         try {
             responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
-            onComplete.onError(e);
+            onComplete.onException(new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR));
             return;
         }
         handleResponse(response, responseBody);
     }
 
-    /**
-     * Handles any errors that happen in the request process. This can be overridden to have custom behavior; the
-     * default implementation just forwards the exception to the callback.
-     */
-    public void handleError(Exception e) { onComplete.onError(e); }
+    private void handleException(final Throwable cause) {
+        onComplete.onException(new FirefoxSyncGetCollectionException(cause, FailureReason.NETWORK_ERROR));
+    }
 
     @Override public String getUserAgent() { return null; } // TODO: decide if necessary.
 
-    // To keep things simple (for now), let's just set them all as errors.
-    @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleError(e); }
-    @Override public void handleHttpIOException(final IOException e) { handleError(e); }
-    @Override public void handleTransportException(final GeneralSecurityException e) { handleError(e); }
+    @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleException(e); }
+    @Override public void handleHttpIOException(final IOException e) { handleException(e); }
+    @Override public void handleTransportException(final GeneralSecurityException e) {
+        // An error occurred in the request preparation - I wonder if there's a more useful FailureReason.
+        handleException(e);
+    }
 
     @Override public int connectionTimeout() { return connectionTimeoutInMillis; }
     @Override public int socketTimeout() { return socketTimeoutInMillis; }
     @Override public AuthHeaderProvider getAuthHeaderProvider() {
         try {
             return FirefoxSyncRequestUtils.getAuthHeaderProvider(syncConfig.token);
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
-            Log.e(LOGTAG, "getAuthHeaderProvider: unable to get auth header.");
-            return null; // Oh well - we'll make the request we expect to fail and handle the failed request.
+        } catch (final UnsupportedEncodingException | URISyntaxException e) {
+            // Since we don't have the auth header, we can expect this request to fail on unauthorized. However,
+            // we can't cancel the request here so we return null to go through with it anyway, and we handle it
+            // when the request fails.
+            Log.e(LOGTAG, "getAuthHeaderProvider: unable to get auth header."); // Don't log e to avoid leaking user data.
+            return null;
         }
     }
 
@@ -96,9 +101,15 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
     protected static <R> List<R> responseBodyToRawRecords(final FirefoxAccountSyncConfig syncConfig, final String responseBody,
-            final String collectionName, final RecordFactory recordFactory) throws NoCollectionKeysSetException, JSONException {
-        final KeyBundle keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
-        final JSONArray recordArray = new JSONArray(responseBody);
+            final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncGetCollectionException {
+        final KeyBundle keyBundle;
+        final JSONArray recordArray;
+        try {
+            keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
+            recordArray = new JSONArray(responseBody);
+        } catch (final NoCollectionKeysSetException | JSONException e) {
+            throw new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR);
+        }
 
         final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());
         for (int i = 0; i < recordArray.length(); ++i) {
@@ -107,7 +118,7 @@ abstract class SyncClientBaseResourceDelegate<T> implements ResourceDelegate {
                 final R record = getAndDecryptRecord(recordFactory, keyBundle, jsonRecord);
                 receivedRecords.add(record);
             } catch (final IOException | JSONException | NonObjectJSONException | CryptoException e) {
-                Log.w(LOGTAG, "Unable to decrypt record", e); // Let's not log to avoid leaking user data.
+                Log.w(LOGTAG, "Unable to decrypt record"); // Let's not log exception to avoid leaking user data.
             }
         }
         return receivedRecords;
