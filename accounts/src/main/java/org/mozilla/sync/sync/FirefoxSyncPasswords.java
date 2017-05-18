@@ -6,7 +6,6 @@ package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ class FirefoxSyncPasswords {
 
     private FirefoxSyncPasswords() {}
 
-    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
+    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
         final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
@@ -30,7 +29,7 @@ class FirefoxSyncPasswords {
     }
 
     private static class SyncPasswordsResourceDelegate extends SyncBaseResourceDelegate<List<PasswordRecord>> {
-        private SyncPasswordsResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<PasswordRecord>> onComplete) {
+        private SyncPasswordsResourceDelegate(final FirefoxSyncConfig syncConfig, final OnSyncComplete<List<PasswordRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 

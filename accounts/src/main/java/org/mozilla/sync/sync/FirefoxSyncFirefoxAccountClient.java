@@ -11,7 +11,6 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.IOUtil;
 import org.mozilla.util.ThrowableUtils;
@@ -160,8 +159,8 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return account.email; // todo: email/account can get updated.
     }
 
-    private FirefoxAccountSyncConfig getInitialSyncConfig() {
-        return new FirefoxAccountSyncConfig(account, networkExecutor, token, collectionKeys);
+    private FirefoxSyncConfig getInitialSyncConfig() {
+        return new FirefoxSyncConfig(account, networkExecutor, token, collectionKeys);
     }
 
     private interface GetCollectionCall<T> {

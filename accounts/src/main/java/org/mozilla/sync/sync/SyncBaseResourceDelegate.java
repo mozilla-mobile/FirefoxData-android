@@ -24,7 +24,6 @@ import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.sync.impl.FirefoxAccountShared;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.FileUtil;
@@ -48,10 +47,10 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
     private static final int socketTimeoutInMillis = 1000 * 2 * 60; // Wait 2 minutes for data.
 
     /** The sync config associated with the request. */
-    protected final FirefoxAccountSyncConfig syncConfig;
+    protected final FirefoxSyncConfig syncConfig;
     protected final OnSyncComplete<T> onComplete;
 
-    SyncBaseResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
+    SyncBaseResourceDelegate(final FirefoxSyncConfig syncConfig, final OnSyncComplete<T> onComplete) {
         this.syncConfig = syncConfig;
         this.onComplete = onComplete;
     }
@@ -100,7 +99,7 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
     @Override public void addHeaders(HttpRequestBase request, DefaultHttpClient client) { }
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
-    protected static <R> List<R> responseBodyToRawRecords(final FirefoxAccountSyncConfig syncConfig, final String responseBody,
+    protected static <R> List<R> responseBodyToRawRecords(final FirefoxSyncConfig syncConfig, final String responseBody,
             final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncGetCollectionException {
         final KeyBundle keyBundle;
         final JSONArray recordArray;

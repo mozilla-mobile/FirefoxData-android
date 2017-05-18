@@ -6,7 +6,6 @@ package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ class FirefoxSyncHistory {
     private FirefoxSyncHistory() {}
 
     /** Gets history for the given sync config, returning history with the most-recently visited first. */
-    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
@@ -42,7 +41,7 @@ class FirefoxSyncHistory {
     }
 
     private static class SyncHistoryResourceDelegate extends SyncBaseResourceDelegate<List<HistoryRecord>> {
-        SyncHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+        SyncHistoryResourceDelegate(final FirefoxSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
