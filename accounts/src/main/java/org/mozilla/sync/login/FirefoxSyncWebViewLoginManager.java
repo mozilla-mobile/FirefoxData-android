@@ -14,6 +14,7 @@ import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
+import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
@@ -86,6 +87,12 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         requestLoginCallback = null;
     }
 
+    /**
+     * Handles a successful login.
+     *
+     * At the time of writing (5/18/17), the several network calls this method (and the methods it calls) makes have
+     * their time-out duration specified in their override of {@link BaseResourceDelegate#connectionTimeout()} & friends.
+     */
     private void onActivityResultOK(@NonNull final Intent data) {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 

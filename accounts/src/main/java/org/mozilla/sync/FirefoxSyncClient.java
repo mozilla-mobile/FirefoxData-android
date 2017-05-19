@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * TODO: doc methods.
+ * These methods should all time out.
  */
 public interface FirefoxSyncClient {
 

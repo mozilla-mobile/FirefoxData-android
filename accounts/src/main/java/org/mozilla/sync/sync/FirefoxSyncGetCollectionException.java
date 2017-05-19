@@ -35,9 +35,7 @@ public class FirefoxSyncGetCollectionException extends Exception {
 
     // Some reasons: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#response-format
     public enum FailureReason {
-        TIMED_OUT,
-
-        NETWORK_ERROR,
+        NETWORK_ERROR, // todo: includes time outs.
         SERVER_ERROR,
 
         ASSERTION_FAILURE, // currently unused, but good to have people handle it if we add it later.

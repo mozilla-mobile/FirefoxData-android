@@ -104,7 +104,13 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         });
     }
 
-    /** Convenience method to share the code to turn the async get collection calls into synchronous calls & handle errors. */
+    /**
+     * Convenience method to share the code to turn the async get collection calls into synchronous calls & handle errors.
+     *
+     * At the time of writing (5/18/17), the calls using this method have their time out duration specified from both the
+     * {@link IOUtil#makeSync(long, IOUtil.AsyncCall)} call, as well as the {@link SyncBaseResourceDelegate#connectionTimeout()}
+     * underlying the requests.
+     */
     private <T> SyncCollectionResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxSyncGetCollectionException {
         try {
             return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<T>>() {
@@ -119,7 +125,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         } catch (final ExecutionException e) {
             throw newGetCollectionException(e);
         } catch (final TimeoutException e) {
-            throw new FirefoxSyncGetCollectionException(e, FailureReason.TIMED_OUT);
+            throw new FirefoxSyncGetCollectionException(e, FailureReason.NETWORK_ERROR);
         }
     }
 

@@ -56,7 +56,6 @@ class FirefoxSyncTokenAccessor {
             return;
         }
 
-        // We make the TokenServerClientDelegate non-anonymous to prevent leaking the Context.
         final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor); // TODO: do we actually want to use this executor? What about networkExecutor?
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);
