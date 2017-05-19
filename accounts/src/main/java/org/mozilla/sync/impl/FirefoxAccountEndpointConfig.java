@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
  */
 public class FirefoxAccountEndpointConfig implements Parcelable {
 
-    private static final String CONTEXT = "fx_ios_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
+    private static final String CONTEXT = "fx_fennec_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
 
     public static final String LABEL_LATEST_DEV = "LatestDev";
     public static final String LABEL_STAGE = "Stage";

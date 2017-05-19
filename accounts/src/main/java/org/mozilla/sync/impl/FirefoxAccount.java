@@ -86,6 +86,7 @@ public class FirefoxAccount implements Parcelable {
             final byte[] keyFetchToken = Utils.hex2Byte(data.getString("keyFetchToken"));
             final byte[] sessionToken = Utils.hex2Byte(data.getString("sessionToken"));
             final byte[] unwrapBKey = Utils.hex2Byte(data.getString("unwrapBKey"));
+            // Note that we ignore attr: customizeSync, verifiedCanLinkAccount, & declinedSyncEngines. // todo: should we?
 
             final State accountState = new Engaged(email, uid, verified, unwrapBKey, sessionToken, keyFetchToken);
             return new FirefoxAccount(email, uid, accountState, endpointConfig);

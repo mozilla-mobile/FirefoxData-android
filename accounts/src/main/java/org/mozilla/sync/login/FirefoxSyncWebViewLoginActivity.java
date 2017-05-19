@@ -48,7 +48,7 @@ import org.mozilla.util.WebViewUtil;
  * This implementation is heavily inspired by Firefox for iOS's FxAContentViewController:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/02467f8015e5936425dfc7355c290f94c56ea57a/Client/Frontend/Settings/FxAContentViewController.swift
  *
- * TODO: add loading timeout + docs.
+ * TODO: add loading timeout + docs; WebCHannel login allows us to choose engines.
  */
 public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
@@ -128,48 +128,42 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
     private class JSInterface {
         @JavascriptInterface
-        public void onCommand(final String command, final String data) {
+        public void onCommand(final String command, final long messageID, final String data) {
+            // API defined by https://github.com/mozilla/fxa-content-server/blob/master/docs/relier-communication-protocols/fx-webchannel.md
             if (command == null) { Log.e(LOGTAG, "onCommand: received null command. Ignoring..."); return; }
-            // TODO: ios has a work-around: if not loaded and command is not loaded, then call onLoaded again.
 
-            Log.d(LOGTAG, "onCommand: " + command);
             switch (command) {
-                case "can_link_account": onCanLinkAccount(); break;
-                case "loaded": onLoaded(); break;
-                case "login": onLogin(data); break;
-                case "sessionStatus": onSessionStatus(); break;
-                case "sign_out": onSignOut(); break;
+                case "fxaccounts:loaded": onLoaded(); break;
+                case "fxaccounts:can_link_account": onCanLinkAccount(command, messageID, data); break;
+                case "fxaccounts:login": onLogin(data); break;
+
+                case "fxaccounts_delete_account": // fall through
+                case "fxaccount:change_password": // fall through
+                case "profile:change":
+                    // These are known events but we should never receive them since we're just signing in.
+                    Log.w(LOGTAG, "onCommand: ignoring known but unexpected command: " + command);
+                    break;
 
                 default:
-                    Log.w(LOGTAG, "Received unknown command: " + command);
+                    Log.w(LOGTAG, "onCommand: ignoring unknown command: " + command);
             }
         }
     }
 
-    private void onCanLinkAccount() {
-        // TODO: verify we can link the account. e.g. on iOS, we can only store one account so we can't link a different account.
-        injectMessage("can_link_account", true);
-    }
-
-    private void onSessionStatus() {
-        // We're not signed in to a Firefox Account at this time, which we signal by returning an error.
-        injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
-        finish();
-    }
-
-    private void onSignOut() {
-        // We're not signed in to a Firefox Account at this time. We should never get a sign out message!
-        injectMessage("error");
-        setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
-        finish();
+    private void onCanLinkAccount(final String command, final long messageId, final String inputData) {
+        final JSONObject outputData = new JSONObject();
+        try {
+            // afaik, "can link account" asks us if the user should be able to sign into a specific account.
+            // Since this class is ignorant of current sign in state, we always say "yes" & return true.
+            outputData.put("ok", true);
+        } catch (final JSONException e) {
+            throw new IllegalStateException("Expected hard-coded JSONObject creation to be valid.");
+        }
+        injectResponse(command, messageId, outputData);
     }
 
     private void onLogin(@Nullable final String data) {
         // The user has signed in to a Firefox Account. We're done!
-        injectMessage("login");
-
-        // TODO: Should we inject "error" like `onSignOut`?
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
@@ -195,37 +189,36 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         // todo: invalidate loading timeout.
     }
 
-    private void injectMessage(final String statusStr) {
-        injectMessage(statusStr, false);
-    }
-
-    private void injectMessage(final String statusStr, final boolean hasData) {
-        final String jsonStr = getInjectionJSONStr(statusStr, hasData);
+    private void injectResponse(final String command, final long messageID, final JSONObject data) {
+        final String customEventArg = getCustomEventJSONStr(command, messageID, data);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 // WebView methods must be called from UiThread.
-                final String script = "window.postMessage(" + jsonStr + ", '" + webViewURL + "');";
+                final String script = "window.dispatchEvent(" +
+                        "new CustomEvent('WebChannelMessageToContent', " + customEventArg + "));";
                 WebViewUtil.evalJS(webView, script);
             }
         });
     }
 
     /**
-     * @param hasData true if the "content" object should include {"data": {"ok": true}}, false otherwise.
+     * Returns the second argument to CustomEvent, as defined by:
+     *   https://github.com/mozilla/fxa-content-server/blob/master/docs/relier-communication-protocols/fx-webchannel.md#response-format
      */
-    private String getInjectionJSONStr(final String statusStr, final boolean hasData) {
+    private String getCustomEventJSONStr(final String command, final long messageID, @Nullable final JSONObject data) {
         final JSONObject obj = new JSONObject();
-        final JSONObject contentObj = new JSONObject();
-        final JSONObject dataObj = new JSONObject();
+        final JSONObject messageObj = new JSONObject();
+        final JSONObject detailObj = new JSONObject();
         try {
-            if (hasData) {
-                dataObj.put("ok", true);
-                contentObj.put("data", dataObj);
-            }
-            contentObj.put("status", statusStr);
-            obj.put("content", contentObj);
-            obj.put("type", "message");
+            messageObj.put("command", command);
+            messageObj.put("messageId", messageID);
+            if (data != null) { messageObj.put("data", data); }
+
+            detailObj.put("message", messageObj);
+            detailObj.put("id", "account_updates"); // it might be more correct to pass this in from JS, than hardcode it.
+
+            obj.put("detail", detailObj);
         } catch (final JSONException e) {
             // Throw because this is largely hard-coded so likely to be developer error.
             throw new IllegalStateException("Failed to create injected JSON object", e);
