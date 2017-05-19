@@ -74,6 +74,8 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Note: we force portrait so we don't have to handle restoring the WebView -
+        // see this activity declaration in the AndroidManifest for motivations.
 
         setContentView(R.layout.activity_fxaccount_login_web_view);
         setSupportActionBar((Toolbar) findViewById(R.id.fxaccount_login_toolbar));

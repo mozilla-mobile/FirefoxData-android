@@ -3,6 +3,8 @@
           package="org.mozilla.gecko"
 >
 
+    <!-- TODO: clean me up! -->
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -30,11 +32,17 @@
                  android:supportsRtl="true"
                  android:theme="@style/AppTheme">
 
+        <!-- We force portrait mode because we don't want to handle recreating the Activity because it's non-trivial:
+        the WebView does not restore the input fields and we can't back to the "needs verification" screen easily (if we
+        were in that state). One side effect of this is that if the Activity is destroyed, e.g. low memory which can
+        happen when the user switches apps to verify their account, we don't restore the state. :( Issue #1. -->
         <activity
-                android:theme="@style/Theme.AppCompat.NoActionBar"
-                android:label="@string/fxaccount_login_webview_label"
                 android:name="org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity"
+                android:label="@string/fxaccount_login_webview_label"
                 android:exported="true"
+                android:theme="@style/Theme.AppCompat.NoActionBar"
+                android:screenOrientation="portrait"
+                android:configChanges="orientation|keyboardHidden"
         />
 
         <activity
