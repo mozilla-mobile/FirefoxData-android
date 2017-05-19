@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 
 import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
@@ -43,6 +44,13 @@ class FirefoxSyncCryptoKeysAccessor {
     /** A callback for a crypto keys request. */
     interface CollectionKeysCallback {
         void onKeysReceived(CollectionKeys collectionKeys);
+
+        /**
+         * Called when the user does not have collection keys on the server. This can happen when the user has a brand
+         * new account and has not uploaded any sync data yet.
+         */
+        void onKeysDoNotExist();
+
         /** Called when the server response denies us the crypto keys, or the response is invalid. */
         void onRequestFailure(Exception e);
         /** Called when we're unable to get a response from the server. */
@@ -57,6 +65,24 @@ class FirefoxSyncCryptoKeysAccessor {
      * {@link FirefoxSyncAssertionException} in the event that some assertion we make fails.
      */
     static void get(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
+        // If the "crypto" collection does not exist, the crypto keys request will 404 and fail. We'd like to actually
+        // know why the request failed so we first ensure the "crypto" collection exists.
+        FirefoxSyncCollectionInfoAccessor.get(token, new FirefoxSyncCollectionInfoAccessor.CollectionInfoCallback() {
+            @Override
+            public void onSuccess(final Collection<String> existingCollectionNames) {
+                if (existingCollectionNames.contains("crypto")) {
+                    makeCryptoKeysRequest(marriedAccount, token, onComplete);
+                } else {
+                    onComplete.onKeysDoNotExist();
+                }
+            }
+
+            @Override public void onRequestFailure(final Exception e) { onComplete.onRequestFailure(e); }
+            @Override public void onError(final Exception e) { onComplete.onError(e); }
+        });
+    }
+
+    private static void makeCryptoKeysRequest(final FirefoxAccount marriedAccount, final TokenServerToken token, final CollectionKeysCallback onComplete) {
         final SyncStorageRecordRequest request;
         try {
             request = new SyncStorageRecordRequest(FirefoxSyncRequestUtils.getCollectionURI(token, CRYPTO_COLLECTION, KEYS_ID, null));

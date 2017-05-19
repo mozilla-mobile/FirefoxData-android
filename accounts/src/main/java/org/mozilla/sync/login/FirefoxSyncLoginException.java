@@ -60,6 +60,7 @@ public class FirefoxSyncLoginException extends Exception {
         REQUIRES_BACKOFF,
         REQUIRES_LOGIN_PROMPT,
         TIMED_OUT,
+        USER_HAS_NO_DATA,
 
         NETWORK_ERROR,
         SERVER_ERROR,

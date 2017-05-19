@@ -16,12 +16,12 @@ import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.FirefoxSyncLoginManager;
-import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
+import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
+import org.mozilla.sync.impl.FirefoxSyncAssertionException;
+import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -126,6 +126,12 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     public void onKeysReceived(final CollectionKeys collectionKeys) {
                         final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(marriedAccount, token, collectionKeys);
                         loginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
+                    }
+
+                    @Override
+                    public void onKeysDoNotExist() {
+                        loginCallback.onFailure(new FirefoxSyncLoginException("Server does not contain crypto keys: " +
+                                "it is likely the user has not uploaded data to the server", FailureReason.USER_HAS_NO_DATA));
                     }
 
                     @Override
