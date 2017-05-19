@@ -15,6 +15,7 @@ public class FileUtil {
 
     private FileUtil() {}
 
+    // TODO: move to IOUtil?
     /**
      * A generic solution to read from an input stream in UTF-8. This function will read from the stream until it
      * is finished and close the stream - this is necessary to close the wrapping resources.

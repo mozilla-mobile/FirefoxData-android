@@ -6,7 +6,6 @@ package org.mozilla.sync.sync;
 
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.sync.net.BaseResource;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 
 import java.net.URI;
@@ -27,7 +26,7 @@ class FirefoxSyncUtils {
      * @param collectionArgs The arguments for this get request. Note that "full=1" is included as a default arg.
      * @param delegate The callback for the request.
      */
-    static void makeGetRequestForCollection(final FirefoxAccountSyncConfig syncConfig, final String collectionName,
+    static void makeGetRequestForCollection(final FirefoxSyncConfig syncConfig, final String collectionName,
             @Nullable final Map<String, String> collectionArgs, final SyncBaseResourceDelegate delegate) throws FirefoxSyncGetCollectionException {
         final Map<String, String> allArgs = getDefaultArgs();
         if (collectionArgs != null) { allArgs.putAll(collectionArgs); }

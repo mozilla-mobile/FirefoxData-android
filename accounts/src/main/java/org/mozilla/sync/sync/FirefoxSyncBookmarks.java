@@ -7,13 +7,10 @@ package org.mozilla.sync.sync;
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.mozilla.sync.sync.FirefoxSyncUtils.makeGetRequestForCollection;
 
 /**
  * Gets the bookmarks for the associated account from Firefox Sync.
@@ -24,7 +21,7 @@ class FirefoxSyncBookmarks {
 
     private FirefoxSyncBookmarks() {}
 
-    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
+    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
@@ -34,7 +31,7 @@ class FirefoxSyncBookmarks {
     }
 
     private static class SyncClientBookmarksResourceDelegate extends SyncBaseResourceDelegate<BookmarkFolder> {
-        SyncClientBookmarksResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<BookmarkFolder> onComplete) {
+        SyncClientBookmarksResourceDelegate(final FirefoxSyncConfig syncConfig, final OnSyncComplete<BookmarkFolder> onComplete) {
             super(syncConfig, onComplete);
         }
 

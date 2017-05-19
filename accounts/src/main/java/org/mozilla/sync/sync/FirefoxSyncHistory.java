@@ -6,15 +6,11 @@ package org.mozilla.sync.sync;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
-import org.mozilla.sync.impl.FirefoxAccountSyncConfig;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.mozilla.sync.sync.FirefoxSyncUtils.makeGetRequestForCollection;
 
 /**
  * Gets the history for the associated account from Firefox Sync.
@@ -25,7 +21,8 @@ class FirefoxSyncHistory {
 
     private FirefoxSyncHistory() {}
 
-    static void get(final FirefoxAccountSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+    /** Gets history for the given sync config, returning history with the most-recently visited first. */
+    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
@@ -35,15 +32,16 @@ class FirefoxSyncHistory {
     }
 
     private static Map<String, String> getArgs(final int itemLimit) {
-        if (itemLimit < 0) return Collections.emptyMap(); // TODO: fix or document.
-
         final Map<String, String> args = new HashMap<>(1);
-        args.put("limit", String.valueOf(itemLimit));
+        if (itemLimit >= 0) { // todo: document or remove.
+            args.put("limit", String.valueOf(itemLimit));
+        }
+        args.put("sort", "newest"); // sort history in the order users would see in their browser.
         return args;
     }
 
     private static class SyncHistoryResourceDelegate extends SyncBaseResourceDelegate<List<HistoryRecord>> {
-        SyncHistoryResourceDelegate(final FirefoxAccountSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+        SyncHistoryResourceDelegate(final FirefoxSyncConfig syncConfig, final OnSyncComplete<List<HistoryRecord>> onComplete) {
             super(syncConfig, onComplete);
         }
 
@@ -62,9 +60,10 @@ class FirefoxSyncHistory {
         }
 
         private List<HistoryRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords) {
-            // TODO: Sort.
             // Iterating over these a second time is inefficient (the first time creates the raw records list), but it
             // makes for cleaner code: fix if there are perf issues.
+            //
+            // We assume the result records are already in the desired sort order.
             final ArrayList<HistoryRecord> resultRecords = new ArrayList<>(rawRecords.size());
             for (final org.mozilla.gecko.sync.repositories.domain.HistoryRecord rawRecord : rawRecords) {
                 resultRecords.add(new HistoryRecord(rawRecord));
