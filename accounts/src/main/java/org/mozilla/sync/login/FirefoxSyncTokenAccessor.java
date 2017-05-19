@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.login;
 
+import android.support.annotation.WorkerThread;
 import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountShared;
@@ -32,9 +33,13 @@ class FirefoxSyncTokenAccessor {
      * Gets a Sync Token or returns an error through the provided callback. The given account
      * <b>must</b> be in the Married state.
      *
+     * The request is made from the calling thread but the callback runs on the TODO thread.
+     * This is unintuitive (see issue #3).
+     *
      * @throws IllegalStateException if the account is not in the Married state.
      */
-    public static void get(final FirefoxAccount account, final FirefoxSyncTokenServerClientDelegate callback) {
+    @WorkerThread // network request.
+    public static void getBlocking(final FirefoxAccount account, final FirefoxSyncTokenServerClientDelegate callback) {
         if (!FirefoxAccountUtils.isMarried(account.accountState)) {
             callback.handleError(new FirefoxSyncAssertionException("Assertion failed: expected account to be in married state. Instead: " +
                     account.accountState.getStateLabel().name()));

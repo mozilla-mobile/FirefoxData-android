@@ -125,10 +125,10 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     @WorkerThread // calls to network.
     private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
         // todo: assert married?
-        FirefoxSyncTokenAccessor.get(marriedAccount, new FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate() {
+        FirefoxSyncTokenAccessor.getBlocking(marriedAccount, new FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate() {
             @Override
             public void handleSuccess(final TokenServerToken token) {
-                FirefoxSyncCryptoKeysAccessor.get(marriedAccount, token, new FirefoxSyncCryptoKeysAccessor.CollectionKeysCallback() {
+                FirefoxSyncCryptoKeysAccessor.getBlocking(marriedAccount, token, new FirefoxSyncCryptoKeysAccessor.CollectionKeysCallback() {
                     @Override
                     public void onKeysReceived(final CollectionKeys collectionKeys) {
                         final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(marriedAccount, token, collectionKeys);

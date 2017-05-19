@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
@@ -21,7 +22,13 @@ class FirefoxSyncBookmarks {
 
     private FirefoxSyncBookmarks() {}
 
-    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
+    /**
+     * Gets the bookmarks associated with the given account.
+     *
+     * Both the request and the callback occur on the calling thread (this is unintuitive: issue #3).
+     */
+    @WorkerThread // network request.
+    static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);

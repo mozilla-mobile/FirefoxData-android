@@ -55,7 +55,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
-                FirefoxSyncBookmarks.get(syncConfig, itemLimit, onComplete);
+                FirefoxSyncBookmarks.getBlocking(syncConfig, itemLimit, onComplete);
             }
         });
     }
@@ -77,7 +77,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {
-                FirefoxSyncPasswords.get(syncConfig, itemLimit, onComplete);
+                FirefoxSyncPasswords.getBlocking(syncConfig, itemLimit, onComplete);
             }
         });
     }
@@ -99,7 +99,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         return getCollectionSync(new GetCollectionCall<List<HistoryRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<HistoryRecord>> onComplete) {
-                FirefoxSyncHistory.get(syncConfig, itemLimit, onComplete);
+                FirefoxSyncHistory.getBlocking(syncConfig, itemLimit, onComplete);
             }
         });
     }

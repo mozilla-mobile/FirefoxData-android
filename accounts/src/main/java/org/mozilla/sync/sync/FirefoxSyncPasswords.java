@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.WorkerThread;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
 
@@ -19,7 +20,13 @@ class FirefoxSyncPasswords {
 
     private FirefoxSyncPasswords() {}
 
-    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
+    /**
+     * Gets the passwords for the given account.
+     *
+     * Both the request and callback occur on the calling thread (this is unintuitive: issue #3).
+     */
+    @WorkerThread // network request.
+    static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
         final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);

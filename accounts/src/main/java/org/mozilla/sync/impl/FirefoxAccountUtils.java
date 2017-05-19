@@ -34,6 +34,11 @@ public class FirefoxAccountUtils { // TODO: visibility? Maybe move to impl?
         return (Married) accountState;
     }
 
+    /**
+     * Advances the given account to the married state.
+     *
+     * Both the network request and the callback will run on the given Executor.
+     */
     public static void advanceAccountToMarried(final FirefoxAccount firefoxAccount, final Executor backgroundExecutor, final MarriedLoginCallback callback) {
         backgroundExecutor.execute(new Runnable() {
             @Override

@@ -5,6 +5,7 @@
 package org.mozilla.sync.login;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.CollectionKeys;
@@ -57,17 +58,19 @@ class FirefoxSyncCryptoKeysAccessor {
         void onError(Exception e);
     }
 
-    // todo: callback threads.
     /**
      * Gets the crypto keys for the given account & sync token.
+     *
+     * Both the request & the callback occur on the calling thread (this is unintuitive: issue #3).
      *
      * {@code onComplete}'s {@link CollectionKeysCallback#onError(Exception)} will be passed a
      * {@link FirefoxSyncAssertionException} in the event that some assertion we make fails.
      */
-    static void get(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
+    @WorkerThread // network request.
+    static void getBlocking(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
         // If the "crypto" collection does not exist, the crypto keys request will 404 and fail. We'd like to actually
         // know why the request failed so we first ensure the "crypto" collection exists.
-        FirefoxSyncCollectionInfoAccessor.get(token, new FirefoxSyncCollectionInfoAccessor.CollectionInfoCallback() {
+        FirefoxSyncCollectionInfoAccessor.getBlocking(token, new FirefoxSyncCollectionInfoAccessor.CollectionInfoCallback() {
             @Override
             public void onSuccess(final Collection<String> existingCollectionNames) {
                 if (existingCollectionNames.contains("crypto")) {

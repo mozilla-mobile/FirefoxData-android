@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.login;
 
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.JSONRecordFetcher;
@@ -36,8 +37,11 @@ class FirefoxSyncCollectionInfoAccessor {
      *
      * In theory, we can provide more result data (what is actually stored at those collections?) but I just don't need
      * that data right now.
+     *
+     * Both the request and callback occur on the calling thread (this is unintuitive: issue #3).
      */
-    static void get(final TokenServerToken token, final CollectionInfoCallback callback) {
+    @WorkerThread // network request.
+    static void getBlocking(final TokenServerToken token, final CollectionInfoCallback callback) {
         final String collectionInfoURI;
         try {
             collectionInfoURI = getCollectionInfoURI(token);
