@@ -47,8 +47,6 @@ import org.mozilla.util.WebViewUtil;
  * The previous implementation, FxAccountWebFlowActivity & friends, are heavily dependent on Gecko, so we rewrote it.
  * This implementation is heavily inspired by Firefox for iOS's FxAContentViewController:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/02467f8015e5936425dfc7355c290f94c56ea57a/Client/Frontend/Settings/FxAContentViewController.swift
- *
- * TODO: add loading timeout + docs; WebCHannel login allows us to choose engines.
  */
 public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
