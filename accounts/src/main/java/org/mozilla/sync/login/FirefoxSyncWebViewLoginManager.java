@@ -20,6 +20,7 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.impl.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
@@ -36,7 +37,6 @@ import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
 
-    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor(); // TODO: use shared executor?
     private final FirefoxAccountSharedPrefsStore accountStore;
 
     // Values stored between the login call & `onActivityResult` so we can execute the given callback.
@@ -101,7 +101,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final LoginCallback requestLoginCallback = this.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
-        FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, backgroundExecutor, new FirefoxAccountUtils.MarriedLoginCallback() {
+        FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, FirefoxAccountShared.executor, new FirefoxAccountUtils.MarriedLoginCallback() {
             @Override
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
@@ -213,17 +213,17 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     public void loadStoredSyncAccount(@NonNull final LoginCallback callback) {
         if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null."); }
 
-        final FirefoxAccount account;
-        try {
-            account = accountStore.loadFirefoxAccount();
-        } catch (final FirefoxAccountSharedPrefsStore.FailedToLoadAccountException e) {
-            callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT));
-            return;
-        }
-
-        backgroundExecutor.execute(new Runnable() {
+        FirefoxAccountShared.executor.execute(new Runnable() {
             @Override
             public void run() {
+                final FirefoxAccount account;
+                try {
+                    account = accountStore.loadFirefoxAccount();
+                } catch (final FirefoxAccountSharedPrefsStore.FailedToLoadAccountException e) {
+                    callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT));
+                    return;
+                }
+
                 prepareSyncClientAndCallback(account, callback);
             }
         });

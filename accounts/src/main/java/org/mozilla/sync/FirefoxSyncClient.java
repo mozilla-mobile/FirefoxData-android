@@ -5,6 +5,7 @@
 package org.mozilla.sync;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.sync.HistoryRecord;
@@ -19,14 +20,14 @@ import java.util.List;
  */
 public interface FirefoxSyncClient {
 
-    @NonNull SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException;
-    @NonNull SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
-    @NonNull SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException;
-    @NonNull SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
-    @NonNull SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
-    @NonNull SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
     @NonNull String getEmail() throws FirefoxSyncException; // TODO: verify with server has not changed; throws exception?
 }
