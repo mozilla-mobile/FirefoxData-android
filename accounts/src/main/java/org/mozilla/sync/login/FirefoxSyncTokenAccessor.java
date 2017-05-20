@@ -7,7 +7,6 @@ package org.mozilla.sync.login;
 import android.support.annotation.WorkerThread;
 import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
@@ -33,7 +32,7 @@ class FirefoxSyncTokenAccessor {
      * Gets a Sync Token or returns an error through the provided callback. The given account
      * <b>must</b> be in the Married state.
      *
-     * The request is made from the calling thread but the callback runs on the TODO thread.
+     * The request is made from the calling thread but the callback runs on the shared sync background thread.
      * This is unintuitive (see issue #3).
      *
      * @throws IllegalStateException if the account is not in the Married state.
@@ -61,7 +60,7 @@ class FirefoxSyncTokenAccessor {
             return;
         }
 
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncShared.executor); // TODO: do we actually want to use this executor? What about networkExecutor?
+        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncLoginShared.executor);
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);
     }

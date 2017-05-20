@@ -20,7 +20,6 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
@@ -98,7 +97,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final LoginCallback requestLoginCallback = this.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
-        FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, FirefoxSyncShared.executor, new FirefoxAccountUtils.MarriedLoginCallback() {
+        FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, FirefoxSyncLoginShared.executor, new FirefoxAccountUtils.MarriedLoginCallback() {
             @Override
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
@@ -211,7 +210,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null."); }
 
         // The callback should always be called from the background thread so we just do everything on the background thread.
-        FirefoxSyncShared.executor.execute(new Runnable() {
+        FirefoxSyncLoginShared.executor.execute(new Runnable() {
             @Override
             public void run() {
                 final FirefoxAccount account;
