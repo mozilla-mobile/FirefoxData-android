@@ -7,7 +7,7 @@ package org.mozilla.sync.login;
 import android.support.annotation.WorkerThread;
 import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
@@ -61,7 +61,7 @@ class FirefoxSyncTokenAccessor {
             return;
         }
 
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor); // TODO: do we actually want to use this executor? What about networkExecutor?
+        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncShared.executor); // TODO: do we actually want to use this executor? What about networkExecutor?
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);
     }

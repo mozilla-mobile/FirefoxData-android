@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
+import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
 
 /**
  * TODO: method docs.

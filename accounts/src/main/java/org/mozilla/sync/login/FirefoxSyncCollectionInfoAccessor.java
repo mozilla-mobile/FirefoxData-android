@@ -5,7 +5,6 @@
 package org.mozilla.sync.login;
 
 import android.support.annotation.WorkerThread;
-import android.util.Log;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.JSONRecordFetcher;
 import org.mozilla.gecko.sync.delegates.JSONRecordFetchDelegate;
@@ -18,8 +17,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-
-import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
 
 /** Static class that contains functions to access the collection info associated with a Firefox Account. */
 class FirefoxSyncCollectionInfoAccessor {

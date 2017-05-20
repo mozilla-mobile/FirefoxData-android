@@ -7,7 +7,7 @@ package org.mozilla.sync.impl;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class FirefoxAccountShared {
+public class FirefoxSyncShared {
 
     public static final String LOGTAG = "FirefoxAccount";
 

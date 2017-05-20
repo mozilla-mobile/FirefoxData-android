@@ -8,14 +8,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 
@@ -42,7 +40,7 @@ import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STAGE;
  */
 class FirefoxAccountSharedPrefsStore {
 
-    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountSharedPrefsStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";

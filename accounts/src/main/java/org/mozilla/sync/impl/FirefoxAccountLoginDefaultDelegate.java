@@ -5,7 +5,6 @@
 package org.mozilla.sync.impl;
 
 import android.util.Log;
-import org.mozilla.sync.impl.FirefoxAccountShared;
 import org.mozilla.gecko.background.fxa.FxAccountClient;
 import org.mozilla.gecko.background.fxa.FxAccountClient20;
 import org.mozilla.gecko.browserid.BrowserIDKeyPair;
@@ -13,7 +12,6 @@ import org.mozilla.gecko.fxa.login.FxAccountLoginStateMachine;
 import org.mozilla.gecko.fxa.login.FxAccountLoginTransition;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.StateFactory;
-import org.mozilla.sync.impl.FirefoxAccount;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
@@ -23,7 +21,7 @@ import java.util.concurrent.Executor;
  */
 abstract class FirefoxAccountLoginDefaultDelegate implements FxAccountLoginStateMachine.LoginStateMachineDelegate {
 
-    protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    protected static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     protected final FirefoxAccount account;
     private final Executor networkExecutor;

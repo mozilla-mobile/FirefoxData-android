@@ -23,7 +23,7 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.FileUtil;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
-    protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    protected static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
     private static final int socketTimeoutInMillis = 1000 * 2 * 60; // Wait 2 minutes for data.

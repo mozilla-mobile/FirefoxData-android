@@ -15,7 +15,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.gecko.R;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
@@ -50,7 +50,7 @@ import org.mozilla.util.WebViewUtil;
  */
 public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
-    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     // Input values.
     public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";

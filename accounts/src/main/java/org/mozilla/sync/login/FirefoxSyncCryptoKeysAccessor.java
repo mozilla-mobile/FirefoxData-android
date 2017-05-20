@@ -32,7 +32,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
-import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
+import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
 
 /** A container for static functions to get the crypto keys for a Firefox account. */
 class FirefoxSyncCryptoKeysAccessor {
