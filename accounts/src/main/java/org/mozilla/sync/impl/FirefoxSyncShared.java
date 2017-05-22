@@ -5,5 +5,5 @@
 package org.mozilla.sync.impl;
 
 public class FirefoxSyncShared {
-    public static final String LOGTAG = "FirefoxAccount";
+    public static final String LOGTAG = "FirefoxSync";
 }

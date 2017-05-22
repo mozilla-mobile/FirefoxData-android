@@ -13,8 +13,6 @@ import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
 public class FirefoxSync {
     private FirefoxSync() {}
 
-    // todo: name.
-    // TODO: maybe we should throw if it's called with the same Context twice?
     public static FirefoxSyncLoginManager getLoginManager(final Context context) {
         return InternalFirefoxSyncLoginManagerFactory.internalGetLoginManager(context);
     }
