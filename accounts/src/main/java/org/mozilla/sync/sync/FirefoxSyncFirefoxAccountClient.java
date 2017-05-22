@@ -17,7 +17,6 @@ import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -35,7 +34,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
         // todo: assert logged in?
         this.account = account;
         // TODO: use shared executor? How do they stop/get GC'd?
-        this.syncConfig = new FirefoxSyncConfig(account, Executors.newSingleThreadExecutor(), token, collectionKeys);
+        this.syncConfig = new FirefoxSyncConfig(token, collectionKeys);
     }
 
     @NonNull

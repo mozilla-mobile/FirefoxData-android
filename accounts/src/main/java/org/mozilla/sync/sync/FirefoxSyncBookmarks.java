@@ -63,7 +63,8 @@ class FirefoxSyncBookmarks {
             // This would be less error-prone if we did the immutable, recursive solution but we run the
             // risk of hitting a StackOverflowException. There are some work-arounds (Visitor pattern?)
             // but they're probably not worth the complexity.
-            // todo: how to handle missing records? e.g. missing a parent b/c partial sync or corruption.
+            //
+            // Note: we don't handle the case that bookmarks are corrupted or we retrieved a partial bookmarks list.
             final Map<String, BookmarkRecord> idToSeenBookmarks = new HashMap<>(rawRecords.size()); // Let's assume they'll mostly be bookmarks.
             final Map<String, BookmarkFolder> idToSeenFolders = new HashMap<>();
             for (final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord rawRecord : rawRecords) {

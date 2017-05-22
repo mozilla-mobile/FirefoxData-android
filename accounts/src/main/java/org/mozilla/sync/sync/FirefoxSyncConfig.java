@@ -6,21 +6,13 @@ package org.mozilla.sync.sync;
 
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.impl.FirefoxAccount;
-
-import java.util.concurrent.ExecutorService;
 
 /** Data container for information necessary to sync. */
 class FirefoxSyncConfig {
-    final FirefoxAccount account; // TODO: rm unused?
-    final ExecutorService networkExecutor;
     final TokenServerToken token;
     final CollectionKeys collectionKeys;
 
-    FirefoxSyncConfig(final FirefoxAccount account, final ExecutorService networkExecutor,
-            final TokenServerToken token, final CollectionKeys collectionKeys) {
-        this.account = account;
-        this.networkExecutor = networkExecutor;
+    FirefoxSyncConfig(final TokenServerToken token, final CollectionKeys collectionKeys) {
         this.token = token;
         this.collectionKeys = collectionKeys;
     }
