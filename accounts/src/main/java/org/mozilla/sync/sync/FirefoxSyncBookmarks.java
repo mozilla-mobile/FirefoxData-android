@@ -26,15 +26,25 @@ class FirefoxSyncBookmarks {
      * Gets the bookmarks associated with the given account.
      *
      * Both the request and the callback occur on the calling thread (this is unintuitive: issue #3).
+     *
+     * @param itemLimit The number of items to fetch. If < 0, fetches all items.
      */
     @WorkerThread // network request.
     static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
-            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, getArgs(itemLimit), resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
+    }
+
+    private static Map<String, String> getArgs(final int itemLimit) {
+        if (itemLimit < 0) { return null; } // Fetch all items if < 0.
+
+        final Map<String, String> args = new HashMap<>(1);
+        args.put("limit", String.valueOf(itemLimit));
+        return args;
     }
 
     private static class SyncClientBookmarksResourceDelegate extends SyncBaseResourceDelegate<BookmarkFolder> {

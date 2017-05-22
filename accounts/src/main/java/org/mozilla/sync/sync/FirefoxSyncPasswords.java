@@ -9,7 +9,9 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Gets the Passwords associated with the Firefox Account from Sync.
@@ -24,15 +26,25 @@ class FirefoxSyncPasswords {
      * Gets the passwords for the given account.
      *
      * Both the request and callback occur on the calling thread (this is unintuitive: issue #3).
+     *
+     * @param itemLimit The number of items to fetch. If < 0, returns all items.
      */
     @WorkerThread // network request.
     static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<PasswordRecord>> onComplete) {
         final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
-            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, null, resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, getArgs(itemLimit), resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
+    }
+
+    private static Map<String, String> getArgs(final int itemLimit) {
+        if (itemLimit < 0) { return null; } // Fetch all items if < 0.
+
+        final Map<String, String> args = new HashMap<>(1);
+        args.put("limit", String.valueOf(itemLimit));
+        return args;
     }
 
     private static class SyncPasswordsResourceDelegate extends SyncBaseResourceDelegate<List<PasswordRecord>> {
