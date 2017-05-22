@@ -15,8 +15,7 @@ import org.mozilla.sync.sync.SyncCollectionResult;
 import java.util.List;
 
 /**
- * TODO: doc methods.
- * These methods should all time out.
+ * Fro doc: These methods should all time out.
  */
 public interface FirefoxSyncClient {
 
@@ -29,5 +28,5 @@ public interface FirefoxSyncClient {
     @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
     @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
-    @NonNull String getEmail() throws FirefoxSyncException; // TODO: verify with server has not changed; throws exception?
+    @NonNull String getEmail() throws FirefoxSyncException;
 }

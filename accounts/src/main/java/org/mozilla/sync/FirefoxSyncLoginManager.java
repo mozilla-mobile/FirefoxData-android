@@ -12,10 +12,9 @@ import android.support.annotation.Nullable;
 import org.mozilla.sync.login.FirefoxSyncLoginException;
 
 /**
- * TODO:
+ * TODO: docs.
  */
 public interface FirefoxSyncLoginManager {
-    // TODO: method names; docs.
 
     /**
      * Prompts the user to log in, makes a few additional network requests to set up their account, and calls the given
@@ -24,9 +23,9 @@ public interface FirefoxSyncLoginManager {
      * This method can be called from any thread. The callback will be called on a background thread private to
      * FirefoxSync, which is an acceptable place to call the blocking get collection methods of {@link FirefoxSyncClient}.
      *
-     * @param activity
-     * @param callerName
-     * @param callback
+     * @param activity The Activity from which we're prompting for log in.
+     * @param callerName The name of your application, which is shown in the user's Firefox Account dashboard to identify this account session.
+     * @param callback The methods to call on completion.
      */
     @AnyThread void promptLogin(final Activity activity, String callerName, @NonNull LoginCallback callback);
 
@@ -37,7 +36,7 @@ public interface FirefoxSyncLoginManager {
      * This method can be called from any thread. The callback will be called on a background thread private to
      * FirefoxSync, which is an acceptable place to call the blocking get collection methods of {@link FirefoxSyncClient}.
      *
-     * @param callback
+     * @param callback The methods to call on completion.
      */
     @AnyThread void loadStoredSyncAccount(@NonNull LoginCallback callback);
     void signOut();
