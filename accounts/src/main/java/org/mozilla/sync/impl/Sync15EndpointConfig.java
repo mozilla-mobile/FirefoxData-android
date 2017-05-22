@@ -22,13 +22,13 @@ public class Sync15EndpointConfig implements Parcelable {
         }
     }
 
-    public static Sync15EndpointConfig getProduction() {
+    static Sync15EndpointConfig getProduction() {
         return new Sync15EndpointConfig(
                 /* tokenServer */ "https://token.services.mozilla.com/1.0/sync/1.5"
         );
     }
 
-    public static Sync15EndpointConfig getStage() {
+    static Sync15EndpointConfig getStage() {
         return new Sync15EndpointConfig(
                 /* tokenServer */ "https://token.stage.mozaws.net/1.0/sync/1.5"
         );
