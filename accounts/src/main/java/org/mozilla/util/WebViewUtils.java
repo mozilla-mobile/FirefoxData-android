@@ -8,9 +8,9 @@ import android.os.Build;
 import android.support.annotation.UiThread;
 import android.webkit.WebView;
 
-public class WebViewUtil {
+public class WebViewUtils {
 
-    private WebViewUtil() {}
+    private WebViewUtils() {}
 
     /**
      * Evaluates JavaScript code in an API-level independent way.

@@ -19,8 +19,8 @@ import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.gecko.R;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
-import org.mozilla.util.ResourcesUtil;
-import org.mozilla.util.WebViewUtil;
+import org.mozilla.util.ResourcesUtils;
+import org.mozilla.util.WebViewUtils;
 
 /**
  * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no
@@ -82,7 +82,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Code in this block must be called before initWebView.
-        script = ResourcesUtil.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
+        script = ResourcesUtils.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
         initFromIntent();
 
         initWebView();
@@ -197,7 +197,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
                 // WebView methods must be called from UiThread.
                 final String script = "window.dispatchEvent(" +
                         "new CustomEvent('WebChannelMessageToContent', " + customEventArg + "));";
-                WebViewUtil.evalJS(webView, script);
+                WebViewUtils.evalJS(webView, script);
             }
         });
     }

@@ -12,7 +12,7 @@ import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
-import org.mozilla.util.IOUtil;
+import org.mozilla.util.IOUtils;
 import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
@@ -115,9 +115,9 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
             // The get collection calls are actually blocking but w/ delegates (see issue #3) so `makeSync` will only
             // actually time out if the get collection requests time-out. This code is confusing but it works & I
             // didn't have time to clean it up - please clean it up with #3.
-            return IOUtil.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtil.AsyncCall<SyncCollectionResult<T>>() {
+            return IOUtils.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtils.AsyncCall<SyncCollectionResult<T>>() {
                 @Override
-                public void initAsyncCall(final IOUtil.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
+                public void initAsyncCall(final IOUtils.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
                     getCollectionCall.getCollectionAsync(new OnSyncComplete<T>() {
                         @Override public void onSuccess(final SyncCollectionResult<T> result) { onComplete.onComplete(result); }
                         @Override public void onException(final FirefoxSyncGetCollectionException e) { onComplete.onException(e); }

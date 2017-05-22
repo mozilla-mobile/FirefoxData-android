@@ -15,9 +15,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class IOUtil {
+public class IOUtils {
 
-    private IOUtil() {}
+    private IOUtils() {}
 
     /**
      * A generic solution to read from an input stream in UTF-8. This function will read from the stream until it
