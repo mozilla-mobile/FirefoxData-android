@@ -26,7 +26,7 @@ import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
-import org.mozilla.util.FileUtil;
+import org.mozilla.util.IOUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -61,7 +61,7 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
     public final void handleHttpResponse(final HttpResponse response) {
         final String responseBody;
         try {
-            responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
+            responseBody = IOUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
             onComplete.onException(new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR));
             return;

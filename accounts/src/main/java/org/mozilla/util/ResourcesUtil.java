@@ -14,7 +14,7 @@ public class ResourcesUtil {
 
     public static String getStringFromRawRes(final Context context, @RawRes final int rawResource) throws IOException {
         final InputStream is = context.getResources().openRawResource(rawResource);
-        return FileUtil.readStringFromInputStreamAndCloseStream(is, 4048);
+        return IOUtil.readStringFromInputStreamAndCloseStream(is, 4048);
     }
 
     public static String getStringFromRawResUnsafe(final Context context, @RawRes final int rawResource) {
