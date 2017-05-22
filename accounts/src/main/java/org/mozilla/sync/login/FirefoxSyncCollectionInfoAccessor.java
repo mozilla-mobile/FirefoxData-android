@@ -59,6 +59,7 @@ class FirefoxSyncCollectionInfoAccessor {
         fetcher.fetch(new JSONRecordFetchDelegate() {
             @Override
             public void handleSuccess(final ExtendedJSONObject body) {
+                // Consider caching result: issue #6.
                 callback.onSuccess(body.keySet());
             }
 

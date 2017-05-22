@@ -5,7 +5,8 @@
 package org.mozilla.sync.login;
 
 /**
- * TODO:
+ * An Exception indicating an Assertion has failed. Semantically equivalent to {@link AssertionError},
+ * this is useful when a callback only takes Exception (and its extensions).
  */
 class FirefoxSyncAssertionException extends Exception {
     FirefoxSyncAssertionException(final String message) { super(message); }

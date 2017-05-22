@@ -24,9 +24,7 @@ class FirefoxSyncTokenAccessor {
 
     private FirefoxSyncTokenAccessor() {}
 
-    // todo: document threading.
-    // TODO: mention when assertions are returned.
-    /**
+   /**
      * Gets a Sync Token or returns an error through the provided callback. The given account
      * <b>must</b> be in the Married state.
      *
@@ -58,6 +56,7 @@ class FirefoxSyncTokenAccessor {
             return;
         }
 
+        // Consider caching result: issue #6.
         final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncLoginShared.executor);
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);

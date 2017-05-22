@@ -105,7 +105,7 @@ class FirefoxSyncCryptoKeysAccessor {
                     return;
                 }
 
-                // TODO: persist keys: see EnsureCrypto5KeysStage.
+                // Consider caching: issue #6 (see EnsureCrypto5KeysStage).
                 onComplete.onKeysReceived(keys);
             }
 
