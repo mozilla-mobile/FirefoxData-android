@@ -53,13 +53,13 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
     private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     // Input values.
-    public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
+    static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
 
     // Return values.
-    public static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
-    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.login.extra.account";
-    public static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.login.extra.failure-reason";
-    public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
+    static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
+    static final String EXTRA_ACCOUNT = "org.mozilla.sync.login.extra.account";
+    static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.login.extra.failure-reason";
+    static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
 
