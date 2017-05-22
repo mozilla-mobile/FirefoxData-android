@@ -21,7 +21,6 @@ import org.mozilla.gecko.sync.net.SyncStorageResponse;
 import org.mozilla.gecko.sync.repositories.domain.RecordParseException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 
 import java.io.IOException;

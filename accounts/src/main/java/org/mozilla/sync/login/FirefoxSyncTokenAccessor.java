@@ -5,7 +5,6 @@
 package org.mozilla.sync.login;
 
 import android.support.annotation.WorkerThread;
-import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
