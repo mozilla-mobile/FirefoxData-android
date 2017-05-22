@@ -33,7 +33,6 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token, final CollectionKeys collectionKeys) {
         // todo: assert logged in?
         this.account = account;
-        // TODO: use shared executor? How do they stop/get GC'd?
         this.syncConfig = new FirefoxSyncConfig(token, collectionKeys);
     }
 

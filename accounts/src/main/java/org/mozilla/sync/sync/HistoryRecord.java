@@ -7,7 +7,7 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 import org.mozilla.util.StringUtils;
 
-// TODO: Class vs. interface. docs.
+// TODO: docs.
 public class HistoryRecord { // TODO: name: record?
 
     private final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord;

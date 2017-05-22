@@ -39,7 +39,7 @@ public class BookmarkFolder extends BookmarkBase {
         // even though it's a little gross and easier to break.
         final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord rootRawRecord = new org.mozilla.gecko.sync.repositories.domain.BookmarkRecord(null);
         rootRawRecord.guid = ROOT_FOLDER_GUID;
-        rootRawRecord.title = "Bookmarks Root Folder"; // TODO: names & stuff.
+        rootRawRecord.title = "Bookmarks Root Folder";
         rootRawRecord.description = "The root bookmark folder";
 
         return new BookmarkFolder(rootRawRecord);

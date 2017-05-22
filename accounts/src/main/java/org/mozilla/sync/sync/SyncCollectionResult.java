@@ -7,7 +7,7 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 
 /**
- * TODO: we use container to expand API later (e.g. last modified)
+ * TODO: docs: we use container to expand API later (e.g. last modified)
  */
 public class SyncCollectionResult<T> {
     private final T result;

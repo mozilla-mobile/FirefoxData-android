@@ -73,7 +73,7 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         onComplete.onException(new FirefoxSyncGetCollectionException(cause, FailureReason.NETWORK_ERROR));
     }
 
-    @Override public String getUserAgent() { return null; } // TODO: decide if necessary.
+    @Override public String getUserAgent() { return null; } // TODO: set.
 
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleException(e); }
     @Override public void handleHttpIOException(final IOException e) { handleException(e); }
@@ -130,6 +130,6 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         cryptoRecord.payload = new ExtendedJSONObject(json.getString("payload"));
         cryptoRecord.setKeyBundle(keyBundle);
         cryptoRecord.decrypt();
-        return (R) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
+        return (R) recordFactory.createRecord(cryptoRecord); // We should rm this cast. To save time, I didn't generify RecordFactory.
     }
 }
