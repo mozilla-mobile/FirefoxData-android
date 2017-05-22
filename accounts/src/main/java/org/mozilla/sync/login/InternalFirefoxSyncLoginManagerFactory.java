@@ -5,7 +5,14 @@
 package org.mozilla.sync.login;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import org.mozilla.sync.FirefoxSyncLoginManager;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.sync.FirefoxSync} instead. This class is used to escalate
@@ -15,7 +22,7 @@ public class InternalFirefoxSyncLoginManagerFactory {
     private InternalFirefoxSyncLoginManagerFactory() {}
 
     /** Please use {@link org.mozilla.sync.FirefoxSync#getLoginManager(android.content.Context)} instead. */
-    public static FirefoxSyncLoginManager internalGetLoginManager(final Context context) {
+    public static FirefoxSyncLoginManager internalGetLoginManager(@NonNull final Context context) {
         // We return a new instance, rather than a singleton, because the Context can change.
         return new FirefoxSyncWebViewLoginManager(context);
     }
