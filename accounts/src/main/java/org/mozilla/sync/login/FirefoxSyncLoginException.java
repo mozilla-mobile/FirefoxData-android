@@ -59,7 +59,7 @@ public class FirefoxSyncLoginException extends Exception {
         ACCOUNT_NEEDS_VERIFICATION, // TODO: how to document these for public use?
         REQUIRES_BACKOFF,
         REQUIRES_LOGIN_PROMPT,
-        USER_HAS_NO_DATA,
+        USER_HAS_NO_LINKED_DEVICES,
 
         NETWORK_ERROR, // todo: includes time outs.
         SERVER_ERROR,

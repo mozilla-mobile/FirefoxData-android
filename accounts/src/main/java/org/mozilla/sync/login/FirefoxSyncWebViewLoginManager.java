@@ -140,7 +140,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     @Override
                     public void onKeysDoNotExist() {
                         loginCallback.onFailure(new FirefoxSyncLoginException("Server does not contain crypto keys: " +
-                                "it is likely the user has not uploaded data to the server", FailureReason.USER_HAS_NO_DATA));
+                                "it is likely the user has not uploaded data to the server", FailureReason.USER_HAS_NO_LINKED_DEVICES));
                     }
 
                     @Override
