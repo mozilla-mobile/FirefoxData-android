@@ -29,11 +29,7 @@ import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STAGE;
 /**
  * A store for a {@link FirefoxAccount} based on {@link SharedPreferences}.
  *
- * This store is <b>unencrypted</b>. Ideally, we'd encrypt personal user data, such as email, uid, and tokens.
- * On iOS, we use the keystore (the user's phone pin/password is the key), however, this is less-trivial on
- * Android where there is no default key. As such, I did not implement encryption. Applications' SharedPrefs
- * are sandboxed from one another so for all but rooted devices, this should be sufficient. Note that Firefox
- * for Android also does not encrypt these user credentials.
+ * This store is <b>unencrypted</b>. For future encryption discussion, see issue #5.
  *
  * This class is thread-safe in that no inconsistent data will be shown but call order (i.e. a load called
  * before a save will return the data before the save) is not guaranteed.
