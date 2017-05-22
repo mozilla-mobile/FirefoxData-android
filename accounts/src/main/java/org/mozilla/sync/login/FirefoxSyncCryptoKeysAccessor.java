@@ -131,7 +131,7 @@ class FirefoxSyncCryptoKeysAccessor {
 
             @Override
             public String ifUnmodifiedSince() {
-                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns! TODO: do something here?
+                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns!
             }
         };
         request.get();

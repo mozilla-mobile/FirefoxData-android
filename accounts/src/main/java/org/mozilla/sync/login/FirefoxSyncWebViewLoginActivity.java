@@ -103,7 +103,11 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true); // needed for FxA login.
         webView.setWebViewClient(new ScriptInjectionWebViewClient(script));
-        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ); // TODO: min SDK 17?
+
+        // It's recommended JS interface is used on SDK min 17+ because on earlier versions the
+        // page's JS can use reflection to call Java methods. However, since we trust the page,
+        // we shouldn't be vulnerable.
+        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ);
         webView.loadUrl(webViewURL);
     }
 
@@ -186,7 +190,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
     }
 
     private void onLoaded() {
-        // todo: invalidate loading timeout.
+        // If we had a loading time-out (issue #2), here is where we would invalidate it.
     }
 
     private void injectResponse(final String command, final long messageID, final JSONObject data) {

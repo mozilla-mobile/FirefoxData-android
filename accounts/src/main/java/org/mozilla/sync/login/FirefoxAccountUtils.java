@@ -26,6 +26,13 @@ import java.util.concurrent.Executor;
 class FirefoxAccountUtils {
     private FirefoxAccountUtils() {}
 
+    static void assertIsMarried(final State accountState) {
+        if (!isMarried(accountState)) {
+            throw new IllegalStateException("Expected the given account state to be Married. " +
+                    "Instead: " + accountState.getStateLabel().toString());
+        }
+    }
+
     static boolean isMarried(final State accountState) {
         return accountState.getStateLabel() == StateLabel.Married;
     }

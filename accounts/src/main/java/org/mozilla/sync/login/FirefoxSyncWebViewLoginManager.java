@@ -60,8 +60,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     @Override
     public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
         if (!isActivityResultOurs(requestCode, data)) { return; }
-        // TODO: can onActivityResult be called multiple times? If so, we should keep {requestCode:callback} instead of throwing.
-        if (requestCallerName == null) { throw new IllegalStateException("onActivityResult unexpectedly called more than once for one promptLogin call (or promptLogin was never called)."); }
+        if (requestCallerName == null) { throw new IllegalStateException("onActivityResult unexpectedly called more " +
+                "than once for one promptLogin call (or promptLogin was never called)."); }
 
         switch (resultCode) {
             case FirefoxSyncWebViewLoginActivity.RESULT_OK:
@@ -91,7 +91,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
         // Keep references because they'll be nulled before the async call completes.
-        final String requestCallerName = this.requestCallerName; // TODO: use in user agent.
+        final String requestCallerName = this.requestCallerName;
         final LoginCallback requestLoginCallback = this.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
@@ -99,7 +99,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             @Override
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
-                accountStore.saveFirefoxAccount(updatedAccount); // todo: callback threads.
+                accountStore.saveFirefoxAccount(updatedAccount);
                 prepareSyncClientAndCallback(updatedAccount, requestLoginCallback);
             }
 
@@ -124,7 +124,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
      */
     @WorkerThread // calls to network.
     private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
-        // todo: assert married?
+        FirefoxAccountUtils.assertIsMarried(marriedAccount.accountState);
         FirefoxSyncTokenAccessor.getBlocking(marriedAccount, new FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate() {
             @Override
             public void handleSuccess(final TokenServerToken token) {
@@ -132,7 +132,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     @Override
                     public void onKeysReceived(final CollectionKeys collectionKeys) {
                         final FirefoxSyncClient syncClient = InternalFirefoxSyncClientFactory.getSyncClient(marriedAccount, token, collectionKeys);
-                        loginCallback.onSuccess(syncClient); // TODO: callback threads; here & below.
+                        loginCallback.onSuccess(syncClient);
                     }
 
                     @Override
@@ -167,8 +167,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 } else if (e instanceof TokenServerException.TokenServerInvalidCredentialsException) {
                     failureReason = FailureReason.REQUIRES_LOGIN_PROMPT;
                 } else {
-                    // TODO: I don't know what TokenServerConditionsRequiredException is and the base TokenServerException
-                    // should never be thrown.
+                    // I couldn't figure out what TokenServerConditionsRequiredException is and the base
+                    // TokenServerException should never be thrown.
                     failureReason = FailureReason.UNKNOWN;
                 }
                 loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
@@ -232,7 +232,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     @Override
     public void signOut() {
-        accountStore.removeFirefoxAccount(); // todo: test me!
-        // TODO: hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
+        accountStore.removeFirefoxAccount();
+        // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
     }
 }

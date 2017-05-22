@@ -55,13 +55,14 @@ public class FirefoxSyncLoginException extends Exception {
      */
     public FailureReason getFailureReason() { return failureReason; }
 
+    // TODO: document failure reasons.
     public enum FailureReason {
-        ACCOUNT_NEEDS_VERIFICATION, // TODO: how to document these for public use?
+        ACCOUNT_NEEDS_VERIFICATION,
         REQUIRES_BACKOFF,
         REQUIRES_LOGIN_PROMPT,
         USER_HAS_NO_LINKED_DEVICES,
 
-        NETWORK_ERROR, // todo: includes time outs.
+        NETWORK_ERROR, // includes time outs.
         SERVER_ERROR,
 
         ASSERTION_FAILURE,
