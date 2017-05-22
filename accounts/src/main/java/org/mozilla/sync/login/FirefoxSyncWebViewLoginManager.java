@@ -118,6 +118,12 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         });
     }
 
+    /**
+     * Gets the account ready to be used in a Sync Client.
+     *
+     * Note that the API declares that all callbacks (including errors!) should occur on one of our private background
+     * threads.
+     */
     @WorkerThread // calls to network.
     private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
         // todo: assert married?
