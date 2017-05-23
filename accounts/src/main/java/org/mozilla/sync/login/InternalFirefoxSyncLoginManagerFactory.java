@@ -8,12 +8,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.sync.FirefoxSync} instead. This class is used to escalate
  * visibility of {@code protected} components for internal library use.

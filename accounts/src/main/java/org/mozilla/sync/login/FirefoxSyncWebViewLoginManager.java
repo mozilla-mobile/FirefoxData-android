@@ -33,9 +33,16 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     private final FirefoxAccountSharedPrefsStore accountStore;
 
-    // Values stored between the login call & `onActivityResult` so we can execute the given callback.
-    private String requestCallerName;
-    private LoginCallback requestLoginCallback;
+    // Values stored between `promptLogin` & `onActivityResult` so we can execute the given callback.
+    //
+    // These are static to prevent API misuse: if a user gets a LoginManager instance for promptLogin,
+    // they could get a different instance for `onActivityResult`. With static vars, we don't have
+    // this issue. This is a little janky and doesn't protect new LoginManager implementations but I
+    // found it better than the alternatives: 1) make the entire API static, which restricts new
+    // implementation flexibility or 2) pass the callback to the getLoginManager call, which makes
+    // it harder for the caller to see where the callbacks are set.
+    private static String requestCallerName;
+    private static LoginCallback requestLoginCallback;
 
     FirefoxSyncWebViewLoginManager(final Context context) {
         this.accountStore = new FirefoxAccountSharedPrefsStore(context);
@@ -73,7 +80,10 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 break;
 
             case FirefoxSyncWebViewLoginActivity.RESULT_CANCELED:
-                requestLoginCallback.onUserCancel();
+                final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback; // nulled before callback would run.
+                FirefoxSyncLoginShared.executor.execute(new Runnable() { // all callbacks from background thread.
+                    @Override public void run() { requestLoginCallback.onUserCancel(); }
+                });
                 break;
         }
 
@@ -91,8 +101,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
         // Keep references because they'll be nulled before the async call completes.
-        final String requestCallerName = this.requestCallerName;
-        final LoginCallback requestLoginCallback = this.requestLoginCallback;
+        final String requestCallerName = FirefoxSyncWebViewLoginManager.requestCallerName;
+        final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
         FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, FirefoxSyncLoginShared.executor, new FirefoxAccountUtils.MarriedLoginCallback() {
@@ -197,7 +207,15 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
             Log.e(LOGTAG, "onActivityResultError: WebViewLoginActivity returned invalid failure reason.");
             failureReason = FailureReason.UNKNOWN;
         }
-        requestLoginCallback.onFailure(new FirefoxSyncLoginException("WebViewLoginActivity returned failure", failureReason));
+
+        final FailureReason finalFailureReason = failureReason; // Couldn't find a good way to express this.
+        final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback; // nulled before callback runs.
+        FirefoxSyncLoginShared.executor.execute(new Runnable() { // All callbacks on background thread.
+            @Override
+            public void run() {
+                requestLoginCallback.onFailure(new FirefoxSyncLoginException("WebViewLoginActivity returned failure", finalFailureReason));
+            }
+        });
     }
 
     private boolean isActivityResultOurs(final int requestCode, @Nullable final Intent data) {
