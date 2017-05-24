@@ -73,7 +73,9 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         onComplete.onException(new FirefoxSyncGetCollectionException(cause, FailureReason.NETWORK_ERROR));
     }
 
-    @Override public String getUserAgent() { return null; } // TODO: set.
+    @Override public String getUserAgent() {
+        return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+    }
 
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleException(e); }
     @Override public void handleHttpIOException(final IOException e) { handleException(e); }
