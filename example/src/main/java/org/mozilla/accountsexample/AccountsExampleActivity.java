@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import org.mozilla.sync.FirefoxSync;
-import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.login.FirefoxSyncLoginException;

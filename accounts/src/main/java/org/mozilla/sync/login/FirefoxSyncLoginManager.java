@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 
 /**
  * A interface to let a user log into a FirefoxSync account or manage an account if the user has
@@ -73,9 +73,9 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
      */
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
-    /** A callback for {@link org.mozilla.sync.FirefoxSyncClient} request. */
+    /** A callback for {@link FirefoxSyncClient} request. */
     interface LoginCallback { // TODO: AccountLoginCallback & AccountCallback?
-        /** Called when a {@link org.mozilla.sync.FirefoxSyncClient} has been successfully retrieved. */
+        /** Called when a {@link FirefoxSyncClient} has been successfully retrieved. */
         void onSuccess(FirefoxSyncClient syncClient);
 
         /**

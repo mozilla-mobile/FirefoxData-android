@@ -12,7 +12,8 @@ import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
 import org.mozilla.util.DeviceUtils;
 
 /**
- * A collection of static functions with entry points to Firefox Sync operations.
+ * The main entry point to the Firefox Sync library: this class is a collection of static
+ * functions to interact with the library.
  */
 public class FirefoxSync {
     private FirefoxSync() {}

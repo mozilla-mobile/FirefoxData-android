@@ -6,7 +6,6 @@ package org.mozilla.sync.sync;
 
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 
 /**

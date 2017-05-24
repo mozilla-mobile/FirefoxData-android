@@ -17,7 +17,7 @@ import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.FirefoxSyncClient;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
