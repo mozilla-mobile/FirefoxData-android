@@ -49,6 +49,7 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 
 /**
  * An HTTP client for talking to an FxAccount server.
@@ -239,7 +240,7 @@ public class FxAccountClient20 implements FxAccountClient {
 
     @Override
     public String getUserAgent() {
-      return FxAccountConstants.USER_AGENT;
+      return FirefoxSyncShared.getUserAgent(); // HACK: See method javadoc for more info.
     }
 
     @Override
