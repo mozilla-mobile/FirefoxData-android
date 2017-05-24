@@ -13,6 +13,7 @@ import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;
 import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 
 import java.io.IOException;
 import java.net.URI;
@@ -64,6 +65,8 @@ class FirefoxSyncTokenAccessor {
 
     /** A base implementation of {@link TokenServerClientDelegate} that provides a user agent. */
     static abstract class FirefoxSyncTokenServerClientDelegate implements TokenServerClientDelegate {
-        @Override public final String getUserAgent() { return FxAccountConstants.USER_AGENT; } // todo: set.
+        @Override public final String getUserAgent() {
+            return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+        }
     }
 }
