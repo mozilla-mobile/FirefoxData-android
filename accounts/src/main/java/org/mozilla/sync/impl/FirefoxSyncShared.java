@@ -18,11 +18,13 @@ public class FirefoxSyncShared {
     /**
      * Globally sets the name of the signed in application using this library.
      *
-     * In the current API, only one application can be signed in so there should never be a conflict.
+     * The applicationName resolves around the currently signed in account in the FirefoxAccountSessionSharedPrefs: if
+     * an account is signed in, this correlates with the signed in application name; if no account is signed in, it will
+     * be null. In the current API, only one application can be signed in so there should never be a conflict.
      *
      * See {@link #getUserAgent} for more info on how this is used.
      */
-    public static void setSignedInApplicationName(final String applicationName) {
+    public static void setSessionApplicationName(final String applicationName) {
         signedInApplication = applicationName;
     }
 
@@ -32,7 +34,7 @@ public class FirefoxSyncShared {
      * HACK: the user agent depends on the name of the logged in application and is thus dependent on an instance of
      * {@link org.mozilla.sync.FirefoxSyncLoginManager}. However, our infrastructure for making requests embeds the
      * User Agent override deeply in the code so it's often non-trivial to pass it in. Instead (at the cost of fragility),
-     * we define a global signed in application via {@link #setSignedInApplicationName(String)} and allow the request
+     * we define a global signed in application via {@link #setSessionApplicationName(String)} and allow the request
      * code to access the user agent globally here. We should consider a proper solution when we replace our request
      * infrastructure (issue #4).
      */

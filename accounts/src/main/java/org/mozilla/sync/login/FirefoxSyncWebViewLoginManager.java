@@ -101,9 +101,13 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private void onActivityResultOK(@NonNull final Intent data) {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
-        FirefoxSyncShared.setSignedInApplicationName(requestCallerName); // HACK: see function javadoc for info.
+        // This generally is aligned with whether or not we have a session signed in. However, we need to make the marriage
+        // request (proposal? ;) before we can save a session and for that, we need a user agent, which needs a set
+        // application name - set it here and undo it if we fail to create a session.
+        FirefoxSyncShared.setSessionApplicationName(requestCallerName); // HACK: see function javadoc for info.
 
-        // Keep reference because they'll be nulled before the async call completes.
+        // Keep references because they'll be nulled before the async call completes.
+        final String requestCallerName = FirefoxSyncWebViewLoginManager.requestCallerName;
         final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
@@ -118,6 +122,9 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
             @Override
             public void onNotMarried(final State notMarriedState) {
+                // We failed to marry the account and start a session: reset the application name associated with the failed session.
+                FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for info.
+
                 final FailureReason failureReason;
                 if (!notMarriedState.verified) {
                     failureReason = FailureReason.ACCOUNT_NEEDS_VERIFICATION;
@@ -246,7 +253,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     return;
                 }
 
-                FirefoxSyncShared.setSignedInApplicationName(session.applicationName); // HACK: see function javadoc for more info.
+                // This may be the first time the session is loaded for this application run so set the application name.
+                FirefoxSyncShared.setSessionApplicationName(session.applicationName); // HACK: see function javadoc for more info.
                 prepareSyncClientAndCallback(session.firefoxAccount, callback);
             }
         });
@@ -255,7 +263,9 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     @Override
     public void signOut() {
         sessionStore.deleteStoredSession();
-        FirefoxSyncShared.setSignedInApplicationName(null); // HACK: see function javadoc for more info.
+
+        // Our session has ended: we no longer have a signed in application and don't need its name.
+        FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for more info.
 
         // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
     }

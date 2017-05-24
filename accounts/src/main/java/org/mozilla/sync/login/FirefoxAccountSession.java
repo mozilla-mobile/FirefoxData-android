@@ -15,13 +15,8 @@ class FirefoxAccountSession {
     final String applicationName;
 
     FirefoxAccountSession(@NonNull final FirefoxAccount firefoxAccount, @NonNull final String applicationName) {
-        if (firefoxAccount == null || applicationName == null) { throw new IllegalArgumentException("Expected non-null args."); }
+        if (firefoxAccount == null || applicationName == null) { throw new IllegalArgumentException("FirefoxAccountSession: expected non-null args."); }
         this.firefoxAccount = firefoxAccount;
         this.applicationName = applicationName;
-    }
-
-    @NonNull FirefoxAccountSession withNewState(final State accountState) {
-        final FirefoxAccount updatedAccount = firefoxAccount.withNewState(accountState);
-        return new FirefoxAccountSession(updatedAccount, applicationName);
     }
 }
