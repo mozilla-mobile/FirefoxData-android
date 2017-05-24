@@ -20,6 +20,7 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.impl.FirefoxAccount;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
@@ -100,8 +101,9 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private void onActivityResultOK(@NonNull final Intent data) {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
-        // Keep references because they'll be nulled before the async call completes.
-        final String requestCallerName = FirefoxSyncWebViewLoginManager.requestCallerName;
+        FirefoxSyncShared.setSignedInApplicationName(requestCallerName); // HACK: see function javadoc for info.
+
+        // Keep reference because they'll be nulled before the async call completes.
         final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback;
 
         // Account must be married to do anything useful with Sync.
@@ -111,7 +113,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
                 final FirefoxAccountSession session = new FirefoxAccountSession(updatedAccount, requestCallerName);
                 sessionStore.saveSession(session);
-                prepareSyncClientAndCallback(session, requestLoginCallback);
+                prepareSyncClientAndCallback(session.firefoxAccount, requestLoginCallback);
             }
 
             @Override
@@ -134,8 +136,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
      * threads.
      */
     @WorkerThread // calls to network.
-    private void prepareSyncClientAndCallback(final FirefoxAccountSession session, final LoginCallback loginCallback) {
-        final FirefoxAccount marriedAccount = session.firefoxAccount;
+    private void prepareSyncClientAndCallback(final FirefoxAccount marriedAccount, final LoginCallback loginCallback) {
         FirefoxAccountUtils.assertIsMarried(marriedAccount.accountState);
         FirefoxSyncTokenAccessor.getBlocking(marriedAccount, new FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate() {
             @Override
@@ -245,7 +246,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     return;
                 }
 
-                prepareSyncClientAndCallback(session, callback);
+                FirefoxSyncShared.setSignedInApplicationName(session.applicationName); // HACK: see function javadoc for more info.
+                prepareSyncClientAndCallback(session.firefoxAccount, callback);
             }
         });
     }
@@ -253,6 +255,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     @Override
     public void signOut() {
         sessionStore.deleteStoredSession();
+        FirefoxSyncShared.setSignedInApplicationName(null); // HACK: see function javadoc for more info.
+
         // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
     }
 }
