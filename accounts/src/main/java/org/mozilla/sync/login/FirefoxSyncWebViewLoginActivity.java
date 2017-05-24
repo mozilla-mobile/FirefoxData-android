@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.login;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -26,6 +27,8 @@ import org.mozilla.util.WebViewUtils;
  * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no
  * knowledge of existing Firefox Account state: if you start it, it attempt to prompt the user to log in.
  *
+ * <b>This is not intended to be a public API</b>: please access via {@link org.mozilla.sync.FirefoxSync#getLoginManager(Context)}.
+ *
  * At the time of writing, the login page maintains browser local storage and will pre-fill a previously entered
  * account email.
  *
@@ -41,7 +44,7 @@ import org.mozilla.util.WebViewUtils;
  * Output Intent args:
  * <ul>
  *     <li>{@link #EXTRA_ACCOUNT}: on success, the returned account. This can be verified or unverified.</li>
- *     <li>{@link #EXTRA_FAILURE_REASON}: on error, a {@link FirefoxSyncLoginException.FailureReason#name()}</li>
+ *     <li>{@link #EXTRA_FAILURE_REASON}: on error, a String explaining what went wrong.
  * </ul>
  *
  * The previous implementation, FxAccountWebFlowActivity & friends, are heavily dependent on Gecko, so we rewrote it.
@@ -171,7 +174,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
-            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
+            setResultForFailureReason("Account received from server is corrupted.");
             finish();
             return;
         }
@@ -230,9 +233,9 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         return obj.toString();
     }
 
-    private void setResultForFailureReason(final FirefoxSyncLoginException.FailureReason reason) {
+    private void setResultForFailureReason(final String failureReason) {
         final Intent resultIntent = new Intent(ACTION_WEB_VIEW_LOGIN_RETURN);
-        resultIntent.putExtra(EXTRA_FAILURE_REASON, reason.name());
+        resultIntent.putExtra(EXTRA_FAILURE_REASON, failureReason);
         setResult(RESULT_ERROR, resultIntent);
     }
 }

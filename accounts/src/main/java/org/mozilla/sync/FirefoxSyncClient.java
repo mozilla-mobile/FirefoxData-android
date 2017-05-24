@@ -19,7 +19,7 @@ import java.util.List;
  */
 public interface FirefoxSyncClient {
 
-    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException; // TODO: maybe throw typed exceptions instead of FailureReason.
     @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
     @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException;
@@ -28,5 +28,6 @@ public interface FirefoxSyncClient {
     @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
     @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
 
+    // can change, should not be used to identify user.
     @NonNull String getEmail() throws FirefoxSyncException;
 }

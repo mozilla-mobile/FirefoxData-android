@@ -1,13 +1,14 @@
 package org.mozilla.accountsexample;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
-import org.mozilla.sync.FirefoxSyncLoginManager;
+import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.login.FirefoxSyncLoginException;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
@@ -20,6 +21,8 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "AccountsExampleActivity";
 
+    private static final String KEY_HAS_USER_CANCELLED = "fx-sync-has-user-cancelled";
+
     private FirefoxSyncLoginManager loginManager;
 
     @Override
@@ -27,9 +30,16 @@ public class AccountsExampleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // If we have an account, we want to refresh our data on start-up. If we don't have
+        // an account, we'll prompt the user if they've manually cancelled a login request.
         loginManager = FirefoxSync.getLoginManager(this);
-        //loginManager.loadStoredSyncAccount(new LoginManagerCallback());
-        loginManager.promptLogin(this, "AccountsExample", new LoginManagerCallback());
+        final SharedPreferences sharedPrefs = getSharedPreferences("fx-sync", 0);
+        final FirefoxSyncLoginManager.LoginCallback loginCallback = new LoginManagerCallback(sharedPrefs);
+        if (loginManager.isSignedIn()) {
+            loginManager.loadStoredSyncAccount(loginCallback);
+        } else if (!sharedPrefs.getBoolean(KEY_HAS_USER_CANCELLED, false)){
+            loginManager.promptLogin(this, "AccountsExample", loginCallback);
+        }
     }
 
     @Override
@@ -39,6 +49,10 @@ public class AccountsExampleActivity extends AppCompatActivity {
     }
 
     private static class LoginManagerCallback implements FirefoxSyncLoginManager.LoginCallback {
+        private final SharedPreferences sharedPrefs;
+
+        private LoginManagerCallback(final SharedPreferences sharedPrefs) {this.sharedPrefs = sharedPrefs;}
+
         @Override
         public void onSuccess(final FirefoxSyncClient syncClient) {
             Log.d(LOGTAG, "onSuccess: load stored account.");
@@ -49,38 +63,14 @@ public class AccountsExampleActivity extends AppCompatActivity {
         @Override
         public void onFailure(final FirefoxSyncLoginException e) {
             Log.d(LOGTAG, "onFailure: load stored account", e);
-            switch (e.getFailureReason()) {
-                case ACCOUNT_NEEDS_VERIFICATION: // fall through
-                case REQUIRES_LOGIN_PROMPT:
-                    // Prompt the user later...
-                    break;
-
-                case USER_HAS_NO_LINKED_DEVICES: // fall through
-                    // User has to connect some devices before we return success. If this was promptLogin,
-                    // the account will be accessible with loadStoredSyncAccount in the future so (fall through)
-                case NETWORK_ERROR: // fall through
-                case SERVER_ERROR:
-                    // Try again later...
-                    break;
-
-                case REQUIRES_BACKOFF:
-                    final int backoffSeconds = e.getBackoffSeconds();
-                    // Try again in at least ^ seconds.
-                    break;
-
-                case ASSERTION_FAILURE:
-                    // Contact the devs and try again later!
-                    break;
-
-                case UNKNOWN:
-                    // Try again later...
-                    break;
-            }
+            // Oh well, we'll try again next run.
         }
 
         @Override
         public void onUserCancel() { // not called for loadStoredSyncAccount.
             Log.d(LOGTAG, "onUserCancel: load stored account");
+            sharedPrefs.edit().putBoolean(KEY_HAS_USER_CANCELLED, true).apply();
+            // Tell user they can log in from the settings.
         }
 
         private void getSyncAndLog(final FirefoxSyncClient syncClient) {

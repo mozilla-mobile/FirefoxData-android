@@ -7,6 +7,7 @@ package org.mozilla.sync;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
 import org.mozilla.util.DeviceUtils;
 

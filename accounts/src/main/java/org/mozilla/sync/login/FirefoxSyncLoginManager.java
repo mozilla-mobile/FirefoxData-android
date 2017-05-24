@@ -2,19 +2,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.sync;
+package org.mozilla.sync.login;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import org.mozilla.sync.FirefoxSyncClient;
 import org.mozilla.sync.login.FirefoxSyncLoginException;
 
 /**
  * TODO: docs.
  */
-public interface FirefoxSyncLoginManager {
+public interface FirefoxSyncLoginManager { // todo SessionManager? AccountException? SessionException?
 
     /**
      * Prompts the user to log in, makes a few additional network requests to set up their account, and calls the given
@@ -39,13 +40,17 @@ public interface FirefoxSyncLoginManager {
      * @param callback The methods to call on completion.
      */
     @AnyThread void loadStoredSyncAccount(@NonNull LoginCallback callback);
+
+    boolean isSignedIn();
+
     void signOut();
 
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
+    // TODO on failure, we delete sync account if credentials go bad.
     interface LoginCallback { // TODO: AccountLoginCallback & AccountCallback?
         void onSuccess(FirefoxSyncClient syncClient);
-        void onFailure(FirefoxSyncLoginException e); // TODO: AccountException? SessionException?
+        void onFailure(FirefoxSyncLoginException e);
         void onUserCancel();
     }
 }

@@ -6,7 +6,6 @@ package org.mozilla.sync.login;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import org.mozilla.sync.FirefoxSyncLoginManager;
 
 /**
  * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.sync.FirefoxSync} instead. This class is used to escalate

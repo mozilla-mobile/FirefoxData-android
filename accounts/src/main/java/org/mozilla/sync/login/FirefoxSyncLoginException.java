@@ -4,6 +4,8 @@
 
 package org.mozilla.sync.login;
 
+import android.support.annotation.NonNull;
+
 /**
  * A Exception that occurs while a user tries to log in to, or access their Firefox Sync account.
  *
@@ -11,62 +13,17 @@ package org.mozilla.sync.login;
  * so be careful how you log them.
  * todo: ^ do we want to strip the stuff ourselves?
  */
-public class FirefoxSyncLoginException extends Exception {
+public class FirefoxSyncLoginException extends Exception { // todo: FirefoxSyncException?
 
-    private static final int DEFAULT_BACKOFF_SECONDS = 0;
-
-    private final FailureReason failureReason;
-    private final int backoffSeconds;
-
-    FirefoxSyncLoginException(final String message, final FailureReason failureReason) {
-        super(message + ". " + failureReason.toString());
-        this.failureReason = failureReason;
-        backoffSeconds = DEFAULT_BACKOFF_SECONDS;
-    }
-
-    FirefoxSyncLoginException(final Throwable cause, final FailureReason failureReason) {
-        super(failureReason.toString(), cause);
-        this.failureReason = failureReason;
-        backoffSeconds = DEFAULT_BACKOFF_SECONDS;
-    }
-
-    private FirefoxSyncLoginException(final int backoffSeconds) {
-        super("Requires backoff of " + backoffSeconds);
-        failureReason = FailureReason.REQUIRES_BACKOFF;
-        this.backoffSeconds = backoffSeconds;
-    }
-
-    static FirefoxSyncLoginException newForBackoffSeconds(final int backoffSeconds) {
-        return new FirefoxSyncLoginException(backoffSeconds);
-    }
+    /** You should generally specify a cause. If you don't want to, see {@link #newWithoutThrowable(String)}. */
+    private FirefoxSyncLoginException(final String message) { super(message); }
+    FirefoxSyncLoginException(final String message, final Throwable cause) { super(message, cause); }
 
     /**
-     * Get the number of seconds the login request should wait before retrying.
-     *
-     * @return the number of seconds the login request should wait before retrying; 0 if there is no backoff request.
+     * Factory method to create an exception without specifying a cause {@link Throwable}.
+     * Callers should generally specify a cause, so we make it obvious that you're making one without.
      */
-    public int getBackoffSeconds() { return backoffSeconds; }
-
-    /**
-     * Gets the reason this exception was thrown. Normally, this would be handled by the type of the exception thrown
-     * but because these Exceptions are not thrown but passed by callback, this is used instead.
-     *
-     * @return the reason this exception was thrown.
-     */
-    public FailureReason getFailureReason() { return failureReason; }
-
-    // TODO: document failure reasons.
-    public enum FailureReason {
-        ACCOUNT_NEEDS_VERIFICATION,
-        REQUIRES_BACKOFF,
-        REQUIRES_LOGIN_PROMPT,
-        USER_HAS_NO_LINKED_DEVICES,
-
-        NETWORK_ERROR, // includes time outs.
-        SERVER_ERROR,
-
-        ASSERTION_FAILURE,
-
-        UNKNOWN,
+    @NonNull static FirefoxSyncLoginException newWithoutThrowable(final String message) {
+        return new FirefoxSyncLoginException(message);
     }
 }

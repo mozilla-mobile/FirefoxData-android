@@ -18,10 +18,8 @@ import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncClient;
-import org.mozilla.sync.FirefoxSyncLoginManager;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxSyncShared;
-import org.mozilla.sync.login.FirefoxSyncLoginException.FailureReason;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
@@ -47,6 +45,16 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     FirefoxSyncWebViewLoginManager(final Context context) {
         this.sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
+    }
+
+    @Override
+    public boolean isSignedIn() {
+        try {
+            sessionStore.loadSession(); // If returns without throwing, we're signed in.
+            return true;
+        } catch (final FirefoxAccountSessionSharedPrefsStore.FailedToLoadSessionException e) {
+            return false;
+        }
     }
 
     @Override
@@ -125,13 +133,11 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 // We failed to marry the account and start a session: reset the application name associated with the failed session.
                 FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for info.
 
-                final FailureReason failureReason;
-                if (!notMarriedState.verified) {
-                    failureReason = FailureReason.ACCOUNT_NEEDS_VERIFICATION;
-                } else {
-                    failureReason = FailureReason.UNKNOWN; // Unfortunately, we otherwise can't figure out why an advance failed. :(
-                }
-                requestLoginCallback.onFailure(new FirefoxSyncLoginException("Unable to move to Married account state", failureReason));
+                // TODO: onUserCancel? Maybe verify verified state before advanceToMarried.
+                final String failureMessage = (!notMarriedState.verified) ?
+                    "Account needs to be verified to access Sync data." :
+                    "Account failed to advance to Married state for unknown reason"; // Unfortunately, we otherwise can't figure out why an advance failed. :(
+                requestLoginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(failureMessage));
             }
         });
     }
@@ -157,73 +163,54 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onKeysDoNotExist() {
-                        loginCallback.onFailure(new FirefoxSyncLoginException("Server does not contain crypto keys: " +
-                                "it is likely the user has not uploaded data to the server", FailureReason.USER_HAS_NO_LINKED_DEVICES));
+                        loginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                                "Server does not contain crypto keys: it is likely the user has not uploaded data to the server"));
                     }
 
                     @Override
                     public void onRequestFailure(final Exception e) {
-                        loginCallback.onFailure(new FirefoxSyncLoginException(e, FailureReason.SERVER_ERROR));
+                        loginCallback.onFailure(new FirefoxSyncLoginException("Request to access crypto keys failed", e));
                     }
 
                     @Override
                     public void onError(final Exception e) {
-                        final FailureReason failureReason = (e instanceof FirefoxSyncAssertionException) ?
-                                FailureReason.ASSERTION_FAILURE : FailureReason.NETWORK_ERROR;
-                        loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
+                        loginCallback.onFailure(new FirefoxSyncLoginException("Unable to create crypto keys request.", e));
                     }
                 });
             }
 
             @Override
             public void handleFailure(final TokenServerException e) { // Received response but unable to obtain taken.
-                final FailureReason failureReason;
-                if (e instanceof TokenServerException.TokenServerMalformedRequestException ||
-                        e instanceof TokenServerException.TokenServerMalformedResponseException) {
-                    failureReason = FailureReason.ASSERTION_FAILURE;
-                } else if (e instanceof TokenServerException.TokenServerUnknownServiceException) {
-                    // 404 from TokenServer: this could be programmer error or server error.
-                    failureReason = FailureReason.SERVER_ERROR;
-                } else if (e instanceof TokenServerException.TokenServerInvalidCredentialsException) {
-                    failureReason = FailureReason.REQUIRES_LOGIN_PROMPT;
-                } else {
-                    // I couldn't figure out what TokenServerConditionsRequiredException is and the base
-                    // TokenServerException should never be thrown.
-                    failureReason = FailureReason.UNKNOWN;
+                if (e instanceof TokenServerException.TokenServerInvalidCredentialsException) {
+                    // The credentials don't work with the TokenServer so we're going to have to prompt again.
+                    Log.w(LOGTAG, "Login credentials are considered invalid with token server: deleting stored account.");
+                    sessionStore.deleteStoredSession();
                 }
-                loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
+
+                loginCallback.onFailure(new FirefoxSyncLoginException("Sync token response does not contain valid token", e));
             }
 
             @Override
             public void handleError(final Exception e) { // Error connecting.
-                final FailureReason failureReason = (e instanceof FirefoxSyncAssertionException) ?
-                        FailureReason.ASSERTION_FAILURE : FailureReason.NETWORK_ERROR;
-                loginCallback.onFailure(new FirefoxSyncLoginException(e, failureReason));
+                loginCallback.onFailure(new FirefoxSyncLoginException("Error connecting to sync token server.", e));
             }
 
             @Override
             public void handleBackoff(final int backoffSeconds) {
-                loginCallback.onFailure(FirefoxSyncLoginException.newForBackoffSeconds(backoffSeconds));
+                loginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                        "Sync token server requested backoff of " + backoffSeconds + " seconds."));
             }
         });
     }
 
     private void onActivityResultError(@NonNull final Intent data) {
-        final String failureStr = data.getStringExtra(FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON);
-        FailureReason failureReason;
-        try {
-            failureReason = failureStr != null ? FailureReason.valueOf(failureStr) : FailureReason.UNKNOWN;
-        } catch (final IllegalArgumentException e) {
-            Log.e(LOGTAG, "onActivityResultError: WebViewLoginActivity returned invalid failure reason.");
-            failureReason = FailureReason.UNKNOWN;
-        }
-
-        final FailureReason finalFailureReason = failureReason; // Couldn't find a good way to express this.
+        final String failureReason = data.getStringExtra(FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON);
         final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback; // nulled before callback runs.
         FirefoxSyncLoginShared.executor.execute(new Runnable() { // All callbacks on background thread.
             @Override
             public void run() {
-                requestLoginCallback.onFailure(new FirefoxSyncLoginException("WebViewLoginActivity returned failure", finalFailureReason));
+                requestLoginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                        "WebViewLoginActivity returned error: " + failureReason));
             }
         });
     }
@@ -249,7 +236,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 try {
                     session = sessionStore.loadSession();
                 } catch (final FirefoxAccountSessionSharedPrefsStore.FailedToLoadSessionException e) {
-                    callback.onFailure(new FirefoxSyncLoginException(e, FailureReason.REQUIRES_LOGIN_PROMPT));
+                    callback.onFailure(new FirefoxSyncLoginException("Failed to restore account from disk.", e));
                     return;
                 }
 
