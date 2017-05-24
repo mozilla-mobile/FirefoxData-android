@@ -25,7 +25,8 @@ import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
 
 /**
- * TODO: docs.
+ * A {@link FirefoxSyncLoginManager} implementation that uses the a native Android
+ * web view & the FxA web sign in flow to log in.
  */
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private static final int REQUEST_CODE = 3561; // arbitrary.
@@ -169,6 +170,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onRequestFailure(final Exception e) {
+                        // TODO: maybe we need to delete account.
                         loginCallback.onFailure(new FirefoxSyncLoginException("Request to access crypto keys failed", e));
                     }
 
@@ -248,7 +250,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     @Override
-    public void signOut() {
+    public void signOut() { // TODO: how to ensure this request succeeds? Throw & request wait or just background service?
         sessionStore.deleteStoredSession();
 
         // Our session has ended: we no longer have a signed in application and don't need its name.
