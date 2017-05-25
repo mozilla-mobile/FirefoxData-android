@@ -156,7 +156,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     @Override
-    public String getEmail() throws FirefoxSyncException {
+    public String getEmail() throws FirefoxSyncException { // todo: blocking? update docs.
         return account.email; // todo: email/account can get updated.
     }
 
