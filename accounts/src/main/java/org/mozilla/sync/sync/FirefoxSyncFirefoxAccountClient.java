@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * TODO:
+ * An implementation of a FirefoxSyncClient that uses a {@link FirefoxAccount} under the hood.
  */
 class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
@@ -48,7 +48,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException {
         return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
@@ -70,7 +70,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     }
 
     @NonNull
-    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException { // TODO: use itemLimit.
+    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException {
         return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {

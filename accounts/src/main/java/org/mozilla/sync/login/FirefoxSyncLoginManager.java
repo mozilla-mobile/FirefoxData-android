@@ -20,12 +20,19 @@ import org.mozilla.sync.sync.FirefoxSyncClient;
  * {@link #promptLogin(Activity, String, LoginCallback)}.
  *
  * Retrieve an instance via the main {@link org.mozilla.sync.FirefoxSync} entry point.
+ *
+ * This class is not thread-safe.
  */
 public interface FirefoxSyncLoginManager { // todo SessionManager? AccountException? SessionException?
 
     /**
      * Prompts the user to log in, makes a few additional network requests to set up their account, and calls the given
-     * callback.
+     * callback. On success, the account will be stored, {@link #isSignedIn()} will return true, and subsequent accesses
+     * to the Sync account should use {@link #loadStoredSyncAccount(LoginCallback)}.
+     *
+     * Caveat: this method can fail before, or after, an account is stored (for example, a network error occurs after
+     * logging in to Firefox Accounts but before we retrieve the separate Sync credentials for the SyncClient).
+     * {@link #isSignedIn()} can be used to determine if an account was stored, even if this method reports a failure.
      *
      * This method can be called from any thread. The callback will be called on a background thread private to
      * FirefoxSync, which is an acceptable place to call the blocking get collection methods of {@link FirefoxSyncClient}.
@@ -37,8 +44,14 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
     @AnyThread void promptLogin(final Activity activity, String callerName, @NonNull LoginCallback callback);
 
     /**
-     * Attempts to load a stored account and calls the given callback with the results. On success, additional network
-     * calls may be made to set the account up for Sync before the callback is called.
+     * Attempts to load a stored account and calls the given callback with the results without interrupting the user. On
+     * success, additional network calls may be made to set the account up for Sync before the callback is called.
+     * {@link #promptLogin(Activity, String, LoginCallback)} is expected to have been called at least once before this
+     * method is called.
+     *
+     * If an account is stored and can be loaded, {@link #isSignedIn()} will return true. If during sign in, the account
+     * is determined to be no longer valid, the stored account will be deleted and {@link #isSignedIn()} will begin to
+     * return false.
      *
      * This method can be called from any thread. The callback will be called on a background thread private to
      * FirefoxSync, which is an acceptable place to call the blocking get collection methods of {@link FirefoxSyncClient}.
@@ -50,6 +63,9 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
     /**
      * Returns a boolean whether or not the user has signed into a still-valid Firefox Sync account.
      *
+     * If this method returns true, {@link #loadStoredSyncAccount(LoginCallback)}. Otherwise,
+     * one should consider using {@link #promptLogin(Activity, String, LoginCallback)}.
+     *
      * This method may be called from any thread.
      *
      * @return true if there is a valid account, false otherwise.
@@ -59,7 +75,7 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
     /**
      * Signs the user out of the stored account, if it exists.
      *
-     * This metod may be called from any thread.
+     * This method may be called from any thread.
      */
     @AnyThread void signOut();
 

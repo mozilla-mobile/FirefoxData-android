@@ -24,7 +24,7 @@ public class FirefoxSyncRequestUtils {
     private FirefoxSyncRequestUtils() {}
 
     /** Returns the user agent for requests from the library - expects {@link DeviceUtils} to be init. */
-    public static String getUserAgent(final String applicationName) {
+    static String getUserAgent(final String applicationName) {
         final String formFactor = DeviceUtils.isTablet() ? "Tablet" : "Mobile";
         final String osVersion = Build.VERSION.RELEASE;
 
@@ -35,10 +35,6 @@ public class FirefoxSyncRequestUtils {
     // The URI methods wrap String methods so we can avoid allocating too many unnecessary objects when composing the methods.
     public static URI getServerURI(@NonNull final TokenServerToken token) throws URISyntaxException {
         return new URI(getServerURIString(token));
-    }
-
-    public static URI getServerStorageURI(@NonNull final TokenServerToken token) throws URISyntaxException {
-        return new URI(getServerStorageURIString(token));
     }
 
     /**

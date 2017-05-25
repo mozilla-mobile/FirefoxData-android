@@ -13,9 +13,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-// todo: docs.
 /**
- * Container file for SyncClientCommand classes.
+ * A collection of internal static functions for the Sync package.
  */
 class FirefoxSyncUtils {
     private FirefoxSyncUtils() {}
