@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.impl;
 
+import android.bluetooth.BluetoothClass;
 import android.text.TextUtils;
 import android.util.Log;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
@@ -36,9 +37,9 @@ public class FirefoxSyncShared {
      * HACK: the user agent depends on the name of the logged in application and is thus dependent on an instance of
      * {@link FirefoxSyncLoginManager}. However, our infrastructure for making requests embeds the
      * User Agent override deeply in the code so it's often non-trivial to pass it in. Instead (at the cost of fragility),
-     * we define a global signed in application via {@link #setSessionApplicationName(String)} and allow the request
-     * code to access the user agent globally here. We should consider a proper solution when we replace our request
-     * infrastructure (issue #4).
+     * we define a global signed in application via {@link #setSessionApplicationName(String)}, get the global form factor
+     * from {@link DeviceUtils} and allow the request code to access the user agent globally here. We should consider a
+     * proper solution when we replace our request infrastructure (issue #4).
      */
     public static String getUserAgent() {
         final String appName;
