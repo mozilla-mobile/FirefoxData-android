@@ -7,7 +7,10 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 
 /**
- * TODO: docs: we use container to expand API later (e.g. last modified)
+ * A container with the data from a Firefox Sync get operation (e.g. bookmarks) and
+ * related metadata. The primary results can be retrieved with {@link #getResult()}.
+ *
+ * We wrap the main Sync data in an Object in order to allow the API to expand in the future.
  */
 public class SyncCollectionResult<T> {
     private final T result;
@@ -16,5 +19,9 @@ public class SyncCollectionResult<T> {
         this.result = result;
     }
 
+    /**
+     * Returns the data received from the Firefox Sync get request.
+     * @return the user's FirefoxSync data; this will never be null.
+     */
     @NonNull public T getResult() { return result; }
 }

@@ -7,26 +7,34 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * TODO: method docs.
+ * A bookmark folder data class, which has a name, description, and a
+ * list of bookmarks and subfolders, among other attributes.
  */
 public class BookmarkFolder extends BookmarkBase {
 
     static final String ROOT_FOLDER_GUID = "places";
 
-    private List<BookmarkFolder> subfolders = new ArrayList<>(); // mutable for ease of creation.
-    private List<BookmarkRecord> bookmarks = new ArrayList<>(); // mutable for ease of creation.
+    private final List<BookmarkFolder> subfolders = new ArrayList<>(); // will mutate the list to populate.
+    private final List<BookmarkRecord> bookmarks = new ArrayList<>(); // will mutate the list to populate.
 
     BookmarkFolder(@NonNull final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord bookmarkRecord) {
         super(bookmarkRecord);
     }
 
+    /**
+     * Returns an immutable list of bookmark folders inside this folder.
+     * @return a list of bookmark folders, or an empty list if there are no items.
+     */
     @NonNull public List<BookmarkFolder> getSubfolders() { return subfolders; }
-    @NonNull public List<BookmarkRecord> getBookmarks() { return bookmarks; }
 
+    /**
+     * Returns an immutable list of bookmarks inside this folder.
+     * @return a list of bookmarks, or an empty list if there are no items.
+     * */
+    @NonNull public List<BookmarkRecord> getBookmarks() { return bookmarks; }
 
     /** @return a folder representing the root folder. */
     static BookmarkFolder createRootFolder() {

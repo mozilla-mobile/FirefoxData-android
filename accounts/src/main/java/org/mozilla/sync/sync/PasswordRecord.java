@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 import org.mozilla.util.StringUtils;
 
 /**
- * TODO:
+ * A data class for a password stored on a web page.
  */
 public class PasswordRecord {
 
@@ -18,9 +18,22 @@ public class PasswordRecord {
         this.underlyingRecord = underlyingRecord;
     }
 
-    // todo: docs.
+    /**
+     * The hostname this password was saved on.
+     * @return The hostname or the empty String if it does not exist.
+     */
     @NonNull public String getHostname() { return StringUtils.emptyStrIfNull(underlyingRecord.hostname); }
+
+    /**
+     * The user name associated with this password.
+     * @return the user name or the empty String if it does not exist.
+     */
     @NonNull public String getUsername() { return StringUtils.emptyStrIfNull(underlyingRecord.encryptedUsername); /* not actually encrypted */ }
+
+    /**
+     * The unencrypted password that was stored.
+     * @return the password or the empty String if it does not exist.
+     */
     @NonNull public String getPassword() { return StringUtils.emptyStrIfNull(underlyingRecord.encryptedPassword); /* not actually encrypted */ }
 
     // Additional fields we can add:

@@ -17,7 +17,7 @@ import java.util.List;
 import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
 
 /**
- * TODO: method docs.
+ * A bookmark data class, containing a title, description, and a URI, among other attributes.
  */
 public class BookmarkRecord extends BookmarkBase {
 
@@ -28,8 +28,22 @@ public class BookmarkRecord extends BookmarkBase {
         tags = tagsJSONToList(underlyingRecord.tags);
     }
 
+    /**
+     * Gets the URI that this bookmark represents.
+     * @return the URI for this bookmark or the empty String if the URI is empty.
+     */
     @NonNull public String getURI() { return StringUtils.emptyStrIfNull(underlyingRecord.bookmarkURI); }
+
+    /**
+     * Gets the keyword search the user has associated with this bookmark.
+     * @return the keyword for this bookmark or the empty String if there is no keyword.
+     */
     @NonNull public String getKeyword() { return StringUtils.emptyStrIfNull(underlyingRecord.keyword); }
+
+    /**
+     * Gets a list of tags the user has associated with this bookmark.
+     * @return a list of tags for this bookmark or an empty list if there are no tags.
+     */
     @NonNull public List<String> getTags() { return tags; }
 
     private static List<String> tagsJSONToList(@Nullable final JSONArray tags) {
