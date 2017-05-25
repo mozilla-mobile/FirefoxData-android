@@ -7,6 +7,7 @@ package org.mozilla.sync.impl;
 import android.text.TextUtils;
 import android.util.Log;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
+import org.mozilla.util.DeviceUtils;
 
 /** A collection of shared functions for Firefox Sync. */
 public class FirefoxSyncShared {
@@ -47,6 +48,6 @@ public class FirefoxSyncShared {
             Log.w(LOGTAG, "getUserAgent: signedInApplication is unexpectedly not yet set");
             appName = "Unknown app";
         }
-        return FirefoxSyncRequestUtils.getUserAgent(appName);
+        return FirefoxSyncRequestUtils.getUserAgent(appName, DeviceUtils.isTablet());
     }
 }

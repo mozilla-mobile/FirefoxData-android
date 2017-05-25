@@ -24,8 +24,8 @@ public class FirefoxSyncRequestUtils {
     private FirefoxSyncRequestUtils() {}
 
     /** Returns the user agent for requests from the library - expects {@link DeviceUtils} to be init. */
-    static String getUserAgent(final String applicationName) {
-        final String formFactor = DeviceUtils.isTablet() ? "Tablet" : "Mobile";
+    static String getUserAgent(final String applicationName, final boolean isTablet) {
+        final String formFactor = isTablet ? "Tablet" : "Mobile";
         final String osVersion = Build.VERSION.RELEASE;
 
         // Format is Mobile-<OS>-Sync/(<form factor>; <OS> <OS-version>) (<Application-name>)

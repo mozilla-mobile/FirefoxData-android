@@ -4,39 +4,11 @@
 
 package org.mozilla.sync.impl;
 
-import android.content.Context;
-import android.content.res.Resources;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mozilla.util.DeviceUtils;
-import org.mozilla.util.DeviceUtilsTestHelper;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FirefoxSyncRequestUtilsTest {
-
-    @Mock private Context mockDeviceUtilsContext;
-    @Mock private Resources mockDeviceUtilsResources;
-
-    @Before
-    public void setUpDeviceUtils() {
-        setUpDeviceUtils(false);
-    }
-
-    /** Tests can call this to override the default DeviceUtils values. */
-    private void setUpDeviceUtils(final boolean isTablet) {
-        DeviceUtilsTestHelper.resetInit();
-
-        when(mockDeviceUtilsContext.getResources()).thenReturn(mockDeviceUtilsResources);
-        when(mockDeviceUtilsResources.getBoolean(Mockito.anyInt())).thenReturn(isTablet); // A call to Resources.getBool(R.bool.is_xlarge);
-        DeviceUtils.init(mockDeviceUtilsContext);
-    }
 
     @Test
     public void testGetUserAgentMatchesRegex() throws Exception {
@@ -46,23 +18,19 @@ public class FirefoxSyncRequestUtilsTest {
         // Note that the Android version is "null" in JUnit tests but shouldn't be on device.
         final String expectedUARegex =
                 "Mobile-Android-Sync/\\([A-Za-z]+; Android [a-zA-Z0-9.]+\\) \\(" + applicationName + "\\)";
-        final String actualUA = FirefoxSyncRequestUtils.getUserAgent(applicationName);
+        final String actualUA = FirefoxSyncRequestUtils.getUserAgent(applicationName, false);
         assertTrue("Expected pattern to match actual user agent: " + actualUA, actualUA.matches(expectedUARegex));
     }
 
-    // This implementation, test, & related test suck because we have to know the implementation
-    // details, i.e. how DeviceUtils determines the form factor, in order to spoof it.
     @Test
     public void testGetUserAgentIndicatesPhoneFormFactor() throws Exception {
-        setUpDeviceUtils(false);
-        final String actualPhoneUA = FirefoxSyncRequestUtils.getUserAgent("whatever");
+        final String actualPhoneUA = FirefoxSyncRequestUtils.getUserAgent("whatever", false);
         assertTrue("Expected phone form factor to be in actual user agent: " + actualPhoneUA, actualPhoneUA.contains("Mobile"));
     }
 
     @Test
     public void testGetUserAgentIndicatesTabletFormFactor() throws Exception {
-        setUpDeviceUtils(true);
-        final String actualTabletUA = FirefoxSyncRequestUtils.getUserAgent("whatever");
+        final String actualTabletUA = FirefoxSyncRequestUtils.getUserAgent("whatever", true);
         assertTrue("Expected tablet form factor to be in actual user agent: " + actualTabletUA, actualTabletUA.contains("Tablet"));
     }
 }
