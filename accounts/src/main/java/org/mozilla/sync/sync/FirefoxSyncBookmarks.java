@@ -99,9 +99,7 @@ class FirefoxSyncBookmarks {
                 }
             }
 
-            final BookmarkFolder rootFolder = createRootBookmarkFolder(idToSeenBookmarks, idToSeenFolders);
-            makeFoldersImmutable(rootFolder, idToSeenFolders);
-            return rootFolder;
+            return createRootBookmarkFolder(idToSeenBookmarks, idToSeenFolders);
         }
 
         private static void mutateSeenBookmarkItems(final BookmarkFolder folder,
@@ -152,13 +150,6 @@ class FirefoxSyncBookmarks {
             }
 
             return rootFolder;
-        }
-
-        private static void makeFoldersImmutable(final BookmarkFolder rootFolder, final Map<String, BookmarkFolder> idToSeenBookmarks) {
-            rootFolder.makeImmutable();
-            for (final BookmarkFolder bookmarkFolder : idToSeenBookmarks.values()) {
-                bookmarkFolder.makeImmutable();
-            }
         }
     }
 }

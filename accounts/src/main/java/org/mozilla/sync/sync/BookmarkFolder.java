@@ -27,11 +27,6 @@ public class BookmarkFolder extends BookmarkBase {
     @NonNull public List<BookmarkFolder> getSubfolders() { return subfolders; }
     @NonNull public List<BookmarkRecord> getBookmarks() { return bookmarks; }
 
-    /** Mutates collections within this folder to immutable versions so they can be returned from the API. */
-    void makeImmutable() {
-        subfolders = Collections.unmodifiableList(subfolders);
-        bookmarks = Collections.unmodifiableList(bookmarks);
-    }
 
     /** @return a folder representing the root folder. */
     static BookmarkFolder createRootFolder() {

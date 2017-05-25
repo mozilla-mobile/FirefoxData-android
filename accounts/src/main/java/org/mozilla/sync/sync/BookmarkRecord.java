@@ -25,7 +25,7 @@ public class BookmarkRecord extends BookmarkBase {
 
     BookmarkRecord(@NonNull final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord bookmarkRecord) {
         super(bookmarkRecord);
-        tags = Collections.unmodifiableList(tagsJSONToList(underlyingRecord.tags));
+        tags = tagsJSONToList(underlyingRecord.tags);
     }
 
     @NonNull public String getURI() { return StringUtils.emptyStrIfNull(underlyingRecord.bookmarkURI); }
