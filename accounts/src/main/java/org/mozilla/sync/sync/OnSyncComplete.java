@@ -4,9 +4,7 @@
 
 package org.mozilla.sync.sync;
 
-/**
- * TODO:
- */
+/** Callback for when a sync collection request completes. */
 interface OnSyncComplete<T> {
     void onSuccess(SyncCollectionResult<T> result);
     void onException(FirefoxSyncGetCollectionException e);

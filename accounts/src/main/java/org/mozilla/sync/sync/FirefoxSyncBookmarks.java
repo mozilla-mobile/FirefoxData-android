@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
@@ -21,13 +22,29 @@ class FirefoxSyncBookmarks {
 
     private FirefoxSyncBookmarks() {}
 
-    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
+    /**
+     * Gets the bookmarks associated with the given account.
+     *
+     * Both the request and the callback occur on the calling thread (this is unintuitive: issue #3).
+     *
+     * @param itemLimit The number of items to fetch. If < 0, fetches all items.
+     */
+    @WorkerThread // network request.
+    static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<BookmarkFolder> onComplete) {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
-            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, null, resourceDelegate);
+            FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, getArgs(itemLimit), resourceDelegate);
         } catch (final FirefoxSyncGetCollectionException e) {
             onComplete.onException(e);
         }
+    }
+
+    private static Map<String, String> getArgs(final int itemLimit) {
+        if (itemLimit < 0) { return null; } // Fetch all items if < 0.
+
+        final Map<String, String> args = new HashMap<>(1);
+        args.put("limit", String.valueOf(itemLimit));
+        return args;
     }
 
     private static class SyncClientBookmarksResourceDelegate extends SyncBaseResourceDelegate<BookmarkFolder> {
@@ -56,7 +73,8 @@ class FirefoxSyncBookmarks {
             // This would be less error-prone if we did the immutable, recursive solution but we run the
             // risk of hitting a StackOverflowException. There are some work-arounds (Visitor pattern?)
             // but they're probably not worth the complexity.
-            // todo: how to handle missing records? e.g. missing a parent b/c partial sync or corruption.
+            //
+            // Note: we don't handle the case that bookmarks are corrupted or we retrieved a partial bookmarks list.
             final Map<String, BookmarkRecord> idToSeenBookmarks = new HashMap<>(rawRecords.size()); // Let's assume they'll mostly be bookmarks.
             final Map<String, BookmarkFolder> idToSeenFolders = new HashMap<>();
             for (final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord rawRecord : rawRecords) {
@@ -81,9 +99,7 @@ class FirefoxSyncBookmarks {
                 }
             }
 
-            final BookmarkFolder rootFolder = createRootBookmarkFolder(idToSeenBookmarks, idToSeenFolders);
-            makeFoldersImmutable(rootFolder, idToSeenFolders);
-            return rootFolder;
+            return createRootBookmarkFolder(idToSeenBookmarks, idToSeenFolders);
         }
 
         private static void mutateSeenBookmarkItems(final BookmarkFolder folder,
@@ -134,13 +150,6 @@ class FirefoxSyncBookmarks {
             }
 
             return rootFolder;
-        }
-
-        private static void makeFoldersImmutable(final BookmarkFolder rootFolder, final Map<String, BookmarkFolder> idToSeenBookmarks) {
-            rootFolder.makeImmutable();
-            for (final BookmarkFolder bookmarkFolder : idToSeenBookmarks.values()) {
-                bookmarkFolder.makeImmutable();
-            }
         }
     }
 }

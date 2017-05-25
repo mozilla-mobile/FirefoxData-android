@@ -4,137 +4,24 @@
 >
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
 
-    <!-- A signature level permission granted only to the Firefox
-         channels sharing an Android Account type. -->
-    <permission
-            android:name="org.mozilla.gecko_fxaccount.permission.PER_ACCOUNT_TYPE"
-            android:protectionLevel="signature">
-    </permission>
+    <!-- TODO: which items present for library? icon for app switcher? Add docs of needed permissions -->
+    <application
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
 
-    <uses-permission android:name="org.mozilla.gecko_fxaccount.permission.PER_ACCOUNT_TYPE" />
-
-    <application android:allowBackup="true"
-                 android:label="@string/app_name"
-                 android:icon="@mipmap/ic_launcher"
-                 android:roundIcon="@mipmap/ic_launcher_round"
-                 android:supportsRtl="true"
-                 android:theme="@style/AppTheme">
-
+        <!-- We force portrait mode because we don't want to handle recreating the Activity because it's non-trivial:
+        the WebView does not restore the input fields and we can't back to the "needs verification" screen easily (if we
+        were in that state). One side effect of this is that if the Activity is destroyed, e.g. low memory which can
+        happen when the user switches apps to verify their account, we don't restore the state. :( Issue #1. -->
         <activity
-                android:theme="@style/Theme.AppCompat.NoActionBar"
-                android:label="@string/fxaccount_login_webview_label"
                 android:name="org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity"
+                android:label="@string/fxaccount_login_webview_label"
                 android:exported="true"
+                android:theme="@style/Theme.AppCompat.NoActionBar"
+                android:screenOrientation="portrait"
+                android:configChanges="orientation|keyboardHidden"
         />
-
-        <activity
-                android:theme="@style/FxAccountTheme.FxAccountStatusActivity"
-                android:label="@string/fxaccount_status_activity_label"
-                android:clearTaskOnLaunch="true"
-                android:taskAffinity="org.mozilla.gecko.FXA"
-                android:name="org.mozilla.gecko.fxa.activities.FxAccountStatusActivity"
-                android:configChanges="locale|layoutDirection"
-                android:windowSoftInputMode="adjustResize">
-            <!-- Adding a launcher will make this activity appear on the
-                 Apps screen, which we only want when testing. -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.mozilla.gecko.ACTION_FXA_STATUS"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <receiver
-                android:name="org.mozilla.gecko.fxa.receivers.FxAccountUpgradeReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package"/>
-            </intent-filter>
-        </receiver>
-
-        <activity
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.activities.FxAccountGetStartedActivityWeb">
-            <intent-filter>
-                <action android:name="org.mozilla.gecko.ACTION_FXA_GET_STARTED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.activities.FxAccountUpdateCredentialsActivityWeb">
-            <intent-filter>
-                <action android:name="org.mozilla.gecko.ACTION_FXA_UPDATE_CREDENTIALS"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.activities.FxAccountFinishMigratingActivityWeb">
-            <intent-filter>
-                <action android:name="org.mozilla.gecko.ACTION_FXA_FINISH_MIGRATING"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.activities.FxAccountConfirmAccountActivityWeb">
-            <intent-filter>
-                <action android:name="org.mozilla.gecko.ACTION_FXA_CONFIRM_ACCOUNT"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <service
-                android:exported="true"
-                android:name="org.mozilla.gecko.fxa.authenticator.FxAccountAuthenticatorService" >
-            <intent-filter >
-                <action android:name="android.accounts.AccountAuthenticator" />
-            </intent-filter>
-
-            <meta-data
-                    android:name="android.accounts.AccountAuthenticator"
-                    android:resource="@xml/fxaccount_authenticator" />
-        </service>
-
-        <service
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.receivers.FxAccountDeletedService" >
-        </service>
-
-        <service
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.sync.FxAccountProfileService" >
-        </service>
-
-        <!-- Firefox Sync. -->
-        <service
-                android:exported="false"
-                android:name="org.mozilla.gecko.fxa.sync.FxAccountSyncService" >
-            <intent-filter >
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                    android:name="android.content.SyncAdapter"
-                    android:resource="@xml/fxaccount_syncadapter" />
-        </service>
 
     </application>
 

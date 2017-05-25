@@ -4,11 +4,13 @@
 
 package org.mozilla.sync.impl;
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
+import org.mozilla.util.DeviceUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -21,13 +23,18 @@ import java.util.Map;
 public class FirefoxSyncRequestUtils {
     private FirefoxSyncRequestUtils() {}
 
+    /** Returns the user agent for requests from the library - expects {@link DeviceUtils} to be init. */
+    static String getUserAgent(final String applicationName) {
+        final String formFactor = DeviceUtils.isTablet() ? "Tablet" : "Mobile";
+        final String osVersion = Build.VERSION.RELEASE;
+
+        // Format is Mobile-<OS>-Sync/(<form factor>; <OS> <OS-version>) (<Application-name>)
+        return String.format("Mobile-Android-Sync/(%s; Android %s) (%s)", formFactor, osVersion, applicationName);
+    }
+
     // The URI methods wrap String methods so we can avoid allocating too many unnecessary objects when composing the methods.
     public static URI getServerURI(@NonNull final TokenServerToken token) throws URISyntaxException {
         return new URI(getServerURIString(token));
-    }
-
-    public static URI getServerStorageURI(@NonNull final TokenServerToken token) throws URISyntaxException {
-        return new URI(getServerStorageURIString(token));
     }
 
     /**

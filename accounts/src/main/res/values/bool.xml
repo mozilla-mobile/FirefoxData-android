@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TODO license here & others -->
+    <!-- We identify the screen size as loaded from resources. Note that devices can spoof this value. -->
+    <bool name="is_xlarge">false</bool>
+</resources>

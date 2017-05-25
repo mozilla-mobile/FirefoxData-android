@@ -5,6 +5,7 @@
 package org.mozilla.sync.login;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.CollectionKeys;
@@ -20,8 +21,6 @@ import org.mozilla.gecko.sync.net.SyncStorageResponse;
 import org.mozilla.gecko.sync.repositories.domain.RecordParseException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxAccountUtils;
-import org.mozilla.sync.impl.FirefoxSyncAssertionException;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 
 import java.io.IOException;
@@ -29,8 +28,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 
-import static org.mozilla.sync.impl.FirefoxAccountShared.LOGTAG;
+import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
 
 /** A container for static functions to get the crypto keys for a Firefox account. */
 class FirefoxSyncCryptoKeysAccessor {
@@ -43,20 +43,47 @@ class FirefoxSyncCryptoKeysAccessor {
     /** A callback for a crypto keys request. */
     interface CollectionKeysCallback {
         void onKeysReceived(CollectionKeys collectionKeys);
+
+        /**
+         * Called when the user does not have collection keys on the server. This can happen when the user has a brand
+         * new account and has not uploaded any sync data yet.
+         */
+        void onKeysDoNotExist();
+
         /** Called when the server response denies us the crypto keys, or the response is invalid. */
         void onRequestFailure(Exception e);
         /** Called when we're unable to get a response from the server. */
         void onError(Exception e);
     }
 
-    // todo: callback threads.
     /**
      * Gets the crypto keys for the given account & sync token.
+     *
+     * Both the request & the callback occur on the calling thread (this is unintuitive: issue #3).
      *
      * {@code onComplete}'s {@link CollectionKeysCallback#onError(Exception)} will be passed a
      * {@link FirefoxSyncAssertionException} in the event that some assertion we make fails.
      */
-    static void get(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
+    @WorkerThread // network request.
+    static void getBlocking(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
+        // If the "crypto" collection does not exist, the crypto keys request will 404 and fail. We'd like to actually
+        // know why the request failed so we first ensure the "crypto" collection exists.
+        FirefoxSyncCollectionInfoAccessor.getBlocking(token, new FirefoxSyncCollectionInfoAccessor.CollectionInfoCallback() {
+            @Override
+            public void onSuccess(final Collection<String> existingCollectionNames) {
+                if (existingCollectionNames.contains("crypto")) {
+                    makeCryptoKeysRequest(marriedAccount, token, onComplete);
+                } else {
+                    onComplete.onKeysDoNotExist();
+                }
+            }
+
+            @Override public void onRequestFailure(final Exception e) { onComplete.onRequestFailure(e); }
+            @Override public void onError(final Exception e) { onComplete.onError(e); }
+        });
+    }
+
+    private static void makeCryptoKeysRequest(final FirefoxAccount marriedAccount, final TokenServerToken token, final CollectionKeysCallback onComplete) {
         final SyncStorageRecordRequest request;
         try {
             request = new SyncStorageRecordRequest(FirefoxSyncRequestUtils.getCollectionURI(token, CRYPTO_COLLECTION, KEYS_ID, null));
@@ -78,7 +105,7 @@ class FirefoxSyncCryptoKeysAccessor {
                     return;
                 }
 
-                // TODO: persist keys: see EnsureCrypto5KeysStage.
+                // Consider caching: issue #6 (see EnsureCrypto5KeysStage).
                 onComplete.onKeysReceived(keys);
             }
 
@@ -104,7 +131,7 @@ class FirefoxSyncCryptoKeysAccessor {
 
             @Override
             public String ifUnmodifiedSince() {
-                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns! TODO: do something here?
+                return null; // This is what EnsureCrypto5KeysStage.ifUnmodifiedSince returns!
             }
         };
         request.get();

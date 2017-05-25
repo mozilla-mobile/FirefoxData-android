@@ -4,10 +4,8 @@
 
 package org.mozilla.sync.login;
 
-import org.mozilla.sync.impl.FirefoxSyncAssertionException;
+import android.support.annotation.WorkerThread;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.impl.FirefoxAccountShared;
-import org.mozilla.sync.impl.FirefoxAccountUtils;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
 import org.mozilla.gecko.fxa.FxAccountConstants;
@@ -15,6 +13,7 @@ import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;
 import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,15 +25,17 @@ class FirefoxSyncTokenAccessor {
 
     private FirefoxSyncTokenAccessor() {}
 
-    // todo: document threading.
-    // TODO: mention when assertions are returned.
-    /**
+   /**
      * Gets a Sync Token or returns an error through the provided callback. The given account
      * <b>must</b> be in the Married state.
      *
+     * The request is made from the calling thread but the callback runs on the shared sync background thread.
+     * This is unintuitive (see issue #3).
+     *
      * @throws IllegalStateException if the account is not in the Married state.
      */
-    public static void get(final FirefoxAccount account, final FirefoxSyncTokenServerClientDelegate callback) {
+    @WorkerThread // network request.
+    public static void getBlocking(final FirefoxAccount account, final FirefoxSyncTokenServerClientDelegate callback) {
         if (!FirefoxAccountUtils.isMarried(account.accountState)) {
             callback.handleError(new FirefoxSyncAssertionException("Assertion failed: expected account to be in married state. Instead: " +
                     account.accountState.getStateLabel().name()));
@@ -56,14 +57,16 @@ class FirefoxSyncTokenAccessor {
             return;
         }
 
-        // We make the TokenServerClientDelegate non-anonymous to prevent leaking the Context.
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxAccountShared.executor); // TODO: do we actually want to use this executor? What about networkExecutor?
+        // Consider caching result: issue #6.
+        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncLoginShared.executor);
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);
     }
 
     /** A base implementation of {@link TokenServerClientDelegate} that provides a user agent. */
     static abstract class FirefoxSyncTokenServerClientDelegate implements TokenServerClientDelegate {
-        @Override public final String getUserAgent() { return FxAccountConstants.USER_AGENT; } // todo: set.
+        @Override public final String getUserAgent() {
+            return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+        }
     }
 }

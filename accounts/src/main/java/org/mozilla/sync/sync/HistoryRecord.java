@@ -7,7 +7,9 @@ package org.mozilla.sync.sync;
 import android.support.annotation.NonNull;
 import org.mozilla.util.StringUtils;
 
-// TODO: Class vs. interface. docs.
+/**
+ * A data class for a history entry, which represents a visited URI.
+ */
 public class HistoryRecord { // TODO: name: record?
 
     private final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord;
@@ -16,7 +18,16 @@ public class HistoryRecord { // TODO: name: record?
         this.underlyingRecord = underlyingRecord;
     }
 
+    /**
+     * The title of the visited page.
+     * @return The title of the visited page or the empty String if it does not exist.
+     */
     @NonNull public String getTitle() { return StringUtils.emptyStrIfNull(underlyingRecord.title); }
+
+    /**
+     * The URI of the visited page.
+     * @return The URI of the visited page or the empty String if it does not exist.
+     */
     @NonNull public String getURI() { return StringUtils.emptyStrIfNull(underlyingRecord.histURI); }
 
     // Additional fields we can add:

@@ -18,6 +18,7 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 
 public class SyncStorageRequest implements Resource {
   public static final HashMap<String, String> SERVER_ERROR_MESSAGES;
@@ -111,7 +112,7 @@ public class SyncStorageRequest implements Resource {
 
     @Override
     public String getUserAgent() {
-      return SyncConstants.USER_AGENT;
+      return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
     }
 
     @Override

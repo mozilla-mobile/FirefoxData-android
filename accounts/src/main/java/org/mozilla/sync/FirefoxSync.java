@@ -5,17 +5,39 @@
 package org.mozilla.sync;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
+import org.mozilla.util.DeviceUtils;
 
 /**
- * A collection of static functions with entry points to Firefox Sync operations.
+ * The main entry point to the Firefox Sync library: this class is a collection of static
+ * functions to interact with the library.
  */
 public class FirefoxSync {
     private FirefoxSync() {}
 
-    // todo: name.
-    // tODO: singleton or new instance?
-    public static FirefoxSyncLoginManager getLoginManager(final Context context) {
+    /**
+     * Initializes the library, in particular, for items that need a Context.
+     *
+     * This function should be called before any Objects are returned to the library user.
+     */
+    private static void initLibrary(final Context context) {
+        DeviceUtils.init(context);
+    }
+
+    /**
+     * Gets a FirefoxSyncLoginManager, which grants access a Firefox Account user's Sync information.
+     *
+     * This function is intended to be called in initialization (such as {@link android.app.Activity#onCreate(Bundle)})
+     * because it can only be called with a specific Context instance once.
+     *
+     * @param context The Context from which this LoginManager is being accessed.
+     * @return A FirefoxSyncLoginManager.
+     */
+    public static FirefoxSyncLoginManager getLoginManager(@NonNull final Context context) {
+        initLibrary(context);
         return InternalFirefoxSyncLoginManagerFactory.internalGetLoginManager(context);
     }
 }

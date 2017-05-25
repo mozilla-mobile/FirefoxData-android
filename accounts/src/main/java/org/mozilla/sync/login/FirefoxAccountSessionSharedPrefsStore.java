@@ -8,14 +8,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
 
@@ -29,22 +27,18 @@ import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STABLE_DE
 import static org.mozilla.sync.impl.FirefoxAccountEndpointConfig.LABEL_STAGE;
 
 /**
- * A store for a {@link FirefoxAccount} based on {@link SharedPreferences}.
+ * A store for a {@link FirefoxAccountSession} based on {@link SharedPreferences}.
  *
- * This store is <b>unencrypted</b>. Ideally, we'd encrypt personal user data, such as email, uid, and tokens.
- * On iOS, we use the keystore (the user's phone pin/password is the key), however, this is less-trivial on
- * Android where there is no default key. As such, I did not implement encryption. Applications' SharedPrefs
- * are sandboxed from one another so for all but rooted devices, this should be sufficient. Note that Firefox
- * for Android also does not encrypt these user credentials.
+ * This store is <b>unencrypted</b>. For future encryption discussion, see issue #5.
  *
  * This class is thread-safe in that no inconsistent data will be shown but call order (i.e. a load called
  * before a save will return the data before the save) is not guaranteed.
  */
-class FirefoxAccountSharedPrefsStore {
+class FirefoxAccountSessionSharedPrefsStore {
 
-    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
-    private static final String DEFAULT_STORE_NAME = "FirefoxAccountSharedPrefsStore";
+    private static final String DEFAULT_STORE_NAME = "FirefoxAccountSessionSharedPrefsStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";
     private static final int STORE_VERSION = 1; // for wiggle room with potential future revisions.
 
@@ -62,24 +56,26 @@ class FirefoxAccountSharedPrefsStore {
             KEY_STATE_JSON,
             KEY_ENDPOINT_CONFIG_LABEL,
     };
+    private static final String KEY_APPLICATION_NAME = "application-name";
 
     private final SharedPreferences sharedPrefs;
 
-    /** Create a FirefoxAccountSharedPrefsStore with the default name. */
-    FirefoxAccountSharedPrefsStore(final Context context) {
+    /** Create a FirefoxAccountSessionSharedPrefsStore with the default name. */
+    FirefoxAccountSessionSharedPrefsStore(final Context context) {
         this(context, DEFAULT_STORE_NAME);
     }
 
     // Untested, but in theory this should allow support for multiple accounts.
-    private FirefoxAccountSharedPrefsStore(final Context context, final String storeName) {
+    private FirefoxAccountSessionSharedPrefsStore(final Context context, final String storeName) {
         this.sharedPrefs = context.getSharedPreferences(getPrefsBranch(storeName), 0);
     }
 
     private static String getPrefsBranch(final String storeName) { return PREFS_BRANCH_PREFIX + storeName; };
 
-    /** Saves a FirefoxAccount to be restored with {@link #loadFirefoxAccount()}. */
+    /** Saves a {@link FirefoxAccountSession} to be restored with {@link #loadSession()}. */
     @AnyThread
-    void saveFirefoxAccount(@NonNull final FirefoxAccount account) {
+    void saveSession(@NonNull final FirefoxAccountSession session) {
+        final FirefoxAccount account = session.firefoxAccount;
         sharedPrefs.edit()
                 .putInt(KEY_VERSION, STORE_VERSION)
                 .putString(KEY_EMAIL, account.email)
@@ -90,17 +86,18 @@ class FirefoxAccountSharedPrefsStore {
                 // Future builds can change the endpoints in their config so we only store the label
                 // so we can pull in the latest endpoints.
                 .putString(KEY_ENDPOINT_CONFIG_LABEL, account.endpointConfig.label)
+                .putString(KEY_APPLICATION_NAME, session.applicationName)
                 .apply();
     }
 
     /**
-     * @throws FailedToLoadAccountException if we're unable to load the account.
+     * @throws FailedToLoadSessionException if we're unable to load the account.
      * @return a FirefoxAccount.
      */
     @NonNull
     @AnyThread
-    FirefoxAccount loadFirefoxAccount() throws FailedToLoadAccountException {
-        if (sharedPrefs.getInt(KEY_VERSION, -1) < 0) { throw new FailedToLoadAccountException("account does not exist"); }
+    FirefoxAccountSession loadSession() throws FailedToLoadSessionException {
+        if (sharedPrefs.getInt(KEY_VERSION, -1) < 0) { throw new FailedToLoadSessionException("account does not exist"); }
 
         final State state;
         try {
@@ -108,7 +105,7 @@ class FirefoxAccountSharedPrefsStore {
             final ExtendedJSONObject stateJSON = new ExtendedJSONObject(sharedPrefs.getString(KEY_STATE_JSON, null));
             state = StateFactory.fromJSONObject(stateLabel, stateJSON);
         } catch (final NoSuchAlgorithmException | IOException | NonObjectJSONException | InvalidKeySpecException | IllegalArgumentException e) {
-            throw new FailedToLoadAccountException("unable to restore account state", e);
+            throw new FailedToLoadSessionException("unable to restore account state", e);
         }
 
         final String endpointConfigLabel = sharedPrefs.getString(KEY_ENDPOINT_CONFIG_LABEL, "");
@@ -118,18 +115,21 @@ class FirefoxAccountSharedPrefsStore {
             case LABEL_LATEST_DEV: endpointConfig = FirefoxAccountEndpointConfig.getLatestDev(); break;
             case LABEL_STAGE: endpointConfig = FirefoxAccountEndpointConfig.getStage(); break;
             case LABEL_PRODUCTION: endpointConfig = FirefoxAccountEndpointConfig.getProduction(); break;
-            default: throw new FailedToLoadAccountException("unable to restore account - unknown endpoint label: " + endpointConfigLabel);
+            default: throw new FailedToLoadSessionException("unable to restore account - unknown endpoint label: " + endpointConfigLabel);
         }
 
         final String email = sharedPrefs.getString(KEY_EMAIL, null);
         final String uid = sharedPrefs.getString(KEY_UID, null);
+        final FirefoxAccount firefoxAccount = new FirefoxAccount(email, uid, state, endpointConfig);
 
-        return new FirefoxAccount(email, uid, state, endpointConfig);
+        final String applicationName = sharedPrefs.getString(KEY_APPLICATION_NAME, null);
+
+        return new FirefoxAccountSession(firefoxAccount, applicationName);
     }
 
-    /** Removes any saved FirefoxAccount. */
+    /** Removes any saved {@link FirefoxAccountSession}. */
     @AnyThread
-    void removeFirefoxAccount() {
+    void deleteStoredSession() {
         // Alternatively, we could call `sharedPrefs.edit().clear()`, but that's fragile, e.g. if we
         // started to store other metadata in here we wouldn't want to clear on account removal.
         final SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -139,9 +139,9 @@ class FirefoxAccountSharedPrefsStore {
         editor.apply();
     }
 
-    static class FailedToLoadAccountException extends Exception {
-        private static final String MESSAGE_PREFIX = "loadFirefoxAccount: ";
-        FailedToLoadAccountException(final String message) { super(MESSAGE_PREFIX + message); }
-        FailedToLoadAccountException(final String message, final Throwable cause) { super(MESSAGE_PREFIX + message, cause); }
+    static class FailedToLoadSessionException extends Exception {
+        private static final String MESSAGE_PREFIX = "loadSession: ";
+        FailedToLoadSessionException(final String message) { super(MESSAGE_PREFIX + message); }
+        FailedToLoadSessionException(final String message, final Throwable cause) { super(MESSAGE_PREFIX + message, cause); }
     }
 }

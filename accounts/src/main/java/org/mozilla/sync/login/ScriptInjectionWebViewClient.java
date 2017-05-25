@@ -6,7 +6,7 @@ package org.mozilla.sync.login;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import org.mozilla.util.WebViewUtil;
+import org.mozilla.util.WebViewUtils;
 
 /**
  * A WebViewClient that injects the given script into the first page it loads.
@@ -25,7 +25,7 @@ class ScriptInjectionWebViewClient extends WebViewClient {
         // This method is called multiple times for some reason: ensure script is injected only once.
         if (!hasInjectedScript) {
             hasInjectedScript = true;
-            WebViewUtil.evalJS(view, script);
+            WebViewUtils.evalJS(view, script);
         }
     }
 }

@@ -23,10 +23,10 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
-import org.mozilla.util.FileUtil;
+import org.mozilla.util.IOUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
-    protected static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    protected static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
     private static final int socketTimeoutInMillis = 1000 * 2 * 60; // Wait 2 minutes for data.
@@ -61,7 +61,7 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
     public final void handleHttpResponse(final HttpResponse response) {
         final String responseBody;
         try {
-            responseBody = FileUtil.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
+            responseBody = IOUtils.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
             onComplete.onException(new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR));
             return;
@@ -73,7 +73,9 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         onComplete.onException(new FirefoxSyncGetCollectionException(cause, FailureReason.NETWORK_ERROR));
     }
 
-    @Override public String getUserAgent() { return null; } // TODO: decide if necessary.
+    @Override public String getUserAgent() {
+        return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+    }
 
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleException(e); }
     @Override public void handleHttpIOException(final IOException e) { handleException(e); }
@@ -130,6 +132,6 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         cryptoRecord.payload = new ExtendedJSONObject(json.getString("payload"));
         cryptoRecord.setKeyBundle(keyBundle);
         cryptoRecord.decrypt();
-        return (R) recordFactory.createRecord(cryptoRecord); // TODO: rm cast. To save time, I didn't generify RecordFactory.
+        return (R) recordFactory.createRecord(cryptoRecord); // We should rm this cast. To save time, I didn't generify RecordFactory.
     }
 }

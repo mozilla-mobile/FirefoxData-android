@@ -8,9 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import org.mozilla.util.StringUtils;
 
-/**
- * TODO: method docs. ignore query & separator.
- */
+/** A base implementation of a bookmark data class. */
 class BookmarkBase {
 
     final org.mozilla.gecko.sync.repositories.domain.BookmarkRecord underlyingRecord;
@@ -21,8 +19,21 @@ class BookmarkBase {
         this.underlyingRecord = underlyingRecord;
     }
 
+    /**
+     * Returns the title the user associated with this bookmark.
+     * @return the title text or the empty string if there is no title.
+     */
     @NonNull public String getTitle() { return StringUtils.emptyStrIfNull(underlyingRecord.title); }
+
+    /**
+     * Returns the description text the user associated with this bookmark.
+     * @return the description text or the empty string if there is no description.
+     */
     @NonNull public String getDescription() { return StringUtils.emptyStrIfNull(underlyingRecord.description); }
 
+    /**
+     * Returns the bookmark folder that contains this bookmark.
+     * @return the parent bookmark folder or null if there is no parent folder.
+     */
     @Nullable public BookmarkFolder getParentFolder() { return parentFolder; }
 }

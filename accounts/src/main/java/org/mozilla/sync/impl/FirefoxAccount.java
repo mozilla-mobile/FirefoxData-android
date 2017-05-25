@@ -32,7 +32,7 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class FirefoxAccount implements Parcelable {
 
-    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     public final String email;
     public final String uid;
@@ -86,7 +86,7 @@ public class FirefoxAccount implements Parcelable {
             final byte[] keyFetchToken = Utils.hex2Byte(data.getString("keyFetchToken"));
             final byte[] sessionToken = Utils.hex2Byte(data.getString("sessionToken"));
             final byte[] unwrapBKey = Utils.hex2Byte(data.getString("unwrapBKey"));
-            // Note that we ignore attr: customizeSync, verifiedCanLinkAccount, & declinedSyncEngines. // todo: should we?
+            // Note that we ignore attr: customizeSync, verifiedCanLinkAccount, & declinedSyncEngines.
 
             final State accountState = new Engaged(email, uid, verified, unwrapBKey, sessionToken, keyFetchToken);
             return new FirefoxAccount(email, uid, accountState, endpointConfig);

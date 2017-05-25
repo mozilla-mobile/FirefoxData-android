@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.login;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,16 +16,18 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.sync.impl.FirefoxAccountShared;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.gecko.R;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
-import org.mozilla.util.ResourcesUtil;
-import org.mozilla.util.WebViewUtil;
+import org.mozilla.util.ResourcesUtils;
+import org.mozilla.util.WebViewUtils;
 
 /**
  * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no
  * knowledge of existing Firefox Account state: if you start it, it attempt to prompt the user to log in.
+ *
+ * <b>This is not intended to be a public API</b>: please access via {@link org.mozilla.sync.FirefoxSync#getLoginManager(Context)}.
  *
  * At the time of writing, the login page maintains browser local storage and will pre-fill a previously entered
  * account email.
@@ -41,27 +44,25 @@ import org.mozilla.util.WebViewUtil;
  * Output Intent args:
  * <ul>
  *     <li>{@link #EXTRA_ACCOUNT}: on success, the returned account. This can be verified or unverified.</li>
- *     <li>{@link #EXTRA_FAILURE_REASON}: on error, a {@link FirefoxSyncLoginException.FailureReason#name()}</li>
+ *     <li>{@link #EXTRA_FAILURE_REASON}: on error, a String explaining what went wrong.
  * </ul>
  *
  * The previous implementation, FxAccountWebFlowActivity & friends, are heavily dependent on Gecko, so we rewrote it.
  * This implementation is heavily inspired by Firefox for iOS's FxAContentViewController:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/02467f8015e5936425dfc7355c290f94c56ea57a/Client/Frontend/Settings/FxAContentViewController.swift
- *
- * TODO: add loading timeout + docs; WebCHannel login allows us to choose engines.
  */
 public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
-    private static final String LOGTAG = FirefoxAccountShared.LOGTAG;
+    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
 
     // Input values.
-    public static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
+    static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
 
     // Return values.
-    public static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
-    public static final String EXTRA_ACCOUNT = "org.mozilla.sync.login.extra.account";
-    public static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.login.extra.failure-reason";
-    public static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
+    static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
+    static final String EXTRA_ACCOUNT = "org.mozilla.sync.login.extra.account";
+    static final String EXTRA_FAILURE_REASON = "org.mozilla.sync.login.extra.failure-reason";
+    static final int RESULT_ERROR = -2; // CANCELED (0) & OK (-1) on Activity super class.
 
     private static final String JS_INTERFACE_OBJ = "firefoxAccountLogin";
 
@@ -74,6 +75,8 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Note: we force portrait so we don't have to handle restoring the WebView -
+        // see this activity declaration in the AndroidManifest for motivations.
 
         setContentView(R.layout.activity_fxaccount_login_web_view);
         setSupportActionBar((Toolbar) findViewById(R.id.fxaccount_login_toolbar));
@@ -82,7 +85,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Code in this block must be called before initWebView.
-        script = ResourcesUtil.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
+        script = ResourcesUtils.getStringFromRawResUnsafe(this, R.raw.firefox_account_login);
         initFromIntent();
 
         initWebView();
@@ -103,7 +106,11 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true); // needed for FxA login.
         webView.setWebViewClient(new ScriptInjectionWebViewClient(script));
-        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ); // TODO: min SDK 17?
+
+        // It's recommended JS interface is used on SDK min 17+ because on earlier versions the
+        // page's JS can use reflection to call Java methods. However, since we trust the page,
+        // we shouldn't be vulnerable.
+        webView.addJavascriptInterface(new JSInterface(), JS_INTERFACE_OBJ);
         webView.loadUrl(webViewURL);
     }
 
@@ -167,7 +174,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         final FirefoxAccount account = FirefoxAccount.fromWebFlow(endpointConfig, data);
         if (account == null) {
             Log.e(LOGTAG, "Account received from server is corrupted. Returning from login...");
-            setResultForFailureReason(FirefoxSyncLoginException.FailureReason.SERVER_ERROR);
+            setResultForFailureReason("Account received from server is corrupted.");
             finish();
             return;
         }
@@ -186,7 +193,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
     }
 
     private void onLoaded() {
-        // todo: invalidate loading timeout.
+        // If we had a loading time-out (issue #2), here is where we would invalidate it.
     }
 
     private void injectResponse(final String command, final long messageID, final JSONObject data) {
@@ -197,7 +204,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
                 // WebView methods must be called from UiThread.
                 final String script = "window.dispatchEvent(" +
                         "new CustomEvent('WebChannelMessageToContent', " + customEventArg + "));";
-                WebViewUtil.evalJS(webView, script);
+                WebViewUtils.evalJS(webView, script);
             }
         });
     }
@@ -226,9 +233,9 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         return obj.toString();
     }
 
-    private void setResultForFailureReason(final FirefoxSyncLoginException.FailureReason reason) {
+    private void setResultForFailureReason(final String failureReason) {
         final Intent resultIntent = new Intent(ACTION_WEB_VIEW_LOGIN_RETURN);
-        resultIntent.putExtra(EXTRA_FAILURE_REASON, reason.name());
+        resultIntent.putExtra(EXTRA_FAILURE_REASON, failureReason);
         setResult(RESULT_ERROR, resultIntent);
     }
 }

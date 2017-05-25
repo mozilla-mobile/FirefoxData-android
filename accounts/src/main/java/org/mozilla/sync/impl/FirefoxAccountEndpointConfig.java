@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
  */
 public class FirefoxAccountEndpointConfig implements Parcelable {
 
-    private static final String CONTEXT = "fx_fennec_v1"; // TODO: update context - https://github.com/mozilla/fxa-content-server/issues/2137
+    private static final String CONTEXT = "fx_fennec_v1"; // TODO: update context: https://github.com/mozilla/fxa-content-server/issues/2137
 
     public static final String LABEL_LATEST_DEV = "LatestDev";
     public static final String LABEL_STAGE = "Stage";
@@ -56,8 +56,10 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
 
     /**
      * Gets an endpoint config for the stable dev servers; note <b>you will be unable to access sync data</b> with this
-     * configuration: the sync servers (stage) don't share resources with these dev servers.
+     * configuration: the sync servers (stage) don't share resources with these dev servers. To prevent
+     * unintentional misuse, I marked it deprecated.
      */
+    @Deprecated
     public static FirefoxAccountEndpointConfig getStableDev() {
         return new FirefoxAccountEndpointConfig(
                 /* label */ LABEL_STABLE_DEV,
@@ -67,14 +69,16 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* signIn */ appendContextParam("https://stable.dev.lcip.org/signin?service=sync"),
                 /* settings */ appendContextParam("https://stable.dev.lcip.org/settings"),
                 /* forceAuth */ appendContextParam("https://stable.dev.lcip.org/force_auth?service=sync"),
-                Sync15EndpointConfig.getStage() // TODO: is there a better server to point to? Here & `LatestDev`.
+                Sync15EndpointConfig.getStage() // Does not correspond with FxA endpoints.
         );
     }
 
     /**
      * Gets an endpoint config for the latest dev servers; note <b>you will be unable to access sync data</b> with this
-     * configuration: the sync servers (stage) don't share resources with these dev servers.
+     * configuration: the sync servers (stage) don't share resources with these dev servers. To prevent
+     * unintentional misuse, I marked it deprecated.
      */
+    @Deprecated
     public static FirefoxAccountEndpointConfig getLatestDev() {
         return new FirefoxAccountEndpointConfig(
                 /* label */ LABEL_LATEST_DEV,
@@ -84,7 +88,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
                 /* signIn */ appendContextParam("https://latest.dev.lcip.org/signin?service=sync"),
                 /* settings */ appendContextParam("https://latest.dev.lcip.org/settings"),
                 /* forceAuth */ appendContextParam("https://latest.dev.lcip.org/force_auth?service=sync"),
-                Sync15EndpointConfig.getStage()
+                Sync15EndpointConfig.getStage() // Does not correspond with FxA endpoints.
         );
     }
 
@@ -115,7 +119,7 @@ public class FirefoxAccountEndpointConfig implements Parcelable {
     }
 
     private static String appendContextParam(final String url) {
-        // TODO: better to append URL params with a dedicated url method.
+        // This should really use a dedicated method to add params to a get http request.
         return url + (url.contains("?") ? "&" : "?") + "context=" + CONTEXT;
     }
 

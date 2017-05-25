@@ -4,6 +4,7 @@
 
 package org.mozilla.sync.sync;
 
+import android.support.annotation.WorkerThread;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
 
@@ -21,8 +22,15 @@ class FirefoxSyncHistory {
 
     private FirefoxSyncHistory() {}
 
-    /** Gets history for the given sync config, returning history with the most-recently visited first. */
-    static void get(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
+    /**
+     * Gets history for the given sync config, returning history with the most-recently visited first.
+     *
+     * Both the request and the callback will run on the given thread (this is unintuitive: issue #3).
+     *
+     * @param itemLimit The number of items to fetch. If < 0, all items will be fetched.
+     */
+    @WorkerThread // network request.
+    static void getBlocking(final FirefoxSyncConfig syncConfig, final int itemLimit, final OnSyncComplete<List<HistoryRecord>> onComplete) {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
@@ -33,7 +41,7 @@ class FirefoxSyncHistory {
 
     private static Map<String, String> getArgs(final int itemLimit) {
         final Map<String, String> args = new HashMap<>(1);
-        if (itemLimit >= 0) { // todo: document or remove.
+        if (itemLimit >= 0) { // Fetch all items if < 0.
             args.put("limit", String.valueOf(itemLimit));
         }
         args.put("sort", "newest"); // sort history in the order users would see in their browser.
