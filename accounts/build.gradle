@@ -46,6 +46,8 @@ unMock {
 
     // Data classes.
     keep "android.content.Intent"
+    keep "android.os.BaseBundle"
+    keep "android.os.Bundle"
 
     // Dependencies of other APIs above.
     keepStartingWith "com.android.internal.util." // needed by SparseArray.
