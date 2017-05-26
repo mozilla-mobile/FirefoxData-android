@@ -34,3 +34,19 @@ dependencies {
 
     compile 'com.squareup.picasso:picasso:2.5.2'
 }
+
+apply plugin: 'de.mobilej.unmock'
+unMock {
+    // Used everywhere.
+    keep "android.util.Log"
+
+    // Static functions.
+    keep "android.text.TextUtils"
+    keep "android.util.SparseArray"
+
+    // Data classes.
+    keep "android.content.Intent"
+
+    // Dependencies of other APIs above.
+    keepStartingWith "com.android.internal.util." // needed by SparseArray.
+}

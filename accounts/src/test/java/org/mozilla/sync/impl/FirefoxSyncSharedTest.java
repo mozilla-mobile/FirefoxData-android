@@ -6,16 +6,18 @@ package org.mozilla.sync.impl;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mozilla.AndroidDepedentTestCase;
+import org.junit.runner.RunWith;
 import org.mozilla.FirefoxSyncTestHelpers;
 import org.mozilla.util.DeviceUtils;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(PowerMockRunner.class)
 @PrepareForTest(DeviceUtils.class)
-public class FirefoxSyncSharedTest extends AndroidDepedentTestCase {
+public class FirefoxSyncSharedTest {
 
     @Before
     public void mockStatic() {
