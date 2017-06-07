@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
@@ -28,6 +29,8 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.10.19'
     testCompile 'org.powermock:powermock-module-junit4:1.6.6'
     testCompile 'org.powermock:powermock-api-mockito:1.6.6'
+
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
     compile project(':thirdparty')
     compile project(':fennec')
