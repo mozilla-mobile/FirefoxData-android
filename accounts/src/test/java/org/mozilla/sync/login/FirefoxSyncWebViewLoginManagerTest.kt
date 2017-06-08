@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Matchers.anyInt
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.mozilla.gecko.fxa.login.Married
 import org.mozilla.gecko.sync.CollectionKeys
@@ -37,6 +36,16 @@ private val STATICALLY_MOCKED_CLASSES = listOf(
         FirefoxSyncCryptoKeysAccessor::class
 )
 
+/**
+ * Tests for the [FirefoxSyncWebViewLoginManager].
+ *
+ * Ideas for additional tests:
+ * - Verify API contracts:
+ *   - Which thread are result callbacks called on?
+ *   - Thread safety guarantees & which threads methods can be called from.
+ * - Other methods: isSignedIn, loadStoredSyncAccount, signOut
+ * - Mock network calls more granularly to better verify 1) error handling & 2) that results are properly constructed.
+ */
 @RunWith(PowerMockRunner::class)
 @PrepareForTest( // should duplicate STATICALLY_MOCKED_CLASSES
         FirefoxAccountUtils::class,
@@ -164,16 +173,10 @@ class FirefoxSyncWebViewLoginManagerTest {
         return returnIntent
     }
 
-    private enum class ActivityResult {
-        SUCCESS, FAILURE, CANCELLED
-    }
-
     private class LoginCallbackSpy : FirefoxSyncLoginManager.LoginCallback {
         internal var wasSuccess = false
         internal var wasFailure = false
         internal var wasCancelled = false
-        internal val wasCallbackCalled: Boolean
-            get() = listOf(wasSuccess, wasFailure, wasCancelled).any()
 
         internal val asyncWaitLatch = CountDownLatch(1)
 
@@ -185,4 +188,8 @@ class FirefoxSyncWebViewLoginManagerTest {
             asyncWaitLatch.countDown()
         }
     }
+}
+
+private enum class ActivityResult {
+    SUCCESS, FAILURE, CANCELLED
 }
