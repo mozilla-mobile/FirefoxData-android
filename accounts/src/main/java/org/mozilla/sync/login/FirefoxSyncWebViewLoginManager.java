@@ -38,8 +38,8 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private final SparseArray<PromptLoginArgs> requestCodeToPromptLoginArgs = new SparseArray<>();
     private int nextRequestCode = 3561; // arbitrary.
 
-    FirefoxSyncWebViewLoginManager(final Context context) {
-        this.sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
+    FirefoxSyncWebViewLoginManager(final FirefoxAccountSessionSharedPrefsStore sessionStore) {
+        this.sessionStore = sessionStore;
     }
 
     @Override

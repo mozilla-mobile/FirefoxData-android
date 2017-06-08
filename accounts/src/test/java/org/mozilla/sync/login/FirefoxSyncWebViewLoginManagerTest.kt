@@ -5,31 +5,44 @@
 package org.mozilla.sync.login
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
-import org.mozilla.sync.impl.FirefoxAccount
-import org.mozilla.sync.sync.FirefoxSyncClient
-
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.mockito.Matchers.any
 import org.mockito.Matchers.anyInt
-import org.mockito.Mockito.atLeastOnce
-import org.mockito.Mockito.doNothing
-import org.mockito.Mockito.verify
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Mockito.*
+import org.mozilla.gecko.fxa.login.Married
+import org.mozilla.gecko.sync.CollectionKeys
+import org.mozilla.gecko.tokenserver.TokenServerToken
+import org.mozilla.sync.impl.FirefoxAccount
 import org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT
 import org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON
+import org.mozilla.sync.sync.FirefoxSyncClient
+import org.powermock.api.mockito.PowerMockito
+import org.powermock.core.classloader.annotations.PrepareForTest
+import org.powermock.modules.junit4.PowerMockRunner
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-@RunWith(MockitoJUnitRunner::class)
+// Sadly, we can't use this for @PrepareForTest because it's not a compile-time constant.
+private val STATICALLY_MOCKED_CLASSES = listOf(
+        FirefoxAccountUtils::class,
+        FirefoxSyncTokenAccessor::class,
+        FirefoxSyncCryptoKeysAccessor::class
+)
+
+@RunWith(PowerMockRunner::class)
+@PrepareForTest( // should duplicate STATICALLY_MOCKED_CLASSES
+        FirefoxAccountUtils::class,
+        FirefoxSyncTokenAccessor::class,
+        FirefoxSyncCryptoKeysAccessor::class
+)
 class FirefoxSyncWebViewLoginManagerTest {
 
     @Mock private val mockActivity: Activity? = null
@@ -38,19 +51,15 @@ class FirefoxSyncWebViewLoginManagerTest {
 
     @Before
     fun setUp() {
-        loginManager = FirefoxSyncWebViewLoginManager(Mockito.mock(Context::class.java))
+        loginManager = FirefoxSyncWebViewLoginManager(mock(FirefoxAccountSessionSharedPrefsStore::class.java))
     }
 
     @Test
     fun testPromptLoginStartsActivity() {
-        loginManager.promptLogin(mockActivity, "Bach", Mockito.mock(FirefoxSyncLoginManager.LoginCallback::class.java))
+        loginManager.promptLogin(mockActivity, "Bach", mock(FirefoxSyncLoginManager.LoginCallback::class.java))
 
         // In refactorings, startActivityForResult(Intent, int, Bundle) could also be called.
         verify<Activity>(mockActivity, atLeastOnce()).startActivityForResult(any(Intent::class.java), anyInt())
-    }
-
-    private fun waitForOnActivityResultToComplete(callback: LoginCallbackSpy) {
-        callback.asyncWaitLatch.await(2, TimeUnit.SECONDS)
     }
 
     @Test
@@ -68,47 +77,95 @@ class FirefoxSyncWebViewLoginManagerTest {
         assertFalse("Expected onUserCancelled to not be called", callback.wasCancelled)
     }
 
-    private enum class ActivityResult {
-        SUCCESS, FAILURE, CANCELLED
+    @Test
+    fun testOnActivityResultCallsSuccess() {
+        // If this test is failing, make sure no one has added additional network requests to the code!
+        // For the longer explanation, see the definition of the function below.
+        mockOnActivityResultSuccessNetworkCallsForSuccess()
+
+        val callback = promptLoginAndOnActivityResultForResult(ActivityResult.SUCCESS)
+        assertTrue("Expected onSuccess to be called", callback.wasSuccess)
     }
 
-    /** Returns the result of [org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity] with the expected format.  */
-    private fun getPromptLoginResultIntent(activityResult: ActivityResult): Intent {
-        val returnIntent = Intent(FirefoxSyncWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
-        if (activityResult == ActivityResult.SUCCESS) {
-            returnIntent.putExtra(EXTRA_ACCOUNT, Mockito.mock(FirefoxAccount::class.java))
+    private fun mockOnActivityResultSuccessNetworkCallsForSuccess() {
+        // This is fragile: a successful onActivityResult makes several requests to the network via static methods
+        // and we peek inside the implementation to know which methods contact the network in order to mock them so
+        // we don't have to make real network requests. The "proper" way to test this would be to pass in (singleton?)
+        // instances of classes that make the network calls and mock these objects rather than calling these fn
+        // statically. Since there is a chain of calls, the dependencies are non-trivial, requiring a lot of boilerplate
+        // code that would take a non-trivial amount of time to implement. Instead, we keep the implementation simple
+        // and mock the static functions directly, facing the fact that this test can steathily break if we add
+        // additional static calls.
+        STATICALLY_MOCKED_CLASSES.forEach { PowerMockito.mockStatic(it.java) }
+
+        val marriedCallback = ArgumentCaptor.forClass(FirefoxAccountUtils.MarriedLoginCallback::class.java)
+        PowerMockito.`when`(FirefoxAccountUtils.advanceAccountToMarried(any(), any(), marriedCallback.capture())).then {
+            marriedCallback.value.onMarried(mock(Married::class.java)) // success callback!
         }
-        if (activityResult == ActivityResult.FAILURE) {
-            returnIntent.putExtra(EXTRA_FAILURE_REASON, "The failure String")
+
+        val syncTokenCallback = ArgumentCaptor.forClass(FirefoxSyncTokenAccessor.FirefoxSyncTokenServerClientDelegate::class.java)
+        PowerMockito.`when`(FirefoxSyncTokenAccessor.getBlocking(any(), syncTokenCallback.capture())).then {
+            syncTokenCallback.value.handleSuccess(mock(TokenServerToken::class.java))
         }
-        return returnIntent
+
+        val cryptoKeysCallback = ArgumentCaptor.forClass(FirefoxSyncCryptoKeysAccessor.CollectionKeysCallback::class.java)
+        PowerMockito.`when`(FirefoxSyncCryptoKeysAccessor.getBlocking(any(), any(), cryptoKeysCallback.capture())).then {
+            cryptoKeysCallback.value.onKeysReceived(mock(CollectionKeys::class.java)) // success callback!
+        }
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testOnActivityResultCallsSuccess() { // todo
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun testOnActivityResultCallsError() {
-        // todo: factor out promptLogin call.
-        val requestCodeCaptor = ArgumentCaptor.forClass(Int::class.java)
-        doNothing().`when`<Activity>(mockActivity).startActivityForResult(any(Intent::class.java), requestCodeCaptor.capture())
-
-        val callback = LoginCallbackSpy()
-        loginManager.promptLogin(mockActivity, "Bach", callback) // registers callback.
-        loginManager.onActivityResult(requestCodeCaptor.value, FirefoxSyncWebViewLoginActivity.RESULT_ERROR,
-                getPromptLoginResultIntent(ActivityResult.FAILURE))
-
-        waitForOnActivityResultToComplete(callback)
-
+        val callback = promptLoginAndOnActivityResultForResult(ActivityResult.FAILURE)
         assertTrue("Expected onFailure to be called", callback.wasFailure)
     }
 
     @Test
-    fun testOnActivityResultCallsUserCancelled() { // todo
+    fun testOnActivityResultCallsUserCancelled() {
+        val callback = promptLoginAndOnActivityResultForResult(ActivityResult.CANCELLED)
+        assertTrue("Expected onCancelled to be called", callback.wasCancelled)
+    }
 
+    private fun waitForOnActivityResultToComplete(callback: LoginCallbackSpy) {
+        callback.asyncWaitLatch.await(500, TimeUnit.MILLISECONDS) // these never hit the network so they can be fast.
+    }
+
+    /** Helper fn to call promptLogin & onActivityResult with a mocked intent of the given ActivityResult. */
+    private fun promptLoginAndOnActivityResultForResult(result: ActivityResult): LoginCallbackSpy {
+        val requestCodeCaptor = ArgumentCaptor.forClass(Int::class.java)
+        doNothing().`when`<Activity>(mockActivity).startActivityForResult(any(Intent::class.java), requestCodeCaptor.capture())
+
+        val resultCode = when (result) {
+            ActivityResult.FAILURE -> FirefoxSyncWebViewLoginActivity.RESULT_ERROR
+            ActivityResult.CANCELLED -> FirefoxSyncWebViewLoginActivity.RESULT_CANCELED
+            ActivityResult.SUCCESS -> FirefoxSyncWebViewLoginActivity.RESULT_OK
+        }
+
+        val callback = LoginCallbackSpy()
+        loginManager.promptLogin(mockActivity, "Bach", callback) // registers callback.
+        loginManager.onActivityResult(requestCodeCaptor.value, resultCode, getPromptLoginResultIntent(result))
+
+        waitForOnActivityResultToComplete(callback)
+
+        return callback
+    }
+
+    /** Returns the result of [org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity] with the expected format.  */
+    private fun getPromptLoginResultIntent(activityResult: ActivityResult): Intent {
+        val mockFirefoxAccount = mock(FirefoxAccount::class.java)
+        `when`(mockFirefoxAccount.withNewState(any())).thenReturn(mockFirefoxAccount)
+
+        val returnIntent = Intent(FirefoxSyncWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
+        when (activityResult) {
+            ActivityResult.SUCCESS -> returnIntent.putExtra(EXTRA_ACCOUNT, mockFirefoxAccount)
+            ActivityResult.FAILURE -> returnIntent.putExtra(EXTRA_FAILURE_REASON, "The failure String")
+            else -> Unit
+        }
+        return returnIntent
+    }
+
+    private enum class ActivityResult {
+        SUCCESS, FAILURE, CANCELLED
     }
 
     private class LoginCallbackSpy : FirefoxSyncLoginManager.LoginCallback {
