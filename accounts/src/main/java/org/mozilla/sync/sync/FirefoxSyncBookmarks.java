@@ -136,15 +136,21 @@ class FirefoxSyncBookmarks {
 
         private static BookmarkFolder createRootBookmarkFolder(final Map<String, BookmarkRecord> idToSeenBookmarks,
                 final Map<String, BookmarkFolder> idToSeenFolders) {
+            // Fetched bookmarks can be orphaned from corruption or because the user specified some number of bookmarks
+            // to fetch. When we see an orphan, we add it to the root folder. This is problematic because it does not
+            // accurately represent the user's bookmarks and the hierarchy can change across invocations but this was
+            // simplest to implement now and easiest to change later (issue #9).
             final BookmarkFolder rootFolder = BookmarkFolder.createRootFolder();
             for (final BookmarkRecord bookmark : idToSeenBookmarks.values()) {
-                if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
+                if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
+                        bookmark.underlyingRecord.parentID == null) { // orphan.
                     rootFolder.getBookmarks().add(bookmark);
                 }
             }
 
             for (final BookmarkFolder folder : idToSeenFolders.values()) {
-                if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
+                if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
+                        folder.underlyingRecord.parentID == null) { // orphan.
                     rootFolder.getSubfolders().add(folder);
                 }
             }
