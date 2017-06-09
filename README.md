@@ -37,3 +37,13 @@ mcomella: grisha: for sure!  mcomella, it shouldn't be too hard to do what you
 want, pulling minimal deps from the FxALoginStateMachine.
 14:27 mcomella: you should, of course, implement your own FxAClient20 or
 whatever that doesn't use Apache's httpclientlib.
+
+## Tests todo
+* Ensure static resource calls return expected results from server results -
+  hard, have to decrypt results
+* Ensure network calls for static calls (e.g. CryptoKeys) gets appropriate result
+  from response
+* LoginManager.loadStoredSyncClient
+* FirefoxSyncClient.getEmail
+* FirefoxLoginManager.signOut/isSignedIn
+* Additional tests in FirefoxSyncWebViewLoginManagerTest javadoc
