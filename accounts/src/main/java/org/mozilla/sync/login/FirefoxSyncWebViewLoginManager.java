@@ -232,13 +232,15 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     @Override
-    public void signOut() { // TODO: how to ensure this request succeeds? Throw & request wait or just background service?
+    public void signOut() {
         sessionStore.deleteStoredSession();
 
         // Our session has ended: we no longer have a signed in application and don't need its name.
         FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for more info.
 
-        // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
+        // If the request fails, we will never delete the device or the tokens (issue #10).
+        // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-accountdevicedestroy
+        // backup plan session destroy: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-sessiondestroy
     }
 
     private static class PromptLoginArgs {
