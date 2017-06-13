@@ -5,23 +5,22 @@
 package org.mozilla.sync.login;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
-import android.util.Pair;
 import android.util.SparseArray;
+import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxSyncShared;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
@@ -160,6 +159,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onError(final Exception e) {
+                        // todo: this fails (I think b/c I borked account) but now we're stuck.
                         loginCallback.onFailure(new FirefoxSyncLoginException("Unable to create crypto keys request.", e));
                     }
                 });
@@ -233,14 +233,46 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
     @Override
     public void signOut() {
+        final FirefoxAccountSession session;
+        try {
+            session = sessionStore.loadSession();
+        } catch (final FirefoxAccountSessionSharedPrefsStore.FailedToLoadSessionException e) {
+            Log.w(LOGTAG, "signOut: failed to load account. Does the account exist? Ignoring sign out request."); // don't log exception for personal info.
+            return;
+        }
         sessionStore.deleteStoredSession();
+
+        // The user agent for the destroy request is derived from the session application name, which we're about to unset.
+        final String userAgent = FirefoxSyncShared.getUserAgent();
 
         // Our session has ended: we no longer have a signed in application and don't need its name.
         FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for more info.
 
-        // If the request fails, we will never delete the device or the tokens (issue #10).
-        // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-accountdevicedestroy
-        // backup plan session destroy: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-sessiondestroy
+        FirefoxSyncLoginShared.executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                // If the request fails, the session won't be destroyed. We don't want to the application developer to
+                // have to handle making another request so we should add library code to make the request on failure
+                // (issue #10).
+                FirefoxAccountUtils.destroyAccountSession(session.firefoxAccount, new FirefoxAccountUtils.DestroySessionResourceDelegate(userAgent) {
+                    private static final String LOG_PREFIX = "destroyAccountSession: ";
+
+                    @Override
+                    public void handleHttpResponse(final HttpResponse response) {
+                        if (response.getStatusLine().getStatusCode() == 200) {
+                            Log.d(LOGTAG, LOG_PREFIX + "success!");
+                        } else {
+                            Log.w(LOGTAG, LOG_PREFIX + "HTTP response is failure! " + response.getStatusLine());
+                        }
+                    }
+
+                    @Override
+                    void onFailure(final Exception e) {
+                        Log.e(LOGTAG, LOG_PREFIX + "unable to complete request."); // don't log e for potential PII.
+                    }
+                });
+            }
+        });
     }
 
     private static class PromptLoginArgs {
