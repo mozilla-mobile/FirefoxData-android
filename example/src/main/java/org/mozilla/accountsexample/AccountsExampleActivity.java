@@ -11,7 +11,6 @@ import android.widget.Toast;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.sync.FirefoxSyncClient;
-import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
@@ -104,10 +103,10 @@ public class AccountsExampleActivity extends AppCompatActivity {
                 receivedHistory = syncClient.getAllHistory().getResult();
                 receivedPasswords = syncClient.getAllPasswords().getResult();
                 rootBookmark = syncClient.getAllBookmarks().getResult();
-            } catch (final FirefoxSyncGetCollectionException e) {
+            } catch (final FirefoxSyncException e) {
                 // We could switch on e.getFailureReason() if we wanted to do more specific handling, but
                 // ultimately, failure means we should try again later.
-                Log.w(LOGTAG, "testSync: failure to receive! " + e.getFailureReason(), e);
+                Log.w(LOGTAG, "testSync: failure to receive! ", e);
                 return;
             }
 

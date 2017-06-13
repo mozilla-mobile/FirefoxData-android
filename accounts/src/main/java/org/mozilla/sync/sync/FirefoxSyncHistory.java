@@ -7,6 +7,7 @@ package org.mozilla.sync.sync;
 import android.support.annotation.WorkerThread;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
+import org.mozilla.sync.FirefoxSyncException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ class FirefoxSyncHistory {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
-        } catch (final FirefoxSyncGetCollectionException e) {
+        } catch (final FirefoxSyncException e) {
             onComplete.onException(e);
         }
     }
@@ -58,7 +59,7 @@ class FirefoxSyncHistory {
             final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, HISTORY_COLLECTION, new HistoryRecordFactory());
-            } catch (final FirefoxSyncGetCollectionException e) {
+            } catch (final FirefoxSyncException e) {
                 onComplete.onException(e);
                 return;
             }

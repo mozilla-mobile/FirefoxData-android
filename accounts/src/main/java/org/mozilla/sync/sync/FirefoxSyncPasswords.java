@@ -7,6 +7,7 @@ package org.mozilla.sync.sync;
 import android.support.annotation.WorkerThread;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.PasswordRecordFactory;
+import org.mozilla.sync.FirefoxSyncException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ class FirefoxSyncPasswords {
         final SyncPasswordsResourceDelegate resourceDelegate = new SyncPasswordsResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, PASSWORDS_COLLECTION, getArgs(itemLimit), resourceDelegate);
-        } catch (final FirefoxSyncGetCollectionException e) {
+        } catch (final FirefoxSyncException e) {
             onComplete.onException(e);
         }
     }
@@ -57,7 +58,7 @@ class FirefoxSyncPasswords {
             final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, PASSWORDS_COLLECTION, new PasswordRecordFactory());
-            } catch (final FirefoxSyncGetCollectionException e) {
+            } catch (final FirefoxSyncException e) {
                 onComplete.onException(e);
                 return;
             }
