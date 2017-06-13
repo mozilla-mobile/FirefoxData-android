@@ -80,23 +80,26 @@ public class FirefoxSyncRequestUtils {
         return stringBuilder.toString();
     }
 
+    /** Convenience function for {@link #getAuthHeaderProvider(URI, String, byte[], boolean)} */
     public static HawkAuthHeaderProvider getAuthHeaderProvider(final TokenServerToken token) throws UnsupportedEncodingException, URISyntaxException {
         // We expect Sync to upload large sets of records. Calculating the
         // payload verification hash for these record sets could be expensive,
         // so we explicitly do not send payload verification hashes to the
         // Sync storage endpoint.
         final boolean includePayloadVerificationHash = false;
+        final URI storageServerURI = FirefoxSyncRequestUtils.getServerURI(token);
+        return getAuthHeaderProvider(storageServerURI, token.id, token.key.getBytes("UTF-8"), includePayloadVerificationHash);
+    }
 
+    public static HawkAuthHeaderProvider getAuthHeaderProvider(final URI serverURI, final String tokenId, final byte[] reqHMACKey,
+            final boolean includePayloadVerificationHash) {
         // We compute skew over time using SkewHandler. This yields an unchanging
         // skew adjustment that the HawkAuthHeaderProvider uses to adjust its
-        // timestamps. Eventually we might want this to adapt within the scope of a
-        // global session.
-        final URI storageServerURI = FirefoxSyncRequestUtils.getServerURI(token);
-        final String storageHostname = storageServerURI.getHost();
+        // timestamps.
+        final String storageHostname = serverURI.getHost();
         final SkewHandler storageServerSkewHandler = SkewHandler.getSkewHandlerForHostname(storageHostname);
         final long storageServerSkew = storageServerSkewHandler.getSkewInSeconds();
 
-        return new HawkAuthHeaderProvider(token.id, token.key.getBytes("UTF-8"), includePayloadVerificationHash,
-                storageServerSkew);
+        return new HawkAuthHeaderProvider(tokenId, reqHMACKey, includePayloadVerificationHash, storageServerSkew);
     }
 }
