@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.sync.FirefoxSyncClient;
 
 /**
@@ -104,7 +105,7 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
          *
          * @param e The Exception with which this failure occurred; this is provided for easier debugging.
          */
-        void onFailure(FirefoxSyncLoginException e);
+        void onFailure(FirefoxSyncException e);
 
         /** Called when a user has cancelled a login prompt. */
         void onUserCancel();

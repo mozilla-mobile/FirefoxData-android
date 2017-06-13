@@ -181,7 +181,7 @@ class FirefoxSyncWebViewLoginManagerTest {
         internal val asyncWaitLatch = CountDownLatch(1)
 
         override fun onSuccess(syncClient: FirefoxSyncClient) { wasSuccess = true; onAsyncComplete(); }
-        override fun onFailure(e: FirefoxSyncLoginException) { wasFailure = true; onAsyncComplete(); }
+        override fun onFailure(e: FirefoxSyncException) { wasFailure = true; onAsyncComplete(); }
         override fun onUserCancel() { wasCancelled = true; onAsyncComplete(); }
 
         private fun onAsyncComplete() {
