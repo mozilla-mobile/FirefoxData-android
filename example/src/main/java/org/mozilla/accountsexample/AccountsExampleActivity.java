@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.FirefoxSyncGetCollectionException;
@@ -25,16 +28,26 @@ public class AccountsExampleActivity extends AppCompatActivity {
 
     private FirefoxSyncLoginManager loginManager;
 
+    private Button signOutButton;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        signOutButton = (Button) findViewById(R.id.sign_out_button);
+        signOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                v.setEnabled(false);
+                loginManager.signOut();
+            }
+        });
 
         // If we have an account, we want to refresh our data on start-up. If we don't have
         // an account, we'll prompt the user if they've manually cancelled a login request.
         loginManager = FirefoxSync.getLoginManager(this);
         final SharedPreferences sharedPrefs = getSharedPreferences("fx-sync", 0);
-        final FirefoxSyncLoginManager.LoginCallback loginCallback = new LoginManagerCallback(sharedPrefs);
+        final FirefoxSyncLoginManager.LoginCallback loginCallback = new LoginManagerCallback(sharedPrefs, signOutButton);
         if (loginManager.isSignedIn()) {
             loginManager.loadStoredSyncAccount(loginCallback);
         } else if (!sharedPrefs.getBoolean(KEY_HAS_USER_CANCELLED, false)){
@@ -48,15 +61,25 @@ public class AccountsExampleActivity extends AppCompatActivity {
         loginManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private static class LoginManagerCallback implements FirefoxSyncLoginManager.LoginCallback {
+    private class LoginManagerCallback implements FirefoxSyncLoginManager.LoginCallback {
         private final SharedPreferences sharedPrefs;
+        private final Button signOutButton;
 
-        private LoginManagerCallback(final SharedPreferences sharedPrefs) {this.sharedPrefs = sharedPrefs;}
+        private LoginManagerCallback(final SharedPreferences sharedPrefs, final Button signOutButton) {
+            this.sharedPrefs = sharedPrefs;
+            this.signOutButton = signOutButton;
+        }
 
         @Override
         public void onSuccess(final FirefoxSyncClient syncClient) {
             Log.d(LOGTAG, "onSuccess: load stored account.");
             getSyncAndLog(syncClient);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    signOutButton.setEnabled(true);
+                }
+            });
         }
 
         // TODO: implement these failure cases later.
