@@ -144,14 +144,14 @@ class FirefoxSyncBookmarks {
             final BookmarkFolder rootFolder = BookmarkFolder.createRootFolder();
             for (final BookmarkRecord bookmark : idToSeenBookmarks.values()) {
                 if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
-                        bookmark.underlyingRecord.parentID == null) { // orphan.
+                        bookmark.getParentFolder() == null) { // orphan.
                     rootFolder.getBookmarks().add(bookmark);
                 }
             }
 
             for (final BookmarkFolder folder : idToSeenFolders.values()) {
                 if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
-                        folder.underlyingRecord.parentID == null) { // orphan.
+                        folder.getParentFolder() == null) { // orphan.
                     rootFolder.getSubfolders().add(folder);
                 }
             }
