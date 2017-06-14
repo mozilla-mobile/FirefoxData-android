@@ -2,17 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.util;
+package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-/**
- * A collection of static functions to operate on Strings.
- */
-public class StringUtils {
+/** A collection of static functions to operate on Strings. */
+class StringUtils {
     private StringUtils() {}
 
     /** @return the empty String, if the input is null, else the input String. */
-    @NonNull public static String emptyStrIfNull(@Nullable final String input) { return (input != null) ? input : ""; }
+    @NonNull static String emptyStrIfNull(@Nullable final String input) { return (input != null) ? input : ""; }
 }

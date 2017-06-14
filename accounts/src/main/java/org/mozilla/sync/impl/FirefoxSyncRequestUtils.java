@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import org.mozilla.gecko.background.fxa.SkewHandler;
 import org.mozilla.gecko.sync.net.HawkAuthHeaderProvider;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.util.DeviceUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;

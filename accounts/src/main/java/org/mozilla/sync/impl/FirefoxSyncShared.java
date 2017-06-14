@@ -4,11 +4,9 @@
 
 package org.mozilla.sync.impl;
 
-import android.bluetooth.BluetoothClass;
 import android.text.TextUtils;
 import android.util.Log;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
-import org.mozilla.util.DeviceUtils;
 
 /** A collection of shared functions for Firefox Sync. */
 public class FirefoxSyncShared {

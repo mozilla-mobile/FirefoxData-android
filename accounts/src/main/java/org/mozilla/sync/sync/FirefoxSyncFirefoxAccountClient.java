@@ -10,7 +10,7 @@ import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.util.IOUtils;
+import org.mozilla.sync.impl.IOUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

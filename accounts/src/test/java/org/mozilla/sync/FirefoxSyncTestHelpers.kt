@@ -4,7 +4,7 @@
 
 package org.mozilla.sync
 
-import org.mozilla.util.DeviceUtils
+import org.mozilla.sync.impl.DeviceUtils
 import org.powermock.api.mockito.PowerMockito
 
 object FirefoxSyncTestHelpers {

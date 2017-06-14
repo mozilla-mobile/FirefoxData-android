@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import org.json.simple.JSONArray;
-import org.mozilla.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

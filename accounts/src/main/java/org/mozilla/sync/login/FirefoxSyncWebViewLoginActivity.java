@@ -20,8 +20,6 @@ import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.gecko.R;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxAccountEndpointConfig;
-import org.mozilla.util.ResourcesUtils;
-import org.mozilla.util.WebViewUtils;
 
 /**
  * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no

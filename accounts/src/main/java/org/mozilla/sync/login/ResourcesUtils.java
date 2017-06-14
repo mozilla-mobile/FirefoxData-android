@@ -2,22 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.util;
+package org.mozilla.sync.login;
 
 import android.content.Context;
 import android.support.annotation.RawRes;
+import org.mozilla.sync.impl.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ResourcesUtils {
+class ResourcesUtils {
 
-    public static String getStringFromRawRes(final Context context, @RawRes final int rawResource) throws IOException {
+    static String getStringFromRawRes(final Context context, @RawRes final int rawResource) throws IOException {
         final InputStream is = context.getResources().openRawResource(rawResource);
         return IOUtils.readStringFromInputStreamAndCloseStream(is, 4048);
     }
 
-    public static String getStringFromRawResUnsafe(final Context context, @RawRes final int rawResource) {
+    static String getStringFromRawResUnsafe(final Context context, @RawRes final int rawResource) {
         try {
             return getStringFromRawRes(context, rawResource);
         } catch (final IOException e) {

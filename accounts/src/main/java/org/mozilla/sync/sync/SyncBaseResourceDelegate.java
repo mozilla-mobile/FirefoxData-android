@@ -26,7 +26,7 @@ import org.mozilla.gecko.sync.repositories.domain.Record;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
-import org.mozilla.util.IOUtils;
+import org.mozilla.sync.impl.IOUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

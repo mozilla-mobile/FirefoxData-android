@@ -6,7 +6,6 @@ package org.mozilla.sync.login;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import org.mozilla.util.WebViewUtils;
 
 /**
  * A WebViewClient that injects the given script into the first page it loads.

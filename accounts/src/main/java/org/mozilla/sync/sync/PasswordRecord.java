@@ -5,7 +5,6 @@
 package org.mozilla.sync.sync;
 
 import android.support.annotation.NonNull;
-import org.mozilla.util.StringUtils;
 
 /**
  * A data class for a password stored on a web page.
