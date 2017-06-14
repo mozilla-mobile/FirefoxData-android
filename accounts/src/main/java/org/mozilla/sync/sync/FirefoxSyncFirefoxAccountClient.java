@@ -10,9 +10,7 @@ import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
-import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.IOUtils;
-import org.mozilla.util.ThrowableUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -37,18 +35,18 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     @Override
-    public SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncException {
         return getBookmarks(-1);
     }
 
     @NonNull
     @Override
-    public SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(final int itemLimit) throws FirefoxSyncException {
         return getBookmarks(itemLimit);
     }
 
     @NonNull
-    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    private SyncCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxSyncException {
         return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
@@ -59,18 +57,18 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     @Override
-    public SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncException {
         return getPasswords(-1);
     }
 
     @NonNull
     @Override
-    public SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(final int itemLimit) throws FirefoxSyncException {
         return getPasswords(itemLimit);
     }
 
     @NonNull
-    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    private SyncCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxSyncException {
         return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {
@@ -81,18 +79,18 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
 
     @NonNull
     @Override
-    public SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncException {
         return getHistory(-1);
     }
 
     @NonNull
     @Override
-    public SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    public SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(final int itemLimit) throws FirefoxSyncException {
         return getHistory(itemLimit);
     }
 
     @NonNull
-    private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncGetCollectionException {
+    private SyncCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxSyncException {
         return getCollectionSync(new GetCollectionCall<List<HistoryRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<HistoryRecord>> onComplete) {
@@ -107,7 +105,7 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
      * At the time of writing (5/18/17), the calls using this method have their time out duration specified from
      * the {@link SyncBaseResourceDelegate#connectionTimeout()} underlying the requests.
      */
-    private <T> SyncCollectionResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxSyncGetCollectionException {
+    private <T> SyncCollectionResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxSyncException {
         try {
             // The get collection calls are actually blocking but w/ delegates (see issue #3) so `makeSync` will only
             // actually time out if the get collection requests time-out. This code is confusing but it works & I
@@ -117,47 +115,21 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
                 public void initAsyncCall(final IOUtils.OnAsyncCallComplete<SyncCollectionResult<T>> onComplete) {
                     getCollectionCall.getCollectionAsync(new OnSyncComplete<T>() {
                         @Override public void onSuccess(final SyncCollectionResult<T> result) { onComplete.onComplete(result); }
-                        @Override public void onException(final FirefoxSyncGetCollectionException e) { onComplete.onException(e); }
+                        @Override public void onException(final FirefoxSyncException e) { onComplete.onException(e); }
                     });
                 }
             });
         } catch (final ExecutionException e) {
-            throw newGetCollectionException(e);
+            throw new FirefoxSyncException("Exception occurred during request.", e);
         } catch (final TimeoutException e) {
-            throw new FirefoxSyncGetCollectionException(e, FailureReason.NETWORK_ERROR);
+            throw new FirefoxSyncException("Request timed out.", e);
         }
-    }
-
-    /** Creates the appropriate exception, in particular identifying its FailureReason, from the given cause. */
-    private static FirefoxSyncGetCollectionException newGetCollectionException(final ExecutionException cause) {
-        // TODO: maybe we should strip PII in non-debug mode?
-        // We want to throw a FirefoxSyncGetCollectionException to the user of the lib but those
-        // FirefoxSyncGetCollectionExceptions thrown by the get collection calls are wrapped in ExecutionExceptions
-        // because we make them sync. As such, we have to dig through the Exception's causes to return a
-        // GetCollectionException with the same FailureReason as the initially thrown Exception. We wrap the given
-        // Exception, rather than returning the first exception, in order to maintain the Exception history.
-        //
-        // Note: We iterate on the list of wrapped Exceptions from the bottom-most first so that if we accidentally
-        // wrap a FirefoxSyncGetCollectionException in a FirefoxSyncGetCollectionException, we use the FailureReason
-        // closest to the location it occurred as it has more information.
-        FailureReason failureReason = null;
-        final List<Throwable> causes = ThrowableUtils.getRootCauseToTopThrowable(cause);
-        for (final Throwable currentCause : causes) {
-            if (currentCause instanceof FirefoxSyncGetCollectionException) {
-                failureReason = ((FirefoxSyncGetCollectionException) currentCause).getFailureReason();
-            }
-
-            if (failureReason != null) { break; } // Return the first match.
-        }
-
-        if (failureReason == null) { /* no matches in list. */ failureReason = FailureReason.UNKNOWN; }
-        return new FirefoxSyncGetCollectionException(cause, failureReason);
     }
 
     @NonNull
     @Override
-    public String getEmail() throws FirefoxSyncException { // todo: blocking? update docs.
-        return account.email; // todo: email/account can get updated.
+    public String getEmail() throws FirefoxSyncException {
+        return account.email; // We cache the email but it can change (issue #11).
     }
 
     private interface GetCollectionCall<T> {

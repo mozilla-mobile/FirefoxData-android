@@ -8,6 +8,7 @@ import android.support.annotation.WorkerThread;
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
+import org.mozilla.sync.FirefoxSyncException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,7 @@ class FirefoxSyncBookmarks {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, getArgs(itemLimit), resourceDelegate);
-        } catch (final FirefoxSyncGetCollectionException e) {
+        } catch (final FirefoxSyncException e) {
             onComplete.onException(e);
         }
     }
@@ -57,7 +58,7 @@ class FirefoxSyncBookmarks {
             final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory());
-            } catch (final FirefoxSyncGetCollectionException e) {
+            } catch (final FirefoxSyncException e) {
                 onComplete.onException(e);
                 return;
             }
@@ -136,15 +137,21 @@ class FirefoxSyncBookmarks {
 
         private static BookmarkFolder createRootBookmarkFolder(final Map<String, BookmarkRecord> idToSeenBookmarks,
                 final Map<String, BookmarkFolder> idToSeenFolders) {
+            // Fetched bookmarks can be orphaned from corruption or because the user specified some number of bookmarks
+            // to fetch. When we see an orphan, we add it to the root folder. This is problematic because it does not
+            // accurately represent the user's bookmarks and the hierarchy can change across invocations but this was
+            // simplest to implement now and easiest to change later (issue #9).
             final BookmarkFolder rootFolder = BookmarkFolder.createRootFolder();
             for (final BookmarkRecord bookmark : idToSeenBookmarks.values()) {
-                if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
+                if (bookmark.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
+                        bookmark.getParentFolder() == null) { // orphan.
                     rootFolder.getBookmarks().add(bookmark);
                 }
             }
 
             for (final BookmarkFolder folder : idToSeenFolders.values()) {
-                if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID)) {
+                if (folder.underlyingRecord.parentID.equals(BookmarkFolder.ROOT_FOLDER_GUID) ||
+                        folder.getParentFolder() == null) { // orphan.
                     rootFolder.getSubfolders().add(folder);
                 }
             }

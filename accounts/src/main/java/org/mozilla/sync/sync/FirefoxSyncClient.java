@@ -31,9 +31,9 @@ public interface FirefoxSyncClient {
      * This method is blocking and can time out.
      *
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncGetCollectionException; // TODO: maybe throw typed exceptions instead of FailureReason.
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncException; // TODO: maybe throw typed exceptions instead of FailureReason.
 
     /**
      * Retrieves a limited number of bookmarks associated with this Sync account.
@@ -48,9 +48,9 @@ public interface FirefoxSyncClient {
      *
      * @param itemLimit The maximum number of bookmarks to retrieve.
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxSyncException;
 
     // --- HISTORY --- //
     /**
@@ -60,9 +60,9 @@ public interface FirefoxSyncClient {
      * This method is blocking and can time out.
      *
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxSyncException;
 
     /**
      * Retrieves a limited number of history entries a user has created from visiting pages. The
@@ -73,9 +73,9 @@ public interface FirefoxSyncClient {
      *
      * @param itemLimit The maximum number of history items to retrieve.
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxSyncException;
 
     // --- PASSWORDS --- //
     /**
@@ -84,9 +84,9 @@ public interface FirefoxSyncClient {
      * This method is blocking and can time out.
      *
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxSyncException;
 
     /**
      * Retrieves a limited number of passwords the user has saved.
@@ -95,9 +95,9 @@ public interface FirefoxSyncClient {
      *
      * @param itemLimit The maximum number of passwords to retrieve.
      * @return a container with the requested sync data; never null.
-     * @throws FirefoxSyncGetCollectionException if there was an error retrieving the results.
+     * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncGetCollectionException;
+    @NonNull @WorkerThread SyncCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxSyncException;
 
     /**
      * Gets the email associated with this Sync Client. It is intended to be used in the UI to

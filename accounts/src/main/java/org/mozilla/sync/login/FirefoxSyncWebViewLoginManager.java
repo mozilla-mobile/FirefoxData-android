@@ -5,21 +5,23 @@
 package org.mozilla.sync.login;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
+import android.util.SparseArray;
+import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.sync.net.BaseResourceDelegate;
 import org.mozilla.gecko.tokenserver.TokenServerException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.sync.sync.FirefoxSyncClient;
+import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.sync.impl.FirefoxSyncShared;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.InternalFirefoxSyncClientFactory;
 
 import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
@@ -29,23 +31,15 @@ import static org.mozilla.sync.impl.FirefoxSyncShared.LOGTAG;
  * web view & the FxA web sign in flow to log in.
  */
 class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
-    private static final int REQUEST_CODE = 3561; // arbitrary.
 
     private final FirefoxAccountSessionSharedPrefsStore sessionStore;
 
-    // Values stored between `promptLogin` & `onActivityResult` so we can execute the given callback.
-    //
-    // These are static to prevent API misuse: if a user gets a LoginManager instance for promptLogin,
-    // they could get a different instance for `onActivityResult`. With static vars, we don't have
-    // this issue. This is a little janky and doesn't protect new LoginManager implementations but I
-    // found it better than the alternatives: 1) make the entire API static, which restricts new
-    // implementation flexibility or 2) pass the callback to the getLoginManager call, which makes
-    // it harder for the caller to see where the callbacks are set.
-    private static String requestCallerName;
-    private static LoginCallback requestLoginCallback;
+    /** Temp storage of args to {@link #promptLogin(Activity, String, LoginCallback)} for use in {@link #onActivityResult(int, int, Intent)}. */
+    private final SparseArray<PromptLoginArgs> requestCodeToPromptLoginArgs = new SparseArray<>();
+    private int nextRequestCode = 3561; // arbitrary.
 
-    FirefoxSyncWebViewLoginManager(final Context context) {
-        this.sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
+    FirefoxSyncWebViewLoginManager(final FirefoxAccountSessionSharedPrefsStore sessionStore) {
+        this.sessionStore = sessionStore;
     }
 
     @Override
@@ -59,46 +53,40 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     @Override
-    public void promptLogin(final Activity activity, final String callerName, @NonNull final LoginCallback callback) {
-        if (callback == null) { throw new IllegalArgumentException("Expected callback to be non-null"); }
-        if (requestCallerName != null) {
-            throw new IllegalStateException("promptLogin unexpectedly called twice before the result was returned. " +
-                    "Did you call onActivityResult?");
-        }
+    public void promptLogin(final Activity activity, @NonNull final String callerName, @NonNull final LoginCallback callback) {
+        if (callback == null || callerName == null) { throw new IllegalArgumentException("Expected callback & callerName to be non-null"); }
 
-        requestCallerName = callerName;
-        requestLoginCallback = callback;
+        requestCodeToPromptLoginArgs.put(nextRequestCode, new PromptLoginArgs(callerName, callback));
 
         final Intent loginIntent = new Intent(activity, FirefoxSyncWebViewLoginActivity.class);
         //loginIntent.putExtra(FirefoxSyncWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // Uncomment for dev purposes.
-        activity.startActivityForResult(loginIntent, REQUEST_CODE);
+        activity.startActivityForResult(loginIntent, nextRequestCode);
+        nextRequestCode += 1;
     }
 
     @Override
     public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
         if (!isActivityResultOurs(requestCode, data)) { return; }
-        if (requestCallerName == null) { throw new IllegalStateException("onActivityResult unexpectedly called more " +
-                "than once for one promptLogin call (or promptLogin was never called)."); }
+
+        final PromptLoginArgs promptLoginArgs = requestCodeToPromptLoginArgs.get(requestCode);
+        requestCodeToPromptLoginArgs.delete(requestCode);
+        if (promptLoginArgs == null) { throw new IllegalStateException("Did not have callback for given request code: " + requestCode); }
 
         switch (resultCode) {
             case FirefoxSyncWebViewLoginActivity.RESULT_OK:
-                onActivityResultOK(data);
+                onActivityResultOK(data, promptLoginArgs.callerName, promptLoginArgs.callback);
                 break;
 
             case FirefoxSyncWebViewLoginActivity.RESULT_ERROR:
-                onActivityResultError(data);
+                onActivityResultError(data, promptLoginArgs.callback);
                 break;
 
             case FirefoxSyncWebViewLoginActivity.RESULT_CANCELED:
-                final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback; // nulled before callback would run.
                 FirefoxSyncLoginShared.executor.execute(new Runnable() { // all callbacks from background thread.
-                    @Override public void run() { requestLoginCallback.onUserCancel(); }
+                    @Override public void run() { promptLoginArgs.callback.onUserCancel(); }
                 });
                 break;
         }
-
-        requestCallerName = null;
-        requestLoginCallback = null;
     }
 
     /**
@@ -107,26 +95,22 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
      * At the time of writing (5/18/17), the several network calls this method (and the methods it calls) makes have
      * their time-out duration specified in their override of {@link BaseResourceDelegate#connectionTimeout()} & friends.
      */
-    private void onActivityResultOK(@NonNull final Intent data) {
+    private void onActivityResultOK(@NonNull final Intent data, final String callerName, final LoginCallback callback) {
         final FirefoxAccount firefoxAccount = data.getParcelableExtra(FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT);
 
         // This generally is aligned with whether or not we have a session signed in. However, we need to make the marriage
         // request (proposal? ;) before we can save a session and for that, we need a user agent, which needs a set
         // application name - set it here and undo it if we fail to create a session.
-        FirefoxSyncShared.setSessionApplicationName(requestCallerName); // HACK: see function javadoc for info.
-
-        // Keep references because they'll be nulled before the async call completes.
-        final String requestCallerName = FirefoxSyncWebViewLoginManager.requestCallerName;
-        final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback;
+        FirefoxSyncShared.setSessionApplicationName(callerName); // HACK: see function javadoc for info.
 
         // Account must be married to do anything useful with Sync.
         FirefoxAccountUtils.advanceAccountToMarried(firefoxAccount, FirefoxSyncLoginShared.executor, new FirefoxAccountUtils.MarriedLoginCallback() {
             @Override
             public void onMarried(final Married marriedState) {
                 final FirefoxAccount updatedAccount = firefoxAccount.withNewState(marriedState);
-                final FirefoxAccountSession session = new FirefoxAccountSession(updatedAccount, requestCallerName);
+                final FirefoxAccountSession session = new FirefoxAccountSession(updatedAccount, callerName);
                 sessionStore.saveSession(session);
-                prepareSyncClientAndCallback(session.firefoxAccount, requestLoginCallback);
+                prepareSyncClientAndCallback(session.firefoxAccount, callback);
             }
 
             @Override
@@ -138,7 +122,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 final String failureMessage = (!notMarriedState.verified) ?
                     "Account needs to be verified to access Sync data." :
                     "Account failed to advance to Married state for unknown reason"; // Unfortunately, we otherwise can't figure out why an advance failed. :(
-                requestLoginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(failureMessage));
+                callback.onFailure(FirefoxSyncException.newWithoutThrowable(failureMessage));
             }
         });
     }
@@ -164,19 +148,20 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onKeysDoNotExist() {
-                        loginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                        loginCallback.onFailure(FirefoxSyncException.newWithoutThrowable(
                                 "Server does not contain crypto keys: it is likely the user has not uploaded data to the server"));
                     }
 
                     @Override
                     public void onRequestFailure(final Exception e) {
                         // TODO: maybe we need to delete account.
-                        loginCallback.onFailure(new FirefoxSyncLoginException("Request to access crypto keys failed", e));
+                        loginCallback.onFailure(new FirefoxSyncException("Request to access crypto keys failed", e));
                     }
 
                     @Override
                     public void onError(final Exception e) {
-                        loginCallback.onFailure(new FirefoxSyncLoginException("Unable to create crypto keys request.", e));
+                        // todo: this fails (I think b/c I borked account) but now we're stuck.
+                        loginCallback.onFailure(new FirefoxSyncException("Unable to create crypto keys request.", e));
                     }
                 });
             }
@@ -189,29 +174,28 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                     sessionStore.deleteStoredSession();
                 }
 
-                loginCallback.onFailure(new FirefoxSyncLoginException("Sync token response does not contain valid token", e));
+                loginCallback.onFailure(new FirefoxSyncException("Sync token response does not contain valid token", e));
             }
 
             @Override
             public void handleError(final Exception e) { // Error connecting.
-                loginCallback.onFailure(new FirefoxSyncLoginException("Error connecting to sync token server.", e));
+                loginCallback.onFailure(new FirefoxSyncException("Error connecting to sync token server.", e));
             }
 
             @Override
             public void handleBackoff(final int backoffSeconds) {
-                loginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                loginCallback.onFailure(FirefoxSyncException.newWithoutThrowable(
                         "Sync token server requested backoff of " + backoffSeconds + " seconds."));
             }
         });
     }
 
-    private void onActivityResultError(@NonNull final Intent data) {
+    private void onActivityResultError(@NonNull final Intent data, final LoginCallback callback) {
         final String failureReason = data.getStringExtra(FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON);
-        final LoginCallback requestLoginCallback = FirefoxSyncWebViewLoginManager.requestLoginCallback; // nulled before callback runs.
         FirefoxSyncLoginShared.executor.execute(new Runnable() { // All callbacks on background thread.
             @Override
             public void run() {
-                requestLoginCallback.onFailure(FirefoxSyncLoginException.newWithoutThrowable(
+                callback.onFailure(FirefoxSyncException.newWithoutThrowable(
                         "WebViewLoginActivity returned error: " + failureReason));
             }
         });
@@ -220,8 +204,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     private boolean isActivityResultOurs(final int requestCode, @Nullable final Intent data) {
         if (data == null) { return false; }
         final String action = data.getAction();
-        return (requestCode == REQUEST_CODE &&
-                action != null &&
+        return (action != null &&
                 // Another Activity can use the same request code so we verify the Intent data too.
                 action.equals(FirefoxSyncWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN));
     }
@@ -238,7 +221,7 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 try {
                     session = sessionStore.loadSession();
                 } catch (final FirefoxAccountSessionSharedPrefsStore.FailedToLoadSessionException e) {
-                    callback.onFailure(new FirefoxSyncLoginException("Failed to restore account from disk.", e));
+                    callback.onFailure(new FirefoxSyncException("Failed to restore account from disk.", e));
                     return;
                 }
 
@@ -250,12 +233,57 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
     }
 
     @Override
-    public void signOut() { // TODO: how to ensure this request succeeds? Throw & request wait or just background service?
+    public void signOut() {
+        final FirefoxAccountSession session;
+        try {
+            session = sessionStore.loadSession();
+        } catch (final FirefoxAccountSessionSharedPrefsStore.FailedToLoadSessionException e) {
+            Log.w(LOGTAG, "signOut: failed to load account. Does the account exist? Ignoring sign out request."); // don't log exception for personal info.
+            return;
+        }
         sessionStore.deleteStoredSession();
+
+        // The user agent for the destroy request is derived from the session application name, which we're about to unset.
+        final String userAgent = FirefoxSyncShared.getUserAgent();
 
         // Our session has ended: we no longer have a signed in application and don't need its name.
         FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for more info.
 
-        // TODO: test me & hit API: https://github.com/mozilla/fxa-auth-server/blob/master/docs/api.md#post-v1accountdevicedestroy
+        FirefoxSyncLoginShared.executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                // If the request fails, the session won't be destroyed. We don't want to the application developer to
+                // have to handle making another request so we should add library code to make the request on failure
+                // (issue #10).
+                FirefoxAccountUtils.destroyAccountSession(session.firefoxAccount, new FirefoxAccountUtils.DestroySessionResourceDelegate(userAgent) {
+                    private static final String LOG_PREFIX = "destroyAccountSession: ";
+
+                    @Override
+                    public void handleHttpResponse(final HttpResponse response) {
+                        if (response.getStatusLine().getStatusCode() == 200) {
+                            Log.d(LOGTAG, LOG_PREFIX + "success!");
+                        } else {
+                            Log.w(LOGTAG, LOG_PREFIX + "HTTP response is failure! " + response.getStatusLine());
+                        }
+                    }
+
+                    @Override
+                    void onFailure(final Exception e) {
+                        Log.e(LOGTAG, LOG_PREFIX + "unable to complete request."); // don't log e for potential PII.
+                    }
+                });
+            }
+        });
+    }
+
+    private static class PromptLoginArgs {
+        final String callerName;
+        final LoginCallback callback;
+
+        private PromptLoginArgs(final String callerName, final LoginCallback callback) {
+            if (callerName == null || callback == null) { throw new IllegalStateException("Expected callerName and callback to be non-null."); }
+            this.callerName = callerName;
+            this.callback = callback;
+        }
     }
 }

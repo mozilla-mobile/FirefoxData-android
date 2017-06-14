@@ -17,6 +17,7 @@ public class InternalFirefoxSyncLoginManagerFactory {
     /** Please use {@link org.mozilla.sync.FirefoxSync#getLoginManager(android.content.Context)} instead. */
     public static FirefoxSyncLoginManager internalGetLoginManager(@NonNull final Context context) {
         // We return a new instance, rather than a singleton, because the Context can change.
-        return new FirefoxSyncWebViewLoginManager(context);
+        final FirefoxAccountSessionSharedPrefsStore sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
+        return new FirefoxSyncWebViewLoginManager(sessionStore);
     }
 }

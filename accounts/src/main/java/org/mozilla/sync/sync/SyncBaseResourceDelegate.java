@@ -23,9 +23,9 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
+import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
-import org.mozilla.sync.sync.FirefoxSyncGetCollectionException.FailureReason;
 import org.mozilla.util.IOUtils;
 
 import java.io.IOException;
@@ -63,14 +63,14 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         try {
             responseBody = IOUtils.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
-            onComplete.onException(new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR));
+            onComplete.onException(new FirefoxSyncException("Failed to read server response.", e));
             return;
         }
         handleResponse(response, responseBody);
     }
 
     private void handleException(final Throwable cause) {
-        onComplete.onException(new FirefoxSyncGetCollectionException(cause, FailureReason.NETWORK_ERROR));
+        onComplete.onException(new FirefoxSyncException("Unable to complete request.", cause));
     }
 
     @Override public String getUserAgent() {
@@ -102,14 +102,14 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
     protected static <R> List<R> responseBodyToRawRecords(final FirefoxSyncConfig syncConfig, final String responseBody,
-            final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncGetCollectionException {
+            final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncException {
         final KeyBundle keyBundle;
         final JSONArray recordArray;
         try {
             keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
             recordArray = new JSONArray(responseBody);
         } catch (final NoCollectionKeysSetException | JSONException e) {
-            throw new FirefoxSyncGetCollectionException(e, FailureReason.SERVER_ERROR);
+            throw new FirefoxSyncException("Unable to create JSONArray of records.", e);
         }
 
         final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());

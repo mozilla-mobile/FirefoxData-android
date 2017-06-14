@@ -135,7 +135,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
 
     private class JSInterface {
         @JavascriptInterface
-        public void onCommand(final String command, final long messageID, final String data) {
+        public void onCommand(final String command, final String messageID, final String data) {
             // API defined by https://github.com/mozilla/fxa-content-server/blob/master/docs/relier-communication-protocols/fx-webchannel.md
             if (command == null) { Log.e(LOGTAG, "onCommand: received null command. Ignoring..."); return; }
 
@@ -157,7 +157,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         }
     }
 
-    private void onCanLinkAccount(final String command, final long messageId, final String inputData) {
+    private void onCanLinkAccount(final String command, final String messageId, final String inputData) {
         final JSONObject outputData = new JSONObject();
         try {
             // afaik, "can link account" asks us if the user should be able to sign into a specific account.
@@ -196,7 +196,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
         // If we had a loading time-out (issue #2), here is where we would invalidate it.
     }
 
-    private void injectResponse(final String command, final long messageID, final JSONObject data) {
+    private void injectResponse(final String command, final String messageID, final JSONObject data) {
         final String customEventArg = getCustomEventJSONStr(command, messageID, data);
         runOnUiThread(new Runnable() {
             @Override
@@ -213,7 +213,7 @@ public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
      * Returns the second argument to CustomEvent, as defined by:
      *   https://github.com/mozilla/fxa-content-server/blob/master/docs/relier-communication-protocols/fx-webchannel.md#response-format
      */
-    private String getCustomEventJSONStr(final String command, final long messageID, @Nullable final JSONObject data) {
+    private String getCustomEventJSONStr(final String command, final String messageID, @Nullable final JSONObject data) {
         final JSONObject obj = new JSONObject();
         final JSONObject messageObj = new JSONObject();
         final JSONObject detailObj = new JSONObject();

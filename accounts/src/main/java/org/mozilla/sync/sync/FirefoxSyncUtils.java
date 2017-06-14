@@ -6,6 +6,7 @@ package org.mozilla.sync.sync;
 
 import android.support.annotation.Nullable;
 import org.mozilla.gecko.sync.net.BaseResource;
+import org.mozilla.sync.FirefoxSyncException;
 import org.mozilla.sync.impl.FirefoxSyncRequestUtils;
 
 import java.net.URI;
@@ -26,7 +27,7 @@ class FirefoxSyncUtils {
      * @param delegate The callback for the request.
      */
     static void makeGetRequestForCollection(final FirefoxSyncConfig syncConfig, final String collectionName,
-            @Nullable final Map<String, String> collectionArgs, final SyncBaseResourceDelegate delegate) throws FirefoxSyncGetCollectionException {
+            @Nullable final Map<String, String> collectionArgs, final SyncBaseResourceDelegate delegate) throws FirefoxSyncException {
         final Map<String, String> allArgs = getDefaultArgs();
         if (collectionArgs != null) { allArgs.putAll(collectionArgs); }
 
@@ -37,8 +38,7 @@ class FirefoxSyncUtils {
             // This is either programmer error (we incorrectly combined the components of the URI) or the
             // server passed us an invalid uri (in the token). Given that if the code worked when we wrote it,
             // it's most likely the latter, we provide that as the failure response.
-            throw new FirefoxSyncGetCollectionException("Unable to create valid collection URI for request",
-                    FirefoxSyncGetCollectionException.FailureReason.SERVER_ERROR);
+            throw new FirefoxSyncException("Unable to create valid collection URI for request", e);
         }
         final BaseResource resource = new BaseResource(uri);
         resource.delegate = delegate;

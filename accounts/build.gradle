@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
@@ -26,9 +27,32 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.10.19'
+    testCompile 'org.powermock:powermock-module-junit4:1.6.6'
+    testCompile 'org.powermock:powermock-api-mockito:1.6.6'
+    testCompile 'org.robolectric:robolectric:3.3.2'
+
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
     compile project(':thirdparty')
     compile project(':fennec')
 
     compile 'com.squareup.picasso:picasso:2.5.2'
+}
+
+apply plugin: 'de.mobilej.unmock'
+unMock {
+    // Used everywhere.
+    keep "android.util.Log"
+
+    // Static functions.
+    keep "android.text.TextUtils"
+    keep "android.util.SparseArray"
+
+    // Data classes.
+    keep "android.content.Intent"
+    keep "android.os.BaseBundle"
+    keep "android.os.Bundle"
+
+    // Dependencies of other APIs above.
+    keepStartingWith "com.android.internal.util." // needed by SparseArray.
 }
