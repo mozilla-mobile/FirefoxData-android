@@ -5,15 +5,12 @@
 package org.mozilla.gecko.sync.crypto;
 
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
 
 import org.mozilla.apache.commons.codec.binary.Base64;
-import org.mozilla.gecko.sync.Utils;
 
 public class KeyBundle {
     private static final String KEY_ALGORITHM_SPEC = "AES";
@@ -26,46 +23,6 @@ public class KeyBundle {
     private static final byte[] EMPTY_BYTES      = {};
     private static final byte[] ENCR_INPUT_BYTES = {1};
     private static final byte[] HMAC_INPUT_BYTES = {2};
-
-    /*
-     * Mozilla's use of HKDF for getting keys from the Sync Key string.
-     *
-     * We do exactly 2 HKDF iterations and make the first iteration the
-     * encryption key and the second iteration the HMAC key.
-     *
-     */
-    public KeyBundle(String username, String base32SyncKey) throws CryptoException {
-      if (base32SyncKey == null) {
-        throw new IllegalArgumentException("No sync key provided.");
-      }
-      if (username == null || username.equals("")) {
-        throw new IllegalArgumentException("No username provided.");
-      }
-      // Hash appropriately.
-      try {
-        username = Utils.usernameFromAccount(username);
-      } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-        throw new IllegalArgumentException("Invalid username.");
-      }
-
-      byte[] syncKey = Utils.decodeFriendlyBase32(base32SyncKey);
-      byte[] user    = username.getBytes();
-
-      Mac hmacHasher;
-      try {
-        hmacHasher = HKDF.makeHMACHasher(syncKey);
-      } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-        throw new CryptoException(e);
-      }
-      assert(hmacHasher != null); // If makeHMACHasher doesn't throw, then hmacHasher is non-null.
-
-      byte[] encrBytes = Utils.concatAll(EMPTY_BYTES, HKDF.HMAC_INPUT, user, ENCR_INPUT_BYTES);
-      byte[] encrKey   = HKDF.digestBytes(encrBytes, hmacHasher);
-      byte[] hmacBytes = Utils.concatAll(encrKey, HKDF.HMAC_INPUT, user, HMAC_INPUT_BYTES);
-
-      this.hmacKey       = HKDF.digestBytes(hmacBytes, hmacHasher);
-      this.encryptionKey = encrKey;
-    }
 
     public KeyBundle(byte[] encryptionKey, byte[] hmacKey) {
        this.setEncryptionKey(encryptionKey);

@@ -28,20 +28,4 @@ public class HTTPFailureException extends SyncException {
     return "<HTTPFailureException " + this.response.getStatusCode() +
            " :: (" + errorMessage + ")>";
   }
-
-  @Override
-  public void updateStats(GlobalSession globalSession, SyncResult syncResult) {
-    switch (response.getStatusCode()) {
-    case 401:
-      // Node reassignment 401s get handled internally.
-      syncResult.stats.numAuthExceptions++;
-      return;
-    case 500:
-    case 501:
-    case 503:
-      // TODO: backoff.
-      syncResult.stats.numIoExceptions++;
-      return;
-    }
-  }
 }

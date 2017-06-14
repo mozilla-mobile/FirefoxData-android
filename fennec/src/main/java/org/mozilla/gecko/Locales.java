@@ -4,17 +4,9 @@
 
 package org.mozilla.gecko;
 
-import java.lang.reflect.Method;
 import java.util.Locale;
 
-import org.mozilla.gecko.LocaleManager;
-
-import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
-import android.os.StrictMode;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 
 /**
  * This is a helper class to do typical locale switching operations without
@@ -26,53 +18,6 @@ import android.support.v7.app.AppCompatActivity;
  * <code>LocaleAwareFragmentActivity</code> or <code>LocaleAwareActivity</code>.
  */
 public class Locales {
-    public static LocaleManager getLocaleManager() {
-        try {
-            final Class<?> clazz = Class.forName("org.mozilla.gecko.BrowserLocaleManager");
-            final Method getInstance = clazz.getMethod("getInstance");
-            final LocaleManager localeManager = (LocaleManager) getInstance.invoke(null);
-            return localeManager;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-    }
-
-    public static void initializeLocale(Context context) {
-        /*
-        final LocaleManager localeManager = getLocaleManager();
-        final StrictMode.ThreadPolicy savedPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
-        try {
-            localeManager.getAndApplyPersistedLocale(context);
-        } finally {
-            StrictMode.setThreadPolicy(savedPolicy);
-        }
-        */
-    }
-
-    public static abstract class LocaleAwareAppCompatActivity extends AppCompatActivity {
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            Locales.initializeLocale(getApplicationContext());
-            super.onCreate(savedInstanceState);
-        }
-
-    }
-    public static abstract class LocaleAwareFragmentActivity extends FragmentActivity {
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            Locales.initializeLocale(getApplicationContext());
-            super.onCreate(savedInstanceState);
-        }
-    }
-
-    public static abstract class LocaleAwareActivity extends Activity {
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            Locales.initializeLocale(getApplicationContext());
-            super.onCreate(savedInstanceState);
-        }
-    }
 
     /**
      * Sometimes we want just the language for a locale, not the entire language
@@ -124,15 +69,4 @@ public class Locales {
         return language + "-" + country;
     }
 
-    public static Locale parseLocaleCode(final String localeCode) {
-        int index;
-        if ((index = localeCode.indexOf('-')) != -1 ||
-            (index = localeCode.indexOf('_')) != -1) {
-            final String langCode = localeCode.substring(0, index);
-            final String countryCode = localeCode.substring(index + 1);
-            return new Locale(langCode, countryCode);
-        }
-
-        return new Locale(localeCode);
-    }
 }

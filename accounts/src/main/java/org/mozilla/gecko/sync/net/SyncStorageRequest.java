@@ -11,7 +11,6 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
 import org.mozilla.gecko.background.common.log.Logger;
-import org.mozilla.gecko.sync.SyncConstants;
 
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpResponse;

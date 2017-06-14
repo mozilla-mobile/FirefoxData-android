@@ -8,7 +8,6 @@ import android.support.annotation.WorkerThread;
 import org.mozilla.sync.impl.FirefoxAccount;
 import org.mozilla.gecko.background.fxa.FxAccountUtils;
 import org.mozilla.gecko.browserid.JSONWebTokenUtils;
-import org.mozilla.gecko.fxa.FxAccountConstants;
 import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;

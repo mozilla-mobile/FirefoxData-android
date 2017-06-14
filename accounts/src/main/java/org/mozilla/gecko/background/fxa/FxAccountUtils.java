@@ -15,11 +15,9 @@ import java.security.NoSuchAlgorithmException;
 import org.mozilla.gecko.AppConstants;
 import org.mozilla.gecko.R;
 import org.mozilla.gecko.background.common.log.Logger;
-import org.mozilla.gecko.background.nativecode.NativeCrypto;
 import org.mozilla.gecko.sync.Utils;
 import org.mozilla.gecko.sync.crypto.HKDF;
 import org.mozilla.gecko.sync.crypto.KeyBundle;
-import org.mozilla.gecko.sync.crypto.PBKDF2;
 
 import android.content.Context;
 
@@ -57,14 +55,6 @@ public class FxAccountUtils {
     return Utils.concatAll(
         KW_VERSION_STRING.getBytes("UTF-8"),
         name.getBytes("UTF-8"));
-  }
-
-  public static byte[] KWE(String name, byte[] emailUTF8) throws UnsupportedEncodingException {
-    return Utils.concatAll(
-        KW_VERSION_STRING.getBytes("UTF-8"),
-        name.getBytes("UTF-8"),
-        ":".getBytes("UTF-8"),
-        emailUTF8);
   }
 
   /**
@@ -112,28 +102,6 @@ public class FxAccountUtils {
     System.arraycopy(derived, 0*32, encryptionKey, 0, 1*32);
     System.arraycopy(derived, 1*32, hmacKey, 0, 1*32);
     return new KeyBundle(encryptionKey, hmacKey);
-  }
-
-  /**
-   * Firefox Accounts are password authenticated, but clients should not store
-   * the plain-text password for any amount of time. Equivalent, but slightly
-   * more secure, is the quickly client-side stretched password.
-   * <p>
-   * We separate this since multiple login-time operations want it, and the
-   * PBKDF2 operation is computationally expensive.
-   */
-  public static byte[] generateQuickStretchedPW(byte[] emailUTF8, byte[] passwordUTF8) throws GeneralSecurityException, UnsupportedEncodingException {
-    byte[] S = FxAccountUtils.KWE("quickStretch", emailUTF8);
-    try {
-      return NativeCrypto.pbkdf2SHA256(passwordUTF8, S, NUMBER_OF_QUICK_STRETCH_ROUNDS, 32);
-    } catch (final LinkageError e) {
-      // This will throw UnsatisfiedLinkError (missing mozglue) the first time it is called, and
-      // ClassNotDefFoundError, for the uninitialized NativeCrypto class, each subsequent time this
-      // is called; LinkageError is their common ancestor.
-      Logger.warn(LOG_TAG, "Got throwable stretching password using native pbkdf2SHA256 " +
-          "implementation; ignoring and using Java implementation.", e);
-      return PBKDF2.pbkdf2SHA256(passwordUTF8, S, NUMBER_OF_QUICK_STRETCH_ROUNDS, 32);
-    }
   }
 
   /**

@@ -6,11 +6,9 @@ package org.mozilla.gecko.browserid;
 
 import android.annotation.SuppressLint;
 
-import org.mozilla.gecko.background.common.log.Logger;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.sync.Utils;
-import org.mozilla.gecko.util.PRNGFixes;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
