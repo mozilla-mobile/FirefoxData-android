@@ -33,7 +33,7 @@ public interface FirefoxSyncClient {
      * @return a container with the requested sync data; never null.
      * @throws FirefoxSyncException if there was an error retrieving the results.
      */
-    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncException; // TODO: maybe throw typed exceptions instead of FailureReason.
+    @NonNull @WorkerThread SyncCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxSyncException;
 
     /**
      * Retrieves a limited number of bookmarks associated with this Sync account.
