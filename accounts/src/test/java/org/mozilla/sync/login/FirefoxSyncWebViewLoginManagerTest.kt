@@ -19,6 +19,7 @@ import org.mockito.Mockito.*
 import org.mozilla.gecko.fxa.login.Married
 import org.mozilla.gecko.sync.CollectionKeys
 import org.mozilla.gecko.tokenserver.TokenServerToken
+import org.mozilla.sync.FirefoxSyncException
 import org.mozilla.sync.impl.FirefoxAccount
 import org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT
 import org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON
