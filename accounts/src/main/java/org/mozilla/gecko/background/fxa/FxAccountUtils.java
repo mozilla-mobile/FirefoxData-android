@@ -170,16 +170,4 @@ public class FxAccountUtils {
     return new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), null, null, null).toString();
   }
 
-  public static String defaultClientName(Context context) {
-    String name = AppConstants.MOZ_APP_DISPLAYNAME; // The display name is never translated.
-    // Change "Firefox Aurora" or similar into "Aurora".
-    if (name.contains("Aurora")) {
-        name = "Aurora";
-    } else if (name.contains("Beta")) {
-        name = "Beta";
-    } else if (name.contains("Nightly")) {
-        name = "Nightly";
-    }
-    return context.getResources().getString(R.string.sync_default_client_name, name, android.os.Build.MODEL);
-  }
 }
