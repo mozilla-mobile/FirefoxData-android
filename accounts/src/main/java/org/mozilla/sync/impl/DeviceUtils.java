@@ -31,9 +31,4 @@ public class DeviceUtils {
     }
 
     public static boolean isTablet() { assertIsInit(); return isTablet; }
-
-    /** Resets the init state to allow new values to be set & returned in testing. */
-    @VisibleForTesting static void resetInit() {
-        isInit.set(false);
-    }
 }
