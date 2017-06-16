@@ -16,6 +16,11 @@ public class FirefoxSyncShared {
 
     private FirefoxSyncShared() {}
 
+    public static void init() {
+        // A proxy so we can keep the InterModuleController package-private.
+        InterModuleController.init();
+    }
+
     /**
      * Globally sets the name of the signed in application using this library.
      *

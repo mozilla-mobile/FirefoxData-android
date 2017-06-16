@@ -7,6 +7,7 @@ package org.mozilla.sync;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import org.mozilla.sync.impl.FirefoxSyncShared;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.login.InternalFirefoxSyncLoginManagerFactory;
 import org.mozilla.sync.impl.DeviceUtils;
@@ -25,6 +26,7 @@ public class FirefoxSync {
      */
     private static void initLibrary(final Context context) {
         DeviceUtils.init(context);
+        FirefoxSyncShared.init();
     }
 
     /**

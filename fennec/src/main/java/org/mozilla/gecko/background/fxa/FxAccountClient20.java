@@ -4,8 +4,6 @@
 
 package org.mozilla.gecko.background.fxa;
 
-import android.support.annotation.NonNull;
-
 import org.json.simple.JSONArray;
 import org.mozilla.gecko.background.fxa.FxAccountClientException.FxAccountClientMalformedResponseException;
 import org.mozilla.gecko.background.fxa.FxAccountClientException.FxAccountClientRemoteException;
@@ -30,7 +28,6 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +41,7 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import org.mozilla.sync.impl.FirefoxSyncShared;
+import org.mozilla.sync.impl.FirefoxSyncInterModuleReceiver;
 
 /**
  * An HTTP client for talking to an FxAccount server.
@@ -235,7 +232,7 @@ public class FxAccountClient20 implements FxAccountClient {
 
     @Override
     public String getUserAgent() {
-      return FirefoxSyncShared.getUserAgent(); // HACK: See method javadoc for more info.
+      return FirefoxSyncInterModuleReceiver.getUserAgent(); // HACK: See class javadoc for more info.
     }
 
     @Override

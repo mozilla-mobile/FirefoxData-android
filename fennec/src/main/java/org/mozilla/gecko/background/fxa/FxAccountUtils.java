@@ -4,6 +4,11 @@
 
 package org.mozilla.gecko.background.fxa;
 
+import org.mozilla.gecko.background.common.log.Logger;
+import org.mozilla.gecko.sync.Utils;
+import org.mozilla.gecko.sync.crypto.HKDF;
+import org.mozilla.gecko.sync.crypto.KeyBundle;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -11,15 +16,6 @@ import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-
-import org.mozilla.gecko.AppConstants;
-import org.mozilla.gecko.R;
-import org.mozilla.gecko.background.common.log.Logger;
-import org.mozilla.gecko.sync.Utils;
-import org.mozilla.gecko.sync.crypto.HKDF;
-import org.mozilla.gecko.sync.crypto.KeyBundle;
-
-import android.content.Context;
 
 public class FxAccountUtils {
   private static final String LOG_TAG = FxAccountUtils.class.getSimpleName();
