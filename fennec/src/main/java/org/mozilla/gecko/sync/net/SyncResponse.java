@@ -4,8 +4,6 @@
 
 package org.mozilla.gecko.sync.net;
 
-import android.support.annotation.Nullable;
-
 import org.mozilla.gecko.sync.Utils;
 
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -140,18 +138,4 @@ public class SyncResponse extends MozResponse {
     return this.getNonMissingHeader(X_WEAVE_NEXT_OFFSET);
   }
 
-  /**
-   * This header gives the last-modified time of the target resource as seen during processing of the request,
-   * and will be included in all success responses (200, 201, 204).
-   * When given in response to a write request, this will be equal to the server’s current time and
-   * to the new last-modified time of any BSOs created or changed by the request.
-   * It is similar to the standard HTTP Last-Modified header,
-   * but the value is a decimal timestamp rather than a HTTP-format date.
-   *
-   * @return the last modified header
-   */
-  @Nullable
-  public String lastModified() {
-    return this.getNonMissingHeader(X_LAST_MODIFIED);
-  }
 }
