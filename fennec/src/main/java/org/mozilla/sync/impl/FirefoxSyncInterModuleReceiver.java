@@ -4,8 +4,6 @@
 
 package org.mozilla.sync.impl;
 
-import android.support.annotation.Nullable;
-
 /**
  * A class to help the gecko/ module, which contains all the code imported from fennec, access functionality from
  * the main module. This is necessary for the following:
@@ -23,5 +21,5 @@ public class FirefoxSyncInterModuleReceiver {
         FirefoxSyncInterModuleReceiver.userAgentFetcher = userAgentFetcher;
     }
 
-    @Nullable public static String getUserAgent() { return userAgentFetcher != null ? userAgentFetcher.getUserAgent() : null; }
+    public static String getUserAgent() { return userAgentFetcher != null ? userAgentFetcher.getUserAgent() : null; }
 }
