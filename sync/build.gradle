@@ -61,6 +61,6 @@ unMock {
 }
 
 apply from: '../publish.gradle'
-def packageName = 'accounts'
+def packageName = 'sync'
 def description = 'Public API for the Firefox Sync Library.'
 ext.configurePublish(packageName, description)
