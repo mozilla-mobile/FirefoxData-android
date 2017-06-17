@@ -1,4 +1,4 @@
-package org.mozilla.fennec;
+package org.mozilla.gecko;
 
 import org.junit.Test;
 

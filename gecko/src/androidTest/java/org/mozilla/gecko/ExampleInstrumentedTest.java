@@ -1,4 +1,4 @@
-package org.mozilla.fennec;
+package org.mozilla.gecko;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
