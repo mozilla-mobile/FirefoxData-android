@@ -1,0 +1,131 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// This file adds a function, configurePublish, that modules can call to configure that
+// module for upload to bintray for a wider distribution on version control.
+//
+// The implementation is heavily based on:
+//   https://antoniocappiello.com/2015/11/11/publish-your-library-to-jcenter-in-3-steps/
+//
+// Currently, we're laid out into several different modules: an example application, the library,
+// and two modules the library depends on. Separating the modules helps ensure the code imported
+// from fennec and friends doesn't rely on code we've written for the library. Additionally, if
+// properly configured, I believe the dependencies will *not* be visible to the application using
+// the library (for example, if you add a dependency on Picasso to the accounts/, it won't be
+// visible in the implementing application) which is especially helpful considering how inconvenient
+// Java packges can be for libraries.
+//
+// That being said, I was unable to configure it properly - we upload each module as a separate
+// package on bintray and the implementing application must import all three libraries together,
+// making all the dependency code visible to the application. There are two approaches which could
+// work:
+//
+// 1) The gradle-bintray-plugin readme suggests a work-around for Android where dependencies are
+// manually added the pom.xml (see
+// https://github.com/bintray/gradle-bintray-plugin#step-6-define-artifacts-to-be-uploaded-to-bintray).
+// We currenty use the android-maven-gradle-plugin, which might make ^ impossible. The android-maven...
+// also has suggestions for multi-project builds: https://github.com/dcendents/android-maven-gradle-plugin/issues/9
+//
+// 2) In an uploaded build, rather than point at local modules with `compile project(':thirdparty')`, we can
+// point at the uploaded dependencies. Note that we have to ensure local development still points at the local
+// dependencies so we can edit them.
+//
+// TODOs:
+// - (dependencies - see above): issue #12
+// - Enable javadoc support
+
+// todo: I don't know why I can't use `properties` properties directly in the function below.
+def libRepoName = properties.libRepositoryName
+def libGroupId = properties.libGroupId
+def libUrl = properties.libUrl
+def libVcsUrl = properties.libVcsUrl
+def libLicense = properties.libLicense
+def libLicenseUrl = properties.libLicenseUrl
+
+ext.configurePublish = { artifactIdArg, descriptionArg ->
+    apply plugin: 'com.github.dcendents.android-maven'
+
+    group = properties.libGroupId
+
+    install {
+        repositories.mavenInstaller {
+            pom {
+                project {
+                    packaging 'aar'
+                    groupId libGroupId
+                    artifactId artifactIdArg
+
+                    name libRepoName
+                    description descriptionArg
+                    url libUrl
+
+                    licenses {
+                        license {
+                            name libLicense
+                            url libLicenseUrl
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'mcomella'
+                            name 'Michael Comella'
+                            email 'michael.l.comella@gmail.com'
+                        }
+                    }
+
+                    scm {
+                        connection libVcsUrl
+                        developerConnection libVcsUrl
+                        url libUrl
+                    }
+                }
+            }
+        }
+    }
+
+    apply plugin: 'com.jfrog.bintray'
+
+    version = properties.libVersion
+
+    task sourcesJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        classifier = 'sources'
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        //archives javadocJar
+        archives sourcesJar
+    }
+
+    Properties localProperties = new Properties()
+    localProperties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+    bintray {
+        user = localProperties.getProperty("bintray.user")
+        key = localProperties.getProperty("bintray.apikey")
+
+        configurations = ['archives']
+        pkg {
+            repo = libRepoName
+            name = artifactIdArg
+            desc = descriptionArg
+            websiteUrl = libUrl
+            vcsUrl = libVcsUrl
+            licenses = [libLicense]
+            publish = true
+            publicDownloadNumbers = true
+        }
+    }
+}

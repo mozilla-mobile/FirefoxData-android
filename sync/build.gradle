@@ -3,19 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
-
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -30,10 +28,39 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+    compile 'com.android.support:appcompat-v7:25.3.1' // todo: can we rm this? issue #13
+    compile project(':thirdparty')
+    compile project(':gecko')
+
     testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+    testCompile 'org.powermock:powermock-module-junit4:1.6.6'
+    testCompile 'org.powermock:powermock-api-mockito:1.6.6'
+    testCompile 'org.robolectric:robolectric:3.3.2'
+
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+}
+
+apply plugin: 'de.mobilej.unmock'
+unMock {
+    // Used everywhere.
+    keep "android.util.Log"
+
+    // Static functions.
+    keep "android.text.TextUtils"
+    keep "android.util.SparseArray"
+
+    // Data classes.
+    keep "android.content.Intent"
+    keep "android.os.BaseBundle"
+    keep "android.os.Bundle"
+
+    // Dependencies of other APIs above.
+    keepStartingWith "com.android.internal.util." // needed by SparseArray.
 }
 
 apply from: '../publish.gradle'
-def packageName = 'thirdparty'
-def description = 'Third party code for the Firefox Sync library.'
+def packageName = 'sync'
+def description = 'Public API for the Firefox Sync Library.'
 ext.configurePublish(packageName, description)
