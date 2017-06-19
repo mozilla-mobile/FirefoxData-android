@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.accountsexample;
+package org.mozilla.sync.example;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,13 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncException;
-import org.mozilla.sync.sync.FirefoxSyncClient;
+import org.mozilla.sync.example.accountsexample.R;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
+import org.mozilla.sync.sync.FirefoxSyncClient;
 import org.mozilla.sync.sync.HistoryRecord;
 import org.mozilla.sync.sync.PasswordRecord;
 

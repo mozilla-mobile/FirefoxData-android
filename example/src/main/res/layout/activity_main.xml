@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        tools:context="org.mozilla.accountsexample.AccountsExampleActivity">
+        tools:context="org.mozilla.sync.example.accountsexample.AccountsExampleActivity">
 
     <Button
         android:id="@+id/sign_out_button"
