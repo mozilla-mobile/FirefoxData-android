@@ -2,11 +2,5 @@
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <resources>
-    <string name="app_name">FirefoxAccounts</string>
-
     <string name="fxaccount_login_webview_label">Firefox Account Login</string>
-
-    <!-- Strings left out from big import, for some reason. Actual text is guessed. -->
-    <string name="fxaccount_remove_account_dialog_action_confirm">Confirm</string>
-
 </resources>
