@@ -6,6 +6,7 @@ package org.mozilla.sync.sync;
 
 
 import android.support.annotation.NonNull;
+import org.mozilla.gecko.fxa.login.State;
 import org.mozilla.gecko.sync.CollectionKeys;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.sync.FirefoxSyncException;
@@ -28,7 +29,10 @@ class FirefoxSyncFirefoxAccountClient implements FirefoxSyncClient {
     private final FirefoxSyncConfig syncConfig;
 
     FirefoxSyncFirefoxAccountClient(final FirefoxAccount account, final TokenServerToken token, final CollectionKeys collectionKeys) {
-        // todo: assert logged in?
+        if (account.accountState.getStateLabel() != State.StateLabel.Married) {
+            throw new IllegalArgumentException("Expected married account. Instead: " + account.accountState.getStateLabel().toString());
+        }
+
         this.account = account;
         this.syncConfig = new FirefoxSyncConfig(token, collectionKeys);
     }

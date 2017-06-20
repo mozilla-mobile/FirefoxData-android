@@ -118,7 +118,6 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
                 // We failed to marry the account and start a session: reset the application name associated with the failed session.
                 FirefoxSyncShared.setSessionApplicationName(null); // HACK: see function javadoc for info.
 
-                // TODO: onUserCancel? Maybe verify verified state before advanceToMarried.
                 final String failureMessage = (!notMarriedState.verified) ?
                     "Account needs to be verified to access Sync data." :
                     "Account failed to advance to Married state for unknown reason"; // Unfortunately, we otherwise can't figure out why an advance failed. :(
@@ -154,13 +153,11 @@ class FirefoxSyncWebViewLoginManager implements FirefoxSyncLoginManager {
 
                     @Override
                     public void onRequestFailure(final Exception e) {
-                        // TODO: maybe we need to delete account.
                         loginCallback.onFailure(new FirefoxSyncException("Request to access crypto keys failed", e));
                     }
 
                     @Override
                     public void onError(final Exception e) {
-                        // todo: this fails (I think b/c I borked account) but now we're stuck.
                         loginCallback.onFailure(new FirefoxSyncException("Unable to create crypto keys request.", e));
                     }
                 });

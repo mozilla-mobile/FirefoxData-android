@@ -24,7 +24,7 @@ import org.mozilla.sync.sync.FirefoxSyncClient;
  *
  * This class is not thread-safe.
  */
-public interface FirefoxSyncLoginManager { // todo SessionManager? AccountException? SessionException?
+public interface FirefoxSyncLoginManager {
 
     /**
      * Prompts the user to log in, makes a few additional network requests to set up their account, and calls the given
@@ -91,7 +91,7 @@ public interface FirefoxSyncLoginManager { // todo SessionManager? AccountExcept
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
 
     /** A callback for {@link FirefoxSyncClient} request. */
-    interface LoginCallback { // TODO: AccountLoginCallback & AccountCallback?
+    interface LoginCallback {
         /** Called when a {@link FirefoxSyncClient} has been successfully retrieved. */
         void onSuccess(FirefoxSyncClient syncClient);
 
