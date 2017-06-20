@@ -1,51 +1,106 @@
-## todo
-* Deps: I assume FxA versions must sync with Firefox to reduce our APK size.
-  * Can we rm some deps? e.g. ActionBar is added in API 11 but we use support
-  * Switch to official Apache httpclientandroidlib ?: https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
-  * Apache commons from gradle instead of import files?
+# FirefoxData for Android
+FirefoxData is a library that allows an application to easily access a
+selection of the user's [Firefox Account][fxa] data:
+* History
+* Bookmarks
+* Passwords
+
+This library is also available on iOS (TODO: link).
+
+## Installation
+Add the following to gradle:
+
+TODO: blocked on upload to jcenter & friends.
+
+## Quick start
+todo: API naming & update links (example).
+todo: get javadoc. link to it.
+
+Below is the simplest implementation, based on [SimpleExampleActivity][], which
+is one of the examples in [the examples/ module][example].
+
+```java
+public class MainActivity extends AppCompatActivity {
+    private FirefoxSyncLoginManager loginManager;
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main); // update for your implementation.
+
+        // Store a reference to the login manager,
+        // which is used to get a FirefoxSyncClient.
+        loginManager = FirefoxSync.getLoginManager(this);
+
+        final FirefoxSyncLoginManager.LoginCallback callback = new ExampleLoginCallback(this);
+        if (!loginManager.isSignedIn()) {
+            loginManager.promptLogin(this, "Your app name", callback);
+        } else {
+            loginManager.loadStoredSyncAccount(callback);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Required callback.
+        loginManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // Make sure this is static so we don't keep a reference
+    // to Context, which can cause memory leaks.
+    private static class ExampleLoginCallback implements FirefoxSyncLoginManager.LoginCallback {
+        @Override
+        public void onSuccess(final FirefoxSyncClient syncClient) {
+            try {
+                final List<HistoryRecord> history = syncClient.getAllHistory().getResult();
+                for (final HistoryRecord record : history) {
+                    Log.d("FxData", record.getTitle() + ": " + record.getURI());
+                }
+            } catch (final FirefoxSyncException e) {
+                Log.e("FxData", "failed to get data", e);
+            }
+        }
+
+        @Override
+        public void onFailure(final FirefoxSyncException e) {
+            Log.e("FxData", "Failed to get SyncClient", e);
+        }
+
+        @Override
+        public void onUserCancel() {
+            Log.d("FxData", "User cancelled log-in attempt.");
+        }
+    }
+}
+```
+
+### Details
+todo: this section.
+
+The `FirefoxSync` class is the entry point to the library. Call:
+```java
+FirefoxSync.getLoginManager(context);
+```
+
+to get a reference to a `FirefoxSyncLoginManager`, which can be used in the
+following ways:
+user to log into an account or to access an account the user is already logged
+into. It has the following methods:
+* `promptLogin(activity, callerName, loginCallback)`: prompt the user to log
+into an account
+* `loadStoredSyncAccount(loginCallback)`: access an account the user
+
+`FirefoxSyncLoginManager`
+
+## Known issues
+* Visibility of deps.
+* import of multiple deps
+* big size (some initiatives)
 * l10n
-* Delete Android account code
-* Figure out RobocopTarget
-* Where is NativeCrypto code? Do I need NDK?
-* telemetry
-
-### Support
-* get tests working
-* linters
-  * android lint
-  * checkstyle
-* CI
 * ProGuard
-* Release build type
 
-### Adminnstrivia
-* attach example/test project
-* License for non-MPL files.
-* Mention how to build with local (so dev on mozilla-central)
-
-### Later
-* Remerge to fennec (grisha says leave out Android account stuff)
-* drop ch.boye.httpclientandroidlib. nalexander says:
-
-mcomella: it's big.  You don't want to ship it.  Using a different dep would be
-easy.  You don't have to, and you can "trust" the HTTP/TLS configuration to
-work, but you'll end up bring a _lot_ of Sync with you...
-14:32 Well, maybe not that much.  But enough that it won't be a clean excision.
-14:32 And I gave you the excision point; you should use it :)
-
-mcomella: grisha: for sure!  mcomella, it shouldn't be too hard to do what you
-want, pulling minimal deps from the FxALoginStateMachine.
-14:27 mcomella: you should, of course, implement your own FxAClient20 or
-whatever that doesn't use Apache's httpclientlib.
-
-## Tests todo
-* Ensure static resource calls return expected results from server results -
-  hard, have to decrypt results
-* Ensure network calls for static calls (e.g. CryptoKeys) gets appropriate result
-  from response
-* LoginManager.loadStoredSyncClient
-* FirefoxSyncClient.getEmail
-* FirefoxLoginManager.signOut/isSignedIn
-* Additional tests in FirefoxSyncWebViewLoginManagerTest javadoc
-
-Need internet permission?
+[SimpleExampleActivity]: https://github.com/mcomella/FirefoxAccounts-android/blob/master/example/src/main/java/org/mozilla/sync/example/SimpleExampleActivity.java
+[example]: https://github.com/mcomella/FirefoxAccounts-android/tree/master/example/src/main/java/org/mozilla/sync/example
+[fxa]: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Firefox_Accounts
