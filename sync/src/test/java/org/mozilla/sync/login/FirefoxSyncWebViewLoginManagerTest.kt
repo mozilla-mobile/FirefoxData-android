@@ -74,11 +74,15 @@ class FirefoxSyncWebViewLoginManagerTest {
 
     @Test
     fun testOnActivityResultDoesNotCallbackForNotOurIntent() {
+        // We want to test onActivityResult if another Intent is returned with the same request code we sent ours with.
+        val requestCodeCaptor = ArgumentCaptor.forClass(Int::class.java)
+        `when`(mockActivity!!.startActivityForResult(any(), requestCodeCaptor.capture())).then { /* do nothing, just want capture */ }
+
         // We need to register a callback to ensure it's not called after calling onActivityResult with an Intent
         // that is not ours.
         val callback = LoginCallbackSpy()
-        loginManager.promptLogin(mockActivity, "Chopin", callback) // TODO: use same request code.
-        loginManager.onActivityResult(100, Activity.RESULT_OK, Intent(Intent.ACTION_VIEW))
+        loginManager.promptLogin(mockActivity, "Chopin", callback)
+        loginManager.onActivityResult(requestCodeCaptor.value, Activity.RESULT_OK, Intent(Intent.ACTION_VIEW))
 
         waitForOnActivityResultToComplete(callback)
 

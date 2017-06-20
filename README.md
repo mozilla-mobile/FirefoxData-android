@@ -47,3 +47,5 @@ whatever that doesn't use Apache's httpclientlib.
 * FirefoxSyncClient.getEmail
 * FirefoxLoginManager.signOut/isSignedIn
 * Additional tests in FirefoxSyncWebViewLoginManagerTest javadoc
+
+Need internet permission?

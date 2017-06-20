@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
 /**
  * A data class for a history entry, which represents a visited URI.
  */
-public class HistoryRecord { // TODO: name: record?
+public class HistoryRecord {
 
     private final org.mozilla.gecko.sync.repositories.domain.HistoryRecord underlyingRecord;
 
