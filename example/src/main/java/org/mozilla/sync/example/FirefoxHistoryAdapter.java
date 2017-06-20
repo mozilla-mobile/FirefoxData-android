@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.sync.example;
 
 import android.support.v7.widget.RecyclerView;
@@ -10,7 +14,7 @@ import org.mozilla.sync.sync.HistoryRecord;
 import java.util.Collections;
 import java.util.List;
 
-// todo: licenses.
+/** An adapter for a list of history items. */
 class FirefoxHistoryAdapter extends RecyclerView.Adapter<FirefoxHistoryAdapter.HistoryViewHolder> {
 
     private List<HistoryRecord> historyRecords = Collections.emptyList();
