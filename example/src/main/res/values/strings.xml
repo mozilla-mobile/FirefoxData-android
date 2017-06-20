@@ -1,6 +1,19 @@
 <resources>
-    <string name="app_name">AccountsExample</string>
+    <string name="app_name">FirefoxDataExample</string>
 
+    <!-- SimpleExampleActivity -->
     <string name="simple_example_sign_out_button">Sign out</string>
     <string name="simple_example_sign_out">You have signed out! Close and reopen the app for another login prompt.</string>
+
+    <!-- FirefoxDataInRecyclerViewExampleActivity -->
+    <string name="sign_in_button">Sign in</string>
+    <string name="sign_in_explanation">Sign into your Firefox Account to see your browsing history!</string>
+
+    <string name="loading_button">Cancel</string>
+    <string name="loading_explanation">Loading your Firefox data…</string>
+
+    <string name="error_button">Sign out</string>
+    <string name="error_explanation">Failed to get Firefox data due to Exception: %1$s</string>
+
+    <string name="sign_out">Sign out</string>
 </resources>

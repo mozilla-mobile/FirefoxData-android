@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.Toast;
 import org.mozilla.sync.FirefoxSync;
 import org.mozilla.sync.FirefoxSyncException;
-import org.mozilla.sync.example.accountsexample.R;
 import org.mozilla.sync.login.FirefoxSyncLoginManager;
 import org.mozilla.sync.sync.BookmarkFolder;
 import org.mozilla.sync.sync.BookmarkRecord;
@@ -35,6 +34,8 @@ import java.util.List;
  * Once the user's data is printed, they'll be able to sign out via the on-screen button.
  *
  * That's it! If the user wishes to take more action, they have to close the app, reopen it, and start over.
+ *
+ * For a more complex example, see {@link FirefoxDataInRecyclerViewExampleActivity}.
  */
 public class SimpleExampleActivity extends AppCompatActivity {
 
