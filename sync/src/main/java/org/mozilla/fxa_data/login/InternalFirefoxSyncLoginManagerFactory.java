@@ -1,0 +1,23 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+package org.mozilla.fxa_data.login;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+/**
+ * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.fxa_data.FirefoxSync} instead. This class is used to escalate
+ * visibility of {@code protected} components for internal library use.
+ */
+public class InternalFirefoxSyncLoginManagerFactory {
+    private InternalFirefoxSyncLoginManagerFactory() {}
+
+    /** Please use {@link org.mozilla.fxa_data.FirefoxSync#getLoginManager(android.content.Context)} instead. */
+    public static FirefoxSyncLoginManager internalGetLoginManager(@NonNull final Context context) {
+        // We return a new instance, rather than a singleton, because the Context can change.
+        final FirefoxAccountSessionSharedPrefsStore sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
+        return new FirefoxSyncWebViewLoginManager(sessionStore);
+    }
+}

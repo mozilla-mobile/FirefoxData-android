@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.mozilla.sync.example">
+          package="org.mozilla.fxa_data.example">
 
     <application
             android:allowBackup="true"
@@ -10,14 +10,14 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
 
-        <activity android:name=".FirefoxDataInRecyclerViewExampleActivity">
+        <activity android:name="org.mozilla.fxa_data.example.FirefoxDataInRecyclerViewExampleActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name="org.mozilla.sync.example.SimpleExampleActivity">
+        <activity android:name="org.mozilla.fxa_data.example.SimpleExampleActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>

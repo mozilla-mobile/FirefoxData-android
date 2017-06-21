@@ -7,7 +7,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="org.mozilla.sync.example.FirefoxDataInRecyclerViewExampleActivity">
+        tools:context="org.mozilla.fxa_data.example.FirefoxDataInRecyclerViewExampleActivity">
 
     <!-- We swap between these layouts depending on state. container_explanation is used for:
         - Sign in

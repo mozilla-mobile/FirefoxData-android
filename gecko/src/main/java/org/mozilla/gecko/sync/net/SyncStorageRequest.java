@@ -17,7 +17,7 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.methods.HttpRequestBase;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import org.mozilla.sync.impl.FirefoxSyncInterModuleReceiver;
+import org.mozilla.fxa_data.impl.FirefoxSyncInterModuleReceiver;
 
 public class SyncStorageRequest implements Resource {
   public static final HashMap<String, String> SERVER_ERROR_MESSAGES;

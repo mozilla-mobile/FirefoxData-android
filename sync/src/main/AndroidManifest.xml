@@ -14,7 +14,7 @@
         were in that state). One side effect of this is that if the Activity is destroyed, e.g. low memory which can
         happen when the user switches apps to verify their account, we don't restore the state. :( Issue #1. -->
         <activity
-                android:name="org.mozilla.sync.login.FirefoxSyncWebViewLoginActivity"
+                android:name="org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity"
                 android:label="@string/fxaccount_login_webview_label"
                 android:exported="true"
                 android:theme="@style/Theme.AppCompat.NoActionBar"
