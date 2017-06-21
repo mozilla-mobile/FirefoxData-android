@@ -21,8 +21,8 @@ import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.fxa_data.FirefoxSyncException;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
 import org.mozilla.fxa_data.impl.FirefoxSyncShared;
-import org.mozilla.fxa_data.sync.FirefoxSyncClient;
-import org.mozilla.fxa_data.sync.InternalFirefoxSyncClientFactory;
+import org.mozilla.fxa_data.download.FirefoxSyncClient;
+import org.mozilla.fxa_data.download.InternalFirefoxSyncClientFactory;
 
 import static org.mozilla.fxa_data.impl.FirefoxSyncShared.LOGTAG;
 

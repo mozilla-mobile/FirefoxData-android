@@ -23,7 +23,7 @@ import org.mozilla.fxa_data.FirefoxSyncException
 import org.mozilla.fxa_data.impl.FirefoxAccount
 import org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT
 import org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON
-import org.mozilla.fxa_data.sync.FirefoxSyncClient
+import org.mozilla.fxa_data.download.FirefoxSyncClient
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner

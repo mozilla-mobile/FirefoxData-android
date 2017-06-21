@@ -10,7 +10,7 @@ import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import org.mozilla.fxa_data.FirefoxSyncException;
-import org.mozilla.fxa_data.sync.FirefoxSyncClient;
+import org.mozilla.fxa_data.download.FirefoxSyncClient;
 
 /**
  * A interface to let a user log into a FirefoxSync account or manage an account if the user has

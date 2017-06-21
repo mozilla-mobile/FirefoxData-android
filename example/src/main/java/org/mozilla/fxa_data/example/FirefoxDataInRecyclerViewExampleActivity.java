@@ -19,9 +19,9 @@ import android.widget.TextView;
 import org.mozilla.fxa_data.FirefoxSync;
 import org.mozilla.fxa_data.FirefoxSyncException;
 import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
-import org.mozilla.fxa_data.sync.FirefoxSyncClient;
-import org.mozilla.fxa_data.sync.HistoryRecord;
-import org.mozilla.fxa_data.sync.SyncCollectionResult;
+import org.mozilla.fxa_data.download.FirefoxSyncClient;
+import org.mozilla.fxa_data.download.HistoryRecord;
+import org.mozilla.fxa_data.download.SyncCollectionResult;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;

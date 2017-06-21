@@ -16,11 +16,11 @@ import android.widget.Toast;
 import org.mozilla.fxa_data.FirefoxSync;
 import org.mozilla.fxa_data.FirefoxSyncException;
 import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
-import org.mozilla.fxa_data.sync.BookmarkFolder;
-import org.mozilla.fxa_data.sync.BookmarkRecord;
-import org.mozilla.fxa_data.sync.FirefoxSyncClient;
-import org.mozilla.fxa_data.sync.HistoryRecord;
-import org.mozilla.fxa_data.sync.PasswordRecord;
+import org.mozilla.fxa_data.download.BookmarkFolder;
+import org.mozilla.fxa_data.download.BookmarkRecord;
+import org.mozilla.fxa_data.download.FirefoxSyncClient;
+import org.mozilla.fxa_data.download.HistoryRecord;
+import org.mozilla.fxa_data.download.PasswordRecord;
 
 import java.util.List;
 
