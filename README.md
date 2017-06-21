@@ -17,6 +17,7 @@ todo: API naming & update links (example).
 todo: get javadoc. link to it.
 todo: explain how to load examples into IDE (run config!)/develop library.
 todo: explain impl.
+todo: explain code layout (modules).
 
 Below is the simplest implementation, based on [SimpleExampleActivity][], which
 is one of the examples in [the examples/ module][example].
