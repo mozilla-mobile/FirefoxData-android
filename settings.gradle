@@ -1,1 +1,1 @@
-include ':sync', ':thirdparty', ':gecko', ':example'
+include ':fxa_data', ':thirdparty', ':gecko', ':example'
