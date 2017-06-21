@@ -37,5 +37,5 @@ dependencies {
 
 apply from: '../publish.gradle'
 def packageName = 'gecko'
-def description = 'Code imported from Firefox for Android for the Firefox Sync library.'
+def description = 'The dependencies from Firefox for Android used in FirefoxData.'
 ext.configurePublish(packageName, description)

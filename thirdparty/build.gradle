@@ -35,5 +35,5 @@ dependencies {
 
 apply from: '../publish.gradle'
 def packageName = 'thirdparty'
-def description = 'Third party code for the Firefox Sync library.'
+def description = 'The third party in-tree dependencies for FirefoxData.'
 ext.configurePublish(packageName, description)
