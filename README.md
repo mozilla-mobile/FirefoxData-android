@@ -101,6 +101,9 @@ into an account
 * l10n
 * ProGuard
 
+## Contributing to the repository
+TODO: publish details.
+
 [SimpleExampleActivity]: https://github.com/mcomella/FirefoxAccounts-android/blob/master/example/src/main/java/org/mozilla/sync/example/SimpleExampleActivity.java
 [example]: https://github.com/mcomella/FirefoxAccounts-android/tree/master/example/src/main/java/org/mozilla/sync/example
 [fxa]: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Firefox_Accounts
