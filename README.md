@@ -1,5 +1,5 @@
 # FirefoxData for Android
-FirefoxData is a library that allows an application to easily access a
+FirefoxData is an Android library that allows an application to easily access a
 selection of the user's [Firefox Account][fxa] data:
 * History
 * Bookmarks
@@ -15,7 +15,6 @@ TODO: blocked on upload to jcenter & friends.
 ## Quick start
 todo: API naming & update links (example).
 todo: get javadoc. link to it.
-todo: explain how to load examples into IDE (run config!)/develop library.
 todo: explain impl.
 todo: explain code layout (modules).
 
@@ -80,7 +79,16 @@ public class MainActivity extends AppCompatActivity {
 ```
 
 ### Details
+**Notes on exposed APIs**:
+* Classes exposed in the `org.mozilla.fxa_data.impl` package are not intended
+for public consumption and are subject to change.
+* Classes from the `thirdparty` and `gecko` modules are exposed due to a known
+issue (see Known Issues below) - these are also subject to change. Public APIs
+can be found in the `org.mozilla.fxa_data` package, with the exception of
+`impl`.
+
 todo: this section.
+
 
 The `FirefoxSync` class is the entry point to the library. Call:
 ```java
@@ -98,15 +106,40 @@ into an account
 `FirefoxSyncLoginManager`
 
 ## Known issues
-* Visibility of deps.
-* import of multiple deps
-* big size (some initiatives)
-* l10n
-* ProGuard
+* [We require importing multiple dependencies, which exposes their APIs. We want
+this to change to one import and no extra exposed APIs.][i-deps]
+* We include some large dependencies: [appcompat][i-appcompat] &
+[httpclientlib][i-httpclientlib]
+* [We only support English at the moment][i-l10n]
+* [We haven't investigated ProGuard configurations yet][i-proguard].
 
 ## Contributing to the repository
-TODO: publish details.
+
+### Setting up a build
+todo: explain how to load examples into IDE (run config!)/develop library.
+
+### Publishing to bintray
+To publish, ensure you have a bintray account with the appropriate permissions,
+add the following to a ./local.properties file:
+
+```
+bintray.user=<username>
+bintray.apikey=<api-key>
+```
+
+Increment the version number in gradle.properties & run the following to
+upload:
+
+```
+./publish.sh
+```
 
 [SimpleExampleActivity]: https://github.com/mcomella/FirefoxAccounts-android/blob/master/example/src/main/java/org/mozilla/sync/example/SimpleExampleActivity.java
 [example]: https://github.com/mcomella/FirefoxAccounts-android/tree/master/example/src/main/java/org/mozilla/sync/example
 [fxa]: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Firefox_Accounts
+
+[i-deps]: https://github.com/mozilla-mobile/FirefoxData-android/issues/12
+[i-httpclientlib]: https://github.com/mozilla-mobile/FirefoxData-android/issues/4
+[i-appcompat]: https://github.com/mozilla-mobile/FirefoxData-android/issues/13
+[i-l10n]: https://github.com/mozilla-mobile/FirefoxData-android/issues/17
+[i-proguard]: https://github.com/mozilla-mobile/FirefoxData-android/issues/16
