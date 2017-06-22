@@ -13,17 +13,16 @@ Add the following to gradle:
 TODO: blocked on upload to jcenter & friends.
 
 ## Quick start
-todo: API naming & update links (example).
-todo: get javadoc. link to it.
-todo: explain impl.
-todo: explain code layout (modules).
+* todo: API naming & update links (example).
+* todo: get javadoc. link to it.
+* todo: explain code layout (modules).
 
 Below is the simplest implementation, based on [SimpleExampleActivity][], which
 is one of the examples in [the examples/ module][example].
 
 ```java
 public class MainActivity extends AppCompatActivity {
-    private FirefoxSyncLoginManager loginManager;
+    private FirefoxDataLoginManager loginManager;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -31,14 +30,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main); // update for your implementation.
 
         // Store a reference to the login manager,
-        // which is used to get a FirefoxSyncClient.
-        loginManager = FirefoxSync.getLoginManager(this);
+        // which is used to get a FirefoxDataClient.
+        loginManager = FirefoxData.getLoginManager(this);
 
-        final FirefoxSyncLoginManager.LoginCallback callback = new ExampleLoginCallback(this);
+        final FirefoxDataLoginManager.LoginCallback callback = new ExampleLoginCallback(this);
         if (!loginManager.isSignedIn()) {
             loginManager.promptLogin(this, "Your app name", callback);
         } else {
-            loginManager.loadStoredSyncAccount(callback);
+            loginManager.loadStoredAccount(callback);
         }
     }
 
@@ -52,22 +51,22 @@ public class MainActivity extends AppCompatActivity {
 
     // Make sure this is static so we don't keep a reference
     // to Context, which can cause memory leaks.
-    private static class ExampleLoginCallback implements FirefoxSyncLoginManager.LoginCallback {
+    private static class ExampleLoginCallback implements FirefoxDataLoginManager.LoginCallback {
         @Override
-        public void onSuccess(final FirefoxSyncClient dataClient) {
+        public void onSuccess(final FirefoxDataClient dataClient) {
             try {
                 final List<HistoryRecord> history = dataClient.getAllHistory().getResult();
                 for (final HistoryRecord record : history) {
                     Log.d("FxData", record.getTitle() + ": " + record.getURI());
                 }
-            } catch (final FirefoxSyncException e) {
+            } catch (final FirefoxDataException e) {
                 Log.e("FxData", "failed to get data", e);
             }
         }
 
         @Override
-        public void onFailure(final FirefoxSyncException e) {
-            Log.e("FxData", "Failed to get SyncClient", e);
+        public void onFailure(final FirefoxDataException e) {
+            Log.e("FxData", "Failed to get DataClient", e);
         }
 
         @Override
@@ -87,23 +86,22 @@ issue (see Known Issues below) - these are also subject to change. Public APIs
 can be found in the `org.mozilla.fxa_data` package, with the exception of
 `impl`.
 
-todo: this section.
+---
 
-
-The `FirefoxSync` class is the entry point to the library. Call:
+The `FirefoxData` class is the entry point to the library. Call:
 ```java
-FirefoxSync.getLoginManager(context);
+FirefoxData.getLoginManager(context);
 ```
 
-to get a reference to a `FirefoxSyncLoginManager`, which can be used in the
+to get a reference to a `FirefoxDataLoginManager`, which can be used in the
 following ways:
 user to log into an account or to access an account the user is already logged
 into. It has the following methods:
 * `promptLogin(activity, callerName, loginCallback)`: prompt the user to log
 into an account
-* `loadStoredSyncAccount(loginCallback)`: access an account the user
+* `loadStoredAccount(loginCallback)`: access an account the user
 
-`FirefoxSyncLoginManager`
+`FirefoxDataLoginManager`
 
 ## Known issues
 * [We require importing multiple dependencies, which exposes their APIs. We want
@@ -120,22 +118,22 @@ todo: explain how to load examples into IDE (run config!)/develop library.
 
 ### Publishing to bintray
 To publish, ensure you have a bintray account with the appropriate permissions,
-add the following to a ./local.properties file:
+add the following to a `./local.properties` file:
 
 ```
 bintray.user=<username>
 bintray.apikey=<api-key>
 ```
 
-Increment the version number in gradle.properties & run the following to
+Increment the version number in `./gradle.properties` & run the following to
 upload:
 
 ```
 ./publish.sh
 ```
 
-[SimpleExampleActivity]: https://github.com/mcomella/FirefoxAccounts-android/blob/master/example/src/main/java/org/mozilla/sync/example/SimpleExampleActivity.java
-[example]: https://github.com/mcomella/FirefoxAccounts-android/tree/master/example/src/main/java/org/mozilla/sync/example
+[SimpleExampleActivity]: https://github.com/mozilla-mobile/FirefoxData-android/blob/master/example/src/main/java/org/mozilla/fxa_data/example/SimpleExampleActivity.java
+[example]: https://github.com/mozilla-mobile/FirefoxData-android/tree/master/example/src/main/java/org/mozilla/fxa_data/example
 [fxa]: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Firefox_Accounts
 
 [i-deps]: https://github.com/mozilla-mobile/FirefoxData-android/issues/12
