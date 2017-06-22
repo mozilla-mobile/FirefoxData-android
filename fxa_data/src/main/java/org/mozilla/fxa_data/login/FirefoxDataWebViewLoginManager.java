@@ -167,8 +167,7 @@ class FirefoxDataWebViewLoginManager implements FirefoxDataLoginManager {
             public void handleFailure(final TokenServerException e) { // Received response but unable to obtain taken.
                 if (e instanceof TokenServerException.TokenServerInvalidCredentialsException) {
                     // The credentials don't work with the TokenServer so we're going to have to prompt again.
-                    Log.w(LOGTAG, "Login credentials are considered invalid with token server: deleting stored account.");
-                    sessionStore.deleteStoredSession();
+                    Log.w(LOGTAG, "Login credentials are considered invalid with token server, consider deleting stored account.");
                 }
 
                 loginCallback.onFailure(new FirefoxDataException("Sync token response does not contain valid token", e));
