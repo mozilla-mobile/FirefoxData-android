@@ -13,10 +13,6 @@ Add the following to gradle:
 TODO: blocked on upload to jcenter & friends.
 
 ## Quick start
-* todo: API naming & update links (example).
-* todo: get javadoc. link to it.
-* todo: explain code layout (modules).
-
 Below is the simplest implementation, based on [SimpleExampleActivity][], which
 is one of the examples in [the examples/ module][example].
 
@@ -77,31 +73,91 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
-### Details
+### Explanation
 **Notes on exposed APIs**:
 * Classes exposed in the `org.mozilla.fxa_data.impl` package are not intended
 for public consumption and are subject to change.
-* Classes from the `thirdparty` and `gecko` modules are exposed due to a known
-issue (see Known Issues below) - these are also subject to change. Public APIs
-can be found in the `org.mozilla.fxa_data` package, with the exception of
-`impl`.
+* Classes from the `thirdparty` and `gecko` modules are exposed due to [a known
+issue][i-deps] and should not be considered public. All public APIs can be
+found in the `org.mozilla.fxa_data` package, with the exception of classes in
+the `impl` package which is private.
 
 ---
 
-The `FirefoxData` class is the entry point to the library. Call:
+The [`FirefoxData`][ffData] class is the entry point to the library. It can
+return a [`FirefoxDataLoginManager`][ffLm], which we recommend storing a
+reference to in `onCreate`:
 ```java
-FirefoxData.getLoginManager(context);
+    private FirefoxDataLoginManager loginManager;
+
+    protected void onCreate(final Bundle savedInstanceState) {
+        ...
+        loginManager = FirefoxData.getLoginManager(this);
 ```
 
-to get a reference to a `FirefoxDataLoginManager`, which can be used in the
-following ways:
-user to log into an account or to access an account the user is already logged
-into. It has the following methods:
-* `promptLogin(activity, callerName, loginCallback)`: prompt the user to log
-into an account
-* `loadStoredAccount(loginCallback)`: access an account the user
+For successful logins, the following must also be called:
+```java
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        ...
+        loginManager.onActivityResult(requestCode, resultCode, data);
+```
 
-`FirefoxDataLoginManager`
+The `FirefoxDataLoginManager` allows you to sign into an account, access a
+previously signed in account, or sign out of the signed in account. To log in,
+e.g. when the user clicks a sign in button, you might call:
+```java
+    public void onClick(View v) {
+        loginManager.promptLogin(MainActivity.this, "Your app name", callback);
+    }
+```
+
+Firefox Accounts have a dashboard of all synced devices - your app name name is
+displayed there so the user can identify which device is which.
+
+The [`FirefoxDataLoginManager.LoginCallback`][ffLc] argument requires the
+following methods:
+* `onSuccess(FirefoxDataClient)`: called when the login was completed
+successfully. The account will be saved for future use:
+`FirefoxDataLoginManager.loadStoredAccount` can be used instead of
+`promptLogin` so the user doesn't have to log in again and
+`FirefoxDataLoginManager.isSignedIn` should now return `true`.
+* `onFailure(FirefoxDataException)`: login (or loading a stored account) has
+failed: it's probably best to try again later.
+* `onUserCancel()`: called when the user cancelled a login attempt (it should
+never be called for `loadStoredAccount`).
+
+Notes:
+* These callbacks are called from a background thread which is okay to block
+* LoginCallback may leak memory if it stores a reference to the Context so
+generally avoid using anonymous classes with it!
+
+The [`FirefoxDataClient`][ffDc] given to `onSuccess` can be used to access the
+user's data. It includes the following blocking methods (which are okay to call
+from the callback):
+* `getAllBookmarks()`
+* `getBookmarksWithLimit(int)`
+* `getAllHistory()`
+* `getHistoryWithLimit(int)`
+* `getAllPasswords()`
+* `getPasswordsWithLimit(int)`
+
+The `*WithLimit` methods can be used to return a subset of a user's data. This
+can be useful if the user has a lot of data or you're making test queries.
+
+Each method returns a [`DataCollectionResult<T>`][ffDcr], which wraps the
+returned value (to allow for future API expansion). Call
+`DataCollectionResult.getResult()` to return one of:
+* [`BookmarkFolder`][ffBf]
+* [`List<HistoryRecord>`][ffHr]
+* [`List<PasswordRecord>`][ffPr]
+
+History & passwords are largely self-explanatory but for bookmarks, we return
+the root bookmark folder of a tree-like structure. You can access the actual
+bookmarks with the following methods:
+* [`List<BookmarkRecord> getBookmarks()`][ffBr]
+* `BookmarkFolder getSubfolders()`
+
+You should now have the data you need!
 
 ## Known issues
 * [We require importing multiple dependencies, which exposes their APIs. We want
@@ -110,6 +166,10 @@ this to change to one import and no extra exposed APIs.][i-deps]
 [httpclientlib][i-httpclientlib]
 * [We only support English at the moment][i-l10n]
 * [We haven't investigated ProGuard configurations yet][i-proguard].
+* [We'd like to host javadocs][i-javadoc]
+
+## Questions?
+todo: IRC, file bug.
 
 ## Contributing to the repository
 
@@ -119,7 +179,6 @@ todo: explain how to load examples into IDE (run config!)/develop library.
 ### Publishing to bintray
 To publish, ensure you have a bintray account with the appropriate permissions,
 add the following to a `./local.properties` file:
-
 ```
 bintray.user=<username>
 bintray.apikey=<api-key>
@@ -127,10 +186,17 @@ bintray.apikey=<api-key>
 
 Increment the version number in `./gradle.properties` & run the following to
 upload:
-
 ```
 ./publish.sh
 ```
+
+### Coding notes
+The code is laid out into a few modules:
+* `fx_data/`: core module, includes the public API.
+* `gecko/`: dependencies imported from fennec, largerly sync code
+* `thirdparty/`: third-party in-tree dependencies
+* `example/`: examples using the library
+
 
 [SimpleExampleActivity]: https://github.com/mozilla-mobile/FirefoxData-android/blob/master/example/src/main/java/org/mozilla/fxa_data/example/SimpleExampleActivity.java
 [example]: https://github.com/mozilla-mobile/FirefoxData-android/tree/master/example/src/main/java/org/mozilla/fxa_data/example
@@ -141,3 +207,15 @@ upload:
 [i-appcompat]: https://github.com/mozilla-mobile/FirefoxData-android/issues/13
 [i-l10n]: https://github.com/mozilla-mobile/FirefoxData-android/issues/17
 [i-proguard]: https://github.com/mozilla-mobile/FirefoxData-android/issues/16
+[i-javadoc]: https://github.com/mozilla-mobile/FirefoxData-android/issues/18
+
+[ffData]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/FirefoxData.java#L15
+[ffLm]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/login/FirefoxDataLoginManager.java#L16
+[ffLc]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/login/FirefoxDataLoginManager.java#L94
+[ffDc]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/FirefoxDataClient.java#L15
+[ffDcr]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/DataCollectionResult.java#L9
+
+[ffBf]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/BookmarkFolder.java#L12
+[ffBr]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/BookmarkRecord.java#L18
+[ffHr]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/HistoryRecord.java#L9
+[ffPr]: https://github.com/mozilla-mobile/FirefoxData-android/blob/f245ea97eb34373b39a8ade44103dd98f3c8b27a/fxa_data/src/main/java/org/mozilla/fxa_data/download/PasswordRecord.java#L9
