@@ -168,8 +168,14 @@ this to change to one import and no extra exposed APIs.][i-deps]
 * [We haven't investigated ProGuard configurations yet][i-proguard].
 * [We'd like to host javadocs][i-javadoc]
 
-## Questions?
-todo: IRC, file bug.
+## Questions? Feedback?
+We'd love to hear from you!
+
+If you have questions or feedback about using this library, you can catch us on
+[Mozilla's IRC](https://wiki.mozilla.org/IRC) in the #mobile channel.
+
+If you've found a bug, we'd love it if you [file an
+issue](https://github.com/mozilla-mobile/FirefoxData-android/issues).
 
 ## Contributing to the repository
 
