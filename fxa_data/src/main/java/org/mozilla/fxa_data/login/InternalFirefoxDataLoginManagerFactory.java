@@ -6,18 +6,19 @@ package org.mozilla.fxa_data.login;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import org.mozilla.fxa_data.FirefoxData;
 
 /**
- * <b>NON-PUBLIC API:</b> please use {@link org.mozilla.fxa_data.FirefoxSync} instead. This class is used to escalate
+ * <b>NON-PUBLIC API:</b> please use {@link FirefoxData} instead. This class is used to escalate
  * visibility of {@code protected} components for internal library use.
  */
-public class InternalFirefoxSyncLoginManagerFactory {
-    private InternalFirefoxSyncLoginManagerFactory() {}
+public class InternalFirefoxDataLoginManagerFactory {
+    private InternalFirefoxDataLoginManagerFactory() {}
 
-    /** Please use {@link org.mozilla.fxa_data.FirefoxSync#getLoginManager(android.content.Context)} instead. */
-    public static FirefoxSyncLoginManager internalGetLoginManager(@NonNull final Context context) {
+    /** Please use {@link FirefoxData#getLoginManager(android.content.Context)} instead. */
+    public static FirefoxDataLoginManager internalGetLoginManager(@NonNull final Context context) {
         // We return a new instance, rather than a singleton, because the Context can change.
         final FirefoxAccountSessionSharedPrefsStore sessionStore = new FirefoxAccountSessionSharedPrefsStore(context);
-        return new FirefoxSyncWebViewLoginManager(sessionStore);
+        return new FirefoxDataWebViewLoginManager(sessionStore);
     }
 }

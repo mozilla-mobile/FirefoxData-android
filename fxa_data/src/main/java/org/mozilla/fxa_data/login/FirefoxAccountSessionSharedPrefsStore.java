@@ -13,7 +13,7 @@ import org.mozilla.gecko.fxa.login.State.StateLabel;
 import org.mozilla.gecko.fxa.login.StateFactory;
 import org.mozilla.gecko.sync.ExtendedJSONObject;
 import org.mozilla.gecko.sync.NonObjectJSONException;
-import org.mozilla.fxa_data.impl.FirefoxSyncShared;
+import org.mozilla.fxa_data.impl.FirefoxDataShared;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
 import org.mozilla.fxa_data.impl.FirefoxAccountEndpointConfig;
 
@@ -36,7 +36,7 @@ import static org.mozilla.fxa_data.impl.FirefoxAccountEndpointConfig.LABEL_STAGE
  */
 class FirefoxAccountSessionSharedPrefsStore {
 
-    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
+    private static final String LOGTAG = FirefoxDataShared.LOGTAG;
 
     private static final String DEFAULT_STORE_NAME = "FirefoxAccountSessionSharedPrefsStore";
     private static final String PREFS_BRANCH_PREFIX = "org.mozilla.accounts.";

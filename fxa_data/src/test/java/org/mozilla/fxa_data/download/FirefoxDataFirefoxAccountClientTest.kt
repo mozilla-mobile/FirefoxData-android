@@ -25,16 +25,16 @@ import org.mozilla.gecko.sync.repositories.domain.HistoryRecord as UnderlyingHis
 
 @RunWith(PowerMockRunner::class)
 @PrepareForTest(FirefoxSyncHistory::class)
-class FirefoxSyncFirefoxAccountClientTest {
+class FirefoxDataFirefoxAccountClientTest {
 
-    private lateinit var client: FirefoxSyncFirefoxAccountClient
+    private lateinit var client: FirefoxDataFirefoxAccountClient
 
     @Captor private lateinit var historyCallbackCaptor: ArgumentCaptor<OnSyncComplete<List<HistoryRecord>>>
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        client = FirefoxSyncFirefoxAccountClient(mock(FirefoxAccount::class.java), mock(TokenServerToken::class.java),
+        client = FirefoxDataFirefoxAccountClient(mock(FirefoxAccount::class.java), mock(TokenServerToken::class.java),
                 mock(CollectionKeys::class.java))
     }
 
@@ -42,7 +42,7 @@ class FirefoxSyncFirefoxAccountClientTest {
      * Verifies that the value returned from [FirefoxSyncBookmarks.getBlocking] is returned directly through our library
      * API. Thus, if we test that method and it works, the API should work.
      *
-     * Ideally, we also test this for [FirefoxSyncClient.getHistoryWithLimit] & the equivalents for bookmarks & password
+     * Ideally, we also test this for [FirefoxDataClient.getHistoryWithLimit] & the equivalents for bookmarks & password
      * but this is good enough for now.
      */
     @Test
@@ -57,7 +57,7 @@ class FirefoxSyncFirefoxAccountClientTest {
 
         val expectedHistory = listOf(historyOne, historyTwo).map { HistoryRecord(it) }
         val immutableExpectedHistory = Collections.unmodifiableList(expectedHistory) // ensure list is not modified by non-test code.
-        val expectedResult = SyncCollectionResult<List<HistoryRecord>>(immutableExpectedHistory)
+        val expectedResult = DataCollectionResult<List<HistoryRecord>>(immutableExpectedHistory)
 
         PowerMockito.mockStatic(FirefoxSyncHistory::class.java)
         PowerMockito.`when`(FirefoxSyncHistory.getBlocking(any(), anyInt(), historyCallbackCaptor.capture())).then {

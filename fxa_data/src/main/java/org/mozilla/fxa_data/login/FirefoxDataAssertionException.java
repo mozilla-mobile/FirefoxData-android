@@ -8,7 +8,7 @@ package org.mozilla.fxa_data.login;
  * An Exception indicating an Assertion has failed. Semantically equivalent to {@link AssertionError},
  * this is useful when a callback only takes Exception (and its extensions).
  */
-class FirefoxSyncAssertionException extends Exception {
-    FirefoxSyncAssertionException(final String message) { super(message); }
-    FirefoxSyncAssertionException(final String message, final Throwable cause) { super(message, cause); }
+class FirefoxDataAssertionException extends Exception {
+    FirefoxDataAssertionException(final String message) { super(message); }
+    FirefoxDataAssertionException(final String message, final Throwable cause) { super(message, cause); }
 }

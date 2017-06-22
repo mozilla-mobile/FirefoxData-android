@@ -12,7 +12,7 @@ import org.mozilla.gecko.fxa.login.Married;
 import org.mozilla.gecko.sync.NonObjectJSONException;
 import org.mozilla.gecko.tokenserver.TokenServerClient;
 import org.mozilla.gecko.tokenserver.TokenServerClientDelegate;
-import org.mozilla.fxa_data.impl.FirefoxSyncShared;
+import org.mozilla.fxa_data.impl.FirefoxDataShared;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,7 +36,7 @@ class FirefoxSyncTokenAccessor {
     @WorkerThread // network request.
     public static void getBlocking(final FirefoxAccount account, final FirefoxSyncTokenServerClientDelegate callback) {
         if (!FirefoxAccountUtils.isMarried(account.accountState)) {
-            callback.handleError(new FirefoxSyncAssertionException("Assertion failed: expected account to be in married state. Instead: " +
+            callback.handleError(new FirefoxDataAssertionException("Assertion failed: expected account to be in married state. Instead: " +
                     account.accountState.getStateLabel().name()));
             return;
         }
@@ -49,7 +49,7 @@ class FirefoxSyncTokenAccessor {
                     JSONWebTokenUtils.DEFAULT_ASSERTION_ISSUER);
         } catch (final URISyntaxException e) {
             // Should never happen: occurs when tokenServerURI is cannot be parsed to a URI but it originally comes from a URI.
-            callback.handleError(new FirefoxSyncAssertionException("Assertion failed: hard-coded tokenServerURI String cannot be parsed to String"));
+            callback.handleError(new FirefoxDataAssertionException("Assertion failed: hard-coded tokenServerURI String cannot be parsed to String"));
             return;
         } catch (final GeneralSecurityException | IOException | NonObjectJSONException e) {
             callback.handleError(new Exception("Unable to create token server assertion.", e));
@@ -57,7 +57,7 @@ class FirefoxSyncTokenAccessor {
         }
 
         // Consider caching result: issue #6.
-        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxSyncLoginShared.executor);
+        final TokenServerClient tokenServerClient = new TokenServerClient(tokenServerURI, FirefoxDataLoginShared.executor);
         tokenServerClient.getTokenFromBrowserIDAssertion(assertion, true, marriedState.getClientState(),
                 callback);
     }
@@ -65,7 +65,7 @@ class FirefoxSyncTokenAccessor {
     /** A base implementation of {@link TokenServerClientDelegate} that provides a user agent. */
     static abstract class FirefoxSyncTokenServerClientDelegate implements TokenServerClientDelegate {
         @Override public final String getUserAgent() {
-            return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+            return FirefoxDataShared.getUserAgent(); // HACK: see function javadoc for more info.
         }
     }
 }

@@ -6,15 +6,15 @@ package org.mozilla.fxa_data.impl;
 
 import android.text.TextUtils;
 import android.util.Log;
-import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
+import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
 
 /** A collection of shared functions for Firefox Sync. */
-public class FirefoxSyncShared {
-    public static final String LOGTAG = "FirefoxSync";
+public class FirefoxDataShared {
+    public static final String LOGTAG = "FirefoxData";
 
     private static String signedInApplication;
 
-    private FirefoxSyncShared() {}
+    private FirefoxDataShared() {}
 
     public static void init() {
         // A proxy so we can keep the InterModuleController package-private.
@@ -38,7 +38,7 @@ public class FirefoxSyncShared {
      * Returns the User Agent for network requests to the Firefox servers.
      *
      * HACK: the user agent depends on the name of the logged in application and is thus dependent on an instance of
-     * {@link FirefoxSyncLoginManager}. However, our infrastructure for making requests embeds the
+     * {@link FirefoxDataLoginManager}. However, our infrastructure for making requests embeds the
      * User Agent override deeply in the code so it's often non-trivial to pass it in. Instead (at the cost of fragility),
      * we define a global signed in application via {@link #setSessionApplicationName(String)}, get the global form factor
      * from {@link DeviceUtils} and allow the request code to access the user agent globally here. We should consider a
@@ -52,6 +52,6 @@ public class FirefoxSyncShared {
             Log.w(LOGTAG, "getUserAgent: signedInApplication is unexpectedly not yet set");
             appName = "Unknown app";
         }
-        return FirefoxSyncRequestUtils.getUserAgent(appName, DeviceUtils.isTablet());
+        return FirefoxDataRequestUtils.getUserAgent(appName, DeviceUtils.isTablet());
     }
 }

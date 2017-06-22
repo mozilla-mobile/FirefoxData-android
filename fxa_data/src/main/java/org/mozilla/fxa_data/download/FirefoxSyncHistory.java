@@ -7,7 +7,7 @@ package org.mozilla.fxa_data.download;
 import android.support.annotation.WorkerThread;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecordFactory;
-import org.mozilla.fxa_data.FirefoxSyncException;
+import org.mozilla.fxa_data.FirefoxDataException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ class FirefoxSyncHistory {
         final SyncHistoryResourceDelegate resourceDelegate = new SyncHistoryResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, HISTORY_COLLECTION, getArgs(itemLimit), resourceDelegate);
-        } catch (final FirefoxSyncException e) {
+        } catch (final FirefoxDataException e) {
             onComplete.onException(e);
         }
     }
@@ -59,13 +59,13 @@ class FirefoxSyncHistory {
             final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, HISTORY_COLLECTION, new HistoryRecordFactory());
-            } catch (final FirefoxSyncException e) {
+            } catch (final FirefoxDataException e) {
                 onComplete.onException(e);
                 return;
             }
 
             final List<HistoryRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onSuccess(new SyncCollectionResult<>(resultRecords));
+            onComplete.onSuccess(new DataCollectionResult<>(resultRecords));
         }
 
         private List<HistoryRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords) {

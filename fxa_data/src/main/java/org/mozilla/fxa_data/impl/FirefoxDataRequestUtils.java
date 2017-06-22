@@ -19,8 +19,8 @@ import java.util.Map;
 /**
  * A group of util functions for the Sync servers.
  */
-public class FirefoxSyncRequestUtils {
-    private FirefoxSyncRequestUtils() {}
+public class FirefoxDataRequestUtils {
+    private FirefoxDataRequestUtils() {}
 
     /** Returns the user agent for requests from the library - expects {@link DeviceUtils} to be init. */
     static String getUserAgent(final String applicationName, final boolean isTablet) {
@@ -86,7 +86,7 @@ public class FirefoxSyncRequestUtils {
         // so we explicitly do not send payload verification hashes to the
         // Sync storage endpoint.
         final boolean includePayloadVerificationHash = false;
-        final URI storageServerURI = FirefoxSyncRequestUtils.getServerURI(token);
+        final URI storageServerURI = FirefoxDataRequestUtils.getServerURI(token);
         return getAuthHeaderProvider(storageServerURI, token.id, token.key.getBytes("UTF-8"), includePayloadVerificationHash);
     }
 

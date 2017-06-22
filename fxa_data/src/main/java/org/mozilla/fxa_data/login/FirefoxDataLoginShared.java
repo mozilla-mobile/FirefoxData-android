@@ -7,8 +7,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /** Static container class for a components shared in the login module. */
-class FirefoxSyncLoginShared {
-    private FirefoxSyncLoginShared() {}
+class FirefoxDataLoginShared {
+    private FirefoxDataLoginShared() {}
 
     /**
      * The Executor that all background operations (at the time of writing: 5/18/17) occur on.

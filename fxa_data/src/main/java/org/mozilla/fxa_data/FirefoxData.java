@@ -7,17 +7,17 @@ package org.mozilla.fxa_data;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import org.mozilla.fxa_data.impl.FirefoxSyncShared;
-import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
-import org.mozilla.fxa_data.login.InternalFirefoxSyncLoginManagerFactory;
+import org.mozilla.fxa_data.impl.FirefoxDataShared;
+import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
+import org.mozilla.fxa_data.login.InternalFirefoxDataLoginManagerFactory;
 import org.mozilla.fxa_data.impl.DeviceUtils;
 
 /**
  * The main entry point to the Firefox Sync library: this class is a collection of static
  * functions to interact with the library.
  */
-public class FirefoxSync {
-    private FirefoxSync() {}
+public class FirefoxData {
+    private FirefoxData() {}
 
     /**
      * Initializes the library, in particular, for items that need a Context.
@@ -26,20 +26,20 @@ public class FirefoxSync {
      */
     private static void initLibrary(final Context context) {
         DeviceUtils.init(context);
-        FirefoxSyncShared.init();
+        FirefoxDataShared.init();
     }
 
     /**
-     * Gets a FirefoxSyncLoginManager, which grants access a Firefox Account user's Sync information.
+     * Gets a FirefoxDataLoginManager, which grants access a Firefox Account user's Sync information.
      *
      * This function is intended to be called in initialization (such as {@link android.app.Activity#onCreate(Bundle)})
      * because it can only be called with a specific Context instance once.
      *
      * @param context The Context from which this LoginManager is being accessed.
-     * @return A FirefoxSyncLoginManager.
+     * @return A FirefoxDataLoginManager.
      */
-    public static FirefoxSyncLoginManager getLoginManager(@NonNull final Context context) {
+    public static FirefoxDataLoginManager getLoginManager(@NonNull final Context context) {
         initLibrary(context);
-        return InternalFirefoxSyncLoginManagerFactory.internalGetLoginManager(context);
+        return InternalFirefoxDataLoginManagerFactory.internalGetLoginManager(context);
     }
 }

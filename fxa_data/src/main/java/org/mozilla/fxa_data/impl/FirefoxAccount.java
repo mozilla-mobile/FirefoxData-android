@@ -32,7 +32,7 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class FirefoxAccount implements Parcelable {
 
-    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
+    private static final String LOGTAG = FirefoxDataShared.LOGTAG;
 
     public final String email;
     public final String uid;

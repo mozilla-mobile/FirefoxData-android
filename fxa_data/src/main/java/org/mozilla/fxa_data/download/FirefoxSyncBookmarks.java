@@ -8,7 +8,7 @@ import android.support.annotation.WorkerThread;
 import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import org.mozilla.gecko.sync.repositories.domain.BookmarkRecordFactory;
-import org.mozilla.fxa_data.FirefoxSyncException;
+import org.mozilla.fxa_data.FirefoxDataException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +35,7 @@ class FirefoxSyncBookmarks {
         final SyncClientBookmarksResourceDelegate resourceDelegate = new SyncClientBookmarksResourceDelegate(syncConfig, onComplete);
         try {
             FirefoxSyncUtils.makeGetRequestForCollection(syncConfig, BOOKMARKS_COLLECTION, getArgs(itemLimit), resourceDelegate);
-        } catch (final FirefoxSyncException e) {
+        } catch (final FirefoxDataException e) {
             onComplete.onException(e);
         }
     }
@@ -58,13 +58,13 @@ class FirefoxSyncBookmarks {
             final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords;
             try {
                 rawRecords = responseBodyToRawRecords(syncConfig, responseBody, BOOKMARKS_COLLECTION, new BookmarkRecordFactory());
-            } catch (final FirefoxSyncException e) {
+            } catch (final FirefoxDataException e) {
                 onComplete.onException(e);
                 return;
             }
 
             final BookmarkFolder rootBookmarkFolder = rawRecordsToBookmarksTree(rawRecords);
-            onComplete.onSuccess(new SyncCollectionResult<>(rootBookmarkFolder));
+            onComplete.onSuccess(new DataCollectionResult<>(rootBookmarkFolder));
         }
 
         private static BookmarkFolder rawRecordsToBookmarksTree(final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords) {

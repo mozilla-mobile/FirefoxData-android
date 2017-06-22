@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
     // to Context, which can cause memory leaks.
     private static class ExampleLoginCallback implements FirefoxSyncLoginManager.LoginCallback {
         @Override
-        public void onSuccess(final FirefoxSyncClient syncClient) {
+        public void onSuccess(final FirefoxSyncClient dataClient) {
             try {
-                final List<HistoryRecord> history = syncClient.getAllHistory().getResult();
+                final List<HistoryRecord> history = dataClient.getAllHistory().getResult();
                 for (final HistoryRecord record : history) {
                     Log.d("FxData", record.getTitle() + ": " + record.getURI());
                 }

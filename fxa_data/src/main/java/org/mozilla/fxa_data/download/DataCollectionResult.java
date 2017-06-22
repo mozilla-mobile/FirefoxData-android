@@ -12,16 +12,16 @@ import android.support.annotation.NonNull;
  *
  * We wrap the main Sync data in an Object in order to allow the API to expand in the future.
  */
-public class SyncCollectionResult<T> {
+public class DataCollectionResult<T> {
     private final T result;
 
-    SyncCollectionResult(@NonNull final T result) {
+    DataCollectionResult(@NonNull final T result) {
         this.result = result;
     }
 
     /**
      * Returns the data received from the Firefox Sync get request.
-     * @return the user's FirefoxSync data; this will never be null.
+     * @return the user's FirefoxData data; this will never be null.
      */
     @NonNull public T getResult() { return result; }
 }

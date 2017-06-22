@@ -23,9 +23,9 @@ import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.gecko.sync.repositories.RecordFactory;
 import org.mozilla.gecko.sync.repositories.domain.HistoryRecord;
 import org.mozilla.gecko.sync.repositories.domain.Record;
-import org.mozilla.fxa_data.FirefoxSyncException;
-import org.mozilla.fxa_data.impl.FirefoxSyncShared;
-import org.mozilla.fxa_data.impl.FirefoxSyncRequestUtils;
+import org.mozilla.fxa_data.FirefoxDataException;
+import org.mozilla.fxa_data.impl.FirefoxDataShared;
+import org.mozilla.fxa_data.impl.FirefoxDataRequestUtils;
 import org.mozilla.fxa_data.impl.IOUtils;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
-    protected static final String LOGTAG = FirefoxSyncShared.LOGTAG;
+    protected static final String LOGTAG = FirefoxDataShared.LOGTAG;
 
     private static final int connectionTimeoutInMillis = 1000 * 30; // Wait 30s for a connection to open.
     private static final int socketTimeoutInMillis = 1000 * 2 * 60; // Wait 2 minutes for data.
@@ -63,18 +63,18 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
         try {
             responseBody = IOUtils.readStringFromInputStreamAndCloseStream(response.getEntity().getContent(), 4096);
         } catch (final IOException e) {
-            onComplete.onException(new FirefoxSyncException("Failed to read server response.", e));
+            onComplete.onException(new FirefoxDataException("Failed to read server response.", e));
             return;
         }
         handleResponse(response, responseBody);
     }
 
     private void handleException(final Throwable cause) {
-        onComplete.onException(new FirefoxSyncException("Unable to complete request.", cause));
+        onComplete.onException(new FirefoxDataException("Unable to complete request.", cause));
     }
 
     @Override public String getUserAgent() {
-        return FirefoxSyncShared.getUserAgent(); // HACK: see function javadoc for more info.
+        return FirefoxDataShared.getUserAgent(); // HACK: see function javadoc for more info.
     }
 
     @Override public void handleHttpProtocolException(final ClientProtocolException e) { handleException(e); }
@@ -88,7 +88,7 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
     @Override public int socketTimeout() { return socketTimeoutInMillis; }
     @Override public AuthHeaderProvider getAuthHeaderProvider() {
         try {
-            return FirefoxSyncRequestUtils.getAuthHeaderProvider(syncConfig.token);
+            return FirefoxDataRequestUtils.getAuthHeaderProvider(syncConfig.token);
         } catch (final UnsupportedEncodingException | URISyntaxException e) {
             // Since we don't have the auth header, we can expect this request to fail on unauthorized. However,
             // we can't cancel the request here so we return null to go through with it anyway, and we handle it
@@ -102,14 +102,14 @@ abstract class SyncBaseResourceDelegate<T> implements ResourceDelegate {
 
     /** Convenience function to turn a request's response body into a list of records of the parametrized type. */
     protected static <R> List<R> responseBodyToRawRecords(final FirefoxSyncConfig syncConfig, final String responseBody,
-            final String collectionName, final RecordFactory recordFactory) throws FirefoxSyncException {
+            final String collectionName, final RecordFactory recordFactory) throws FirefoxDataException {
         final KeyBundle keyBundle;
         final JSONArray recordArray;
         try {
             keyBundle = syncConfig.collectionKeys.keyBundleForCollection(collectionName);
             recordArray = new JSONArray(responseBody);
         } catch (final NoCollectionKeysSetException | JSONException e) {
-            throw new FirefoxSyncException("Unable to create JSONArray of records.", e);
+            throw new FirefoxDataException("Unable to create JSONArray of records.", e);
         }
 
         final ArrayList<R> receivedRecords = new ArrayList<>(recordArray.length());

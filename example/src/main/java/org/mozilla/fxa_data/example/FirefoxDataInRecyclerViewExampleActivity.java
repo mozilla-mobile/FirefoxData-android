@@ -16,12 +16,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import org.mozilla.fxa_data.FirefoxSync;
-import org.mozilla.fxa_data.FirefoxSyncException;
-import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
-import org.mozilla.fxa_data.download.FirefoxSyncClient;
+import org.mozilla.fxa_data.FirefoxData;
+import org.mozilla.fxa_data.FirefoxDataException;
+import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
+import org.mozilla.fxa_data.download.FirefoxDataClient;
 import org.mozilla.fxa_data.download.HistoryRecord;
-import org.mozilla.fxa_data.download.SyncCollectionResult;
+import org.mozilla.fxa_data.download.DataCollectionResult;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
         SIGN_IN_PROMPT, LOADING, ERROR, SHOW_DATA
     }
 
-    private FirefoxSyncLoginManager loginManager;
+    private FirefoxDataLoginManager loginManager;
     private FirefoxHistoryAdapter historyAdapter;
 
     private boolean isWaitingForCallback = false;
@@ -74,7 +74,7 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
         initFirefoxDataView();
 
         // Keep a reference to the login manager - it's the entry point for Firefox data.
-        loginManager = FirefoxSync.getLoginManager(this);
+        loginManager = FirefoxData.getLoginManager(this);
     }
 
     @Override
@@ -100,11 +100,11 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
     private void fetchFirefoxDataAndUpdateUI() {
         isWaitingForCallback = true;
         updateUI(UIState.LOADING);
-        loginManager.loadStoredSyncAccount(new LoginCallback(this));
+        loginManager.loadStoredAccount(new LoginCallback(this));
     }
 
     // static so we don't keep a reference to Context, which could cause memory leaks.
-    private static class LoginCallback implements FirefoxSyncLoginManager.LoginCallback {
+    private static class LoginCallback implements FirefoxDataLoginManager.LoginCallback {
         private final WeakReference<FirefoxDataInRecyclerViewExampleActivity> activityWeakReference;
 
         private LoginCallback(final FirefoxDataInRecyclerViewExampleActivity activity) {
@@ -112,15 +112,15 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
         }
 
         @Override
-        public void onSuccess(final FirefoxSyncClient syncClient) {
+        public void onSuccess(final FirefoxDataClient dataClient) {
             final FirefoxDataInRecyclerViewExampleActivity activity = activityWeakReference.get();
             if (activity == null) { return; }
 
             activity.isWaitingForCallback = false;
-            final SyncCollectionResult<List<HistoryRecord>> result;
+            final DataCollectionResult<List<HistoryRecord>> result;
             try {
-                result = syncClient.getAllHistory();
-            } catch (final FirefoxSyncException e) {
+                result = dataClient.getAllHistory();
+            } catch (final FirefoxDataException e) {
                 activity.updateUI(UIState.ERROR, e);
                 return;
             }
@@ -130,7 +130,7 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
         }
 
         @Override
-        public void onFailure(final FirefoxSyncException e) {
+        public void onFailure(final FirefoxDataException e) {
             final FirefoxDataInRecyclerViewExampleActivity activity = activityWeakReference.get();
             if (activity == null) { return; }
 

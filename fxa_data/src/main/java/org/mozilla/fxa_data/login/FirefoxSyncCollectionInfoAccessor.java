@@ -11,7 +11,7 @@ import org.mozilla.gecko.sync.delegates.JSONRecordFetchDelegate;
 import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.SyncStorageResponse;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
-import org.mozilla.fxa_data.impl.FirefoxSyncRequestUtils;
+import org.mozilla.fxa_data.impl.FirefoxDataRequestUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -49,7 +49,7 @@ class FirefoxSyncCollectionInfoAccessor {
 
         final AuthHeaderProvider authHeaderProvider;
         try {
-            authHeaderProvider = FirefoxSyncRequestUtils.getAuthHeaderProvider(token);
+            authHeaderProvider = FirefoxDataRequestUtils.getAuthHeaderProvider(token);
         } catch (final URISyntaxException | UnsupportedEncodingException e) {
             callback.onError(new Exception("Unable to get collection info auth header provider."));
             return;
@@ -77,6 +77,6 @@ class FirefoxSyncCollectionInfoAccessor {
     }
 
     private static String getCollectionInfoURI(final TokenServerToken token) throws URISyntaxException {
-        return FirefoxSyncRequestUtils.getServerURI(token).toString() + "/info/collections";
+        return FirefoxDataRequestUtils.getServerURI(token).toString() + "/info/collections";
     }
 }

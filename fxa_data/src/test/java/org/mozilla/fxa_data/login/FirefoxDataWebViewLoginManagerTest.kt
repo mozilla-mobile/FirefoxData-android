@@ -19,11 +19,11 @@ import org.mockito.Mockito.*
 import org.mozilla.gecko.fxa.login.Married
 import org.mozilla.gecko.sync.CollectionKeys
 import org.mozilla.gecko.tokenserver.TokenServerToken
-import org.mozilla.fxa_data.FirefoxSyncException
+import org.mozilla.fxa_data.FirefoxDataException
 import org.mozilla.fxa_data.impl.FirefoxAccount
-import org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity.EXTRA_ACCOUNT
-import org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity.EXTRA_FAILURE_REASON
-import org.mozilla.fxa_data.download.FirefoxSyncClient
+import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_ACCOUNT
+import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_FAILURE_REASON
+import org.mozilla.fxa_data.download.FirefoxDataClient
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -38,7 +38,7 @@ private val STATICALLY_MOCKED_CLASSES = listOf(
 )
 
 /**
- * Tests for the [FirefoxSyncWebViewLoginManager].
+ * Tests for the [FirefoxDataWebViewLoginManager].
  *
  * Ideas for additional tests:
  * - Verify API contracts:
@@ -53,20 +53,20 @@ private val STATICALLY_MOCKED_CLASSES = listOf(
         FirefoxSyncTokenAccessor::class,
         FirefoxSyncCryptoKeysAccessor::class
 )
-class FirefoxSyncWebViewLoginManagerTest {
+class FirefoxDataWebViewLoginManagerTest {
 
     @Mock private val mockActivity: Activity? = null
 
-    private lateinit var loginManager: FirefoxSyncLoginManager
+    private lateinit var loginManager: FirefoxDataLoginManager
 
     @Before
     fun setUp() {
-        loginManager = FirefoxSyncWebViewLoginManager(mock(FirefoxAccountSessionSharedPrefsStore::class.java))
+        loginManager = FirefoxDataWebViewLoginManager(mock(FirefoxAccountSessionSharedPrefsStore::class.java))
     }
 
     @Test
     fun testPromptLoginStartsActivity() {
-        loginManager.promptLogin(mockActivity, "Bach", mock(FirefoxSyncLoginManager.LoginCallback::class.java))
+        loginManager.promptLogin(mockActivity, "Bach", mock(FirefoxDataLoginManager.LoginCallback::class.java))
 
         // In refactorings, startActivityForResult(Intent, int, Bundle) could also be called.
         verify<Activity>(mockActivity, atLeastOnce()).startActivityForResult(any(Intent::class.java), anyInt())
@@ -150,9 +150,9 @@ class FirefoxSyncWebViewLoginManagerTest {
         doNothing().`when`<Activity>(mockActivity).startActivityForResult(any(Intent::class.java), requestCodeCaptor.capture())
 
         val resultCode = when (result) {
-            ActivityResult.FAILURE -> FirefoxSyncWebViewLoginActivity.RESULT_ERROR
-            ActivityResult.CANCELLED -> FirefoxSyncWebViewLoginActivity.RESULT_CANCELED
-            ActivityResult.SUCCESS -> FirefoxSyncWebViewLoginActivity.RESULT_OK
+            ActivityResult.FAILURE -> FirefoxDataWebViewLoginActivity.RESULT_ERROR
+            ActivityResult.CANCELLED -> FirefoxDataWebViewLoginActivity.RESULT_CANCELED
+            ActivityResult.SUCCESS -> FirefoxDataWebViewLoginActivity.RESULT_OK
         }
 
         val callback = LoginCallbackSpy()
@@ -164,12 +164,12 @@ class FirefoxSyncWebViewLoginManagerTest {
         return callback
     }
 
-    /** Returns the result of [org.mozilla.fxa_data.login.FirefoxSyncWebViewLoginActivity] with the expected format.  */
+    /** Returns the result of [org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity] with the expected format.  */
     private fun getPromptLoginResultIntent(activityResult: ActivityResult): Intent {
         val mockFirefoxAccount = mock(FirefoxAccount::class.java)
         `when`(mockFirefoxAccount.withNewState(any())).thenReturn(mockFirefoxAccount)
 
-        val returnIntent = Intent(FirefoxSyncWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
+        val returnIntent = Intent(FirefoxDataWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
         when (activityResult) {
             ActivityResult.SUCCESS -> returnIntent.putExtra(EXTRA_ACCOUNT, mockFirefoxAccount)
             ActivityResult.FAILURE -> returnIntent.putExtra(EXTRA_FAILURE_REASON, "The failure String")
@@ -178,15 +178,15 @@ class FirefoxSyncWebViewLoginManagerTest {
         return returnIntent
     }
 
-    private class LoginCallbackSpy : FirefoxSyncLoginManager.LoginCallback {
+    private class LoginCallbackSpy : FirefoxDataLoginManager.LoginCallback {
         internal var wasSuccess = false
         internal var wasFailure = false
         internal var wasCancelled = false
 
         internal val asyncWaitLatch = CountDownLatch(1)
 
-        override fun onSuccess(syncClient: FirefoxSyncClient) { wasSuccess = true; onAsyncComplete(); }
-        override fun onFailure(e: FirefoxSyncException) { wasFailure = true; onAsyncComplete(); }
+        override fun onSuccess(dataClient: FirefoxDataClient) { wasSuccess = true; onAsyncComplete(); }
+        override fun onFailure(e: FirefoxDataException) { wasFailure = true; onAsyncComplete(); }
         override fun onUserCancel() { wasCancelled = true; onAsyncComplete(); }
 
         private fun onAsyncComplete() {

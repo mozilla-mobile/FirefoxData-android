@@ -16,7 +16,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.fxa_data.impl.FirefoxSyncShared;
+import org.mozilla.fxa_data.FirefoxData;
+import org.mozilla.fxa_data.impl.FirefoxDataShared;
 import org.mozilla.gecko.R;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
 import org.mozilla.fxa_data.impl.FirefoxAccountEndpointConfig;
@@ -25,7 +26,7 @@ import org.mozilla.fxa_data.impl.FirefoxAccountEndpointConfig;
  * An Activity that starts a web view and allows the user to log into their Firefox Account. This Activity has no
  * knowledge of existing Firefox Account state: if you start it, it attempt to prompt the user to log in.
  *
- * <b>This is not intended to be a public API</b>: please access via {@link org.mozilla.fxa_data.FirefoxSync#getLoginManager(Context)}.
+ * <b>This is not intended to be a public API</b>: please access via {@link FirefoxData#getLoginManager(Context)}.
  *
  * At the time of writing, the login page maintains browser local storage and will pre-fill a previously entered
  * account email.
@@ -49,9 +50,9 @@ import org.mozilla.fxa_data.impl.FirefoxAccountEndpointConfig;
  * This implementation is heavily inspired by Firefox for iOS's FxAContentViewController:
  *   https://github.com/mozilla-mobile/firefox-ios/blob/02467f8015e5936425dfc7355c290f94c56ea57a/Client/Frontend/Settings/FxAContentViewController.swift
  */
-public class FirefoxSyncWebViewLoginActivity extends AppCompatActivity {
+public class FirefoxDataWebViewLoginActivity extends AppCompatActivity {
 
-    private static final String LOGTAG = FirefoxSyncShared.LOGTAG;
+    private static final String LOGTAG = FirefoxDataShared.LOGTAG;
 
     // Input values.
     static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";

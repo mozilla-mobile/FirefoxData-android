@@ -13,12 +13,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-import org.mozilla.fxa_data.FirefoxSync;
-import org.mozilla.fxa_data.FirefoxSyncException;
-import org.mozilla.fxa_data.login.FirefoxSyncLoginManager;
+import org.mozilla.fxa_data.FirefoxData;
+import org.mozilla.fxa_data.FirefoxDataException;
+import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
 import org.mozilla.fxa_data.download.BookmarkFolder;
 import org.mozilla.fxa_data.download.BookmarkRecord;
-import org.mozilla.fxa_data.download.FirefoxSyncClient;
+import org.mozilla.fxa_data.download.FirefoxDataClient;
 import org.mozilla.fxa_data.download.HistoryRecord;
 import org.mozilla.fxa_data.download.PasswordRecord;
 
@@ -41,7 +41,7 @@ public class SimpleExampleActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "SimpleExampleActivity";
 
-    private FirefoxSyncLoginManager loginManager;
+    private FirefoxDataLoginManager loginManager;
 
     private Button signOutButton;
 
@@ -52,16 +52,16 @@ public class SimpleExampleActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(SimpleExampleActivity.class.getSimpleName());
         initSignOutButton();
 
-        // Store a reference to the login manager, which is used to get a FirefoxSyncClient.
-        loginManager = FirefoxSync.getLoginManager(this);
+        // Store a reference to the login manager, which is used to get a FirefoxDataClient.
+        loginManager = FirefoxData.getLoginManager(this);
 
         // Prompt for login or just print data.
-        final FirefoxSyncLoginManager.LoginCallback callback = new SimpleExampleActivity.LogFirefoxDataLoginCallback(this, signOutButton);
+        final FirefoxDataLoginManager.LoginCallback callback = new SimpleExampleActivity.LogFirefoxDataLoginCallback(this, signOutButton);
         if (!loginManager.isSignedIn()) {
             final String applicationName = getResources().getString(R.string.app_name);
             loginManager.promptLogin(this, applicationName, callback);
         } else {
-            loginManager.loadStoredSyncAccount(callback);
+            loginManager.loadStoredAccount(callback);
         }
     }
 
@@ -74,7 +74,7 @@ public class SimpleExampleActivity extends AppCompatActivity {
     }
 
     // Make static to avoid keeping a reference to Context, which could leak memory.
-    private static class LogFirefoxDataLoginCallback implements FirefoxSyncLoginManager.LoginCallback {
+    private static class LogFirefoxDataLoginCallback implements FirefoxDataLoginManager.LoginCallback {
         private final Handler uiThread;
         private final Button signOutButton;
 
@@ -85,8 +85,8 @@ public class SimpleExampleActivity extends AppCompatActivity {
 
         // All callbacks are called from a background thread.
         @Override
-        public void onSuccess(final FirefoxSyncClient syncClient) {
-            getFirefoxDataAndLog(syncClient);
+        public void onSuccess(final FirefoxDataClient dataClient) {
+            getFirefoxDataAndLog(dataClient);
             uiThread.post(new Runnable() {
                 @Override
                 public void run() {
@@ -96,24 +96,24 @@ public class SimpleExampleActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onFailure(final FirefoxSyncException e) {
+        public void onFailure(final FirefoxDataException e) {
             Log.e(LOGTAG, "onFailure: failed to create a data client so we can't access Firefox data. Try again later", e);
         }
 
         @Override
-        public void onUserCancel() { // Note: never called for loadStoredSyncAccount.
+        public void onUserCancel() { // Note: never called for loadStoredAccount.
             Log.d(LOGTAG, "onUserCancel: user cancelled the login flow.");
         }
 
-        private void getFirefoxDataAndLog(final FirefoxSyncClient syncClient) {
+        private void getFirefoxDataAndLog(final FirefoxDataClient dataClient) {
             final List<HistoryRecord> receivedHistory;
             final List<PasswordRecord> receivedPasswords;
             final BookmarkFolder rootBookmark;
             try {
-                receivedHistory = syncClient.getAllHistory().getResult();
-                receivedPasswords = syncClient.getAllPasswords().getResult();
-                rootBookmark = syncClient.getAllBookmarks().getResult();
-            } catch (final FirefoxSyncException e) {
+                receivedHistory = dataClient.getAllHistory().getResult();
+                receivedPasswords = dataClient.getAllPasswords().getResult();
+                rootBookmark = dataClient.getAllBookmarks().getResult();
+            } catch (final FirefoxDataException e) {
                 Log.e(LOGTAG, "getFirefoxDataAndLog: failed to receive data. Try again later", e);
                 return;
             }

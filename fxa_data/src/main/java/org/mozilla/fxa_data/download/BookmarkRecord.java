@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mozilla.fxa_data.impl.FirefoxSyncShared.LOGTAG;
+import static org.mozilla.fxa_data.impl.FirefoxDataShared.LOGTAG;
 
 /**
  * A bookmark data class, containing a title, description, and a URI, among other attributes.

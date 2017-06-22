@@ -16,7 +16,7 @@ import org.junit.Assert.assertTrue
 
 @RunWith(PowerMockRunner::class)
 @PrepareForTest(DeviceUtils::class)
-class FirefoxSyncSharedTest {
+class FirefoxDataSharedTest {
 
     @Before
     fun mockStatic() {
@@ -25,7 +25,7 @@ class FirefoxSyncSharedTest {
 
     @Before
     fun resetState() {
-        FirefoxSyncShared.setSessionApplicationName(null)
+        FirefoxDataShared.setSessionApplicationName(null)
     }
 
     // The interaction between setSessionApplicationName & getUserAgent is fragile so we test that the desired values
@@ -34,9 +34,9 @@ class FirefoxSyncSharedTest {
     @Test
     fun testGetUserAgentApplicationNameSet() {
         val applicationName = "Moonlight-Sonata"
-        FirefoxSyncShared.setSessionApplicationName(applicationName)
+        FirefoxDataShared.setSessionApplicationName(applicationName)
 
-        val actualUA = FirefoxSyncShared.getUserAgent()
+        val actualUA = FirefoxDataShared.getUserAgent()
         assertTrue("Expected app name, $applicationName, to be included in user agent: $actualUA",
                 actualUA.contains(applicationName))
     }
@@ -45,16 +45,16 @@ class FirefoxSyncSharedTest {
     fun testGetUserAgentApplicationNameReset() {
         // This test is dependent on testGetUserAgentApplicationNameSet.
         val applicationName = "Symphony No. 5"
-        FirefoxSyncShared.setSessionApplicationName(applicationName)
+        FirefoxDataShared.setSessionApplicationName(applicationName)
 
-        val actualUA = FirefoxSyncShared.getUserAgent()
+        val actualUA = FirefoxDataShared.getUserAgent()
         assertTrue("Expected app name, $applicationName, to be included in user agent: $actualUA",
                 actualUA.contains(applicationName))
 
         // Now that we've verified the app name appears in the user agent, let's verify that we can reset the UA.
-        FirefoxSyncShared.setSessionApplicationName(null)
+        FirefoxDataShared.setSessionApplicationName(null)
 
-        val actualUAWithoutApp = FirefoxSyncShared.getUserAgent()
+        val actualUAWithoutApp = FirefoxDataShared.getUserAgent()
         assertFalse("Expected app name, $applicationName, is not included in user agent: $actualUAWithoutApp",
                 actualUAWithoutApp.contains(applicationName))
     }

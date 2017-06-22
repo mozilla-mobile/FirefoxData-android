@@ -26,7 +26,7 @@ import org.mozilla.gecko.sync.net.AuthHeaderProvider;
 import org.mozilla.gecko.sync.net.BaseResource;
 import org.mozilla.gecko.sync.net.ResourceDelegate;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
-import org.mozilla.fxa_data.impl.FirefoxSyncRequestUtils;
+import org.mozilla.fxa_data.impl.FirefoxDataRequestUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -37,7 +37,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 
-import static org.mozilla.fxa_data.impl.FirefoxSyncShared.LOGTAG;
+import static org.mozilla.fxa_data.impl.FirefoxDataShared.LOGTAG;
 
 /**
  * A collection of functions for operating on a FirefoxAccount.
@@ -214,7 +214,7 @@ class FirefoxAccountUtils {
         @Override
         public AuthHeaderProvider getAuthHeaderProvider() {
             if (!areResourcesSet) { throw new IllegalStateException("Expected setResources to be called before this method."); }
-            return FirefoxSyncRequestUtils.getAuthHeaderProvider(serverURI, Utils.byte2Hex(tokenId), reqHMACKey, true);
+            return FirefoxDataRequestUtils.getAuthHeaderProvider(serverURI, Utils.byte2Hex(tokenId), reqHMACKey, true);
         }
 
         @Override public String getUserAgent() { return userAgent; }

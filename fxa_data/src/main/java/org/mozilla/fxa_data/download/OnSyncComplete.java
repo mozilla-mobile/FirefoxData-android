@@ -4,10 +4,10 @@
 
 package org.mozilla.fxa_data.download;
 
-import org.mozilla.fxa_data.FirefoxSyncException;
+import org.mozilla.fxa_data.FirefoxDataException;
 
 /** Callback for when a sync collection request completes. */
 interface OnSyncComplete<T> {
-    void onSuccess(SyncCollectionResult<T> result);
-    void onException(FirefoxSyncException e);
+    void onSuccess(DataCollectionResult<T> result);
+    void onException(FirefoxDataException e);
 }

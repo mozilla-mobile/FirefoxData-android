@@ -8,7 +8,7 @@ import org.junit.Test
 
 import org.junit.Assert.*
 
-class FirefoxSyncRequestUtilsTest {
+class FirefoxDataRequestUtilsTest {
 
     @Test
     fun testGetUserAgentMatchesRegex() {
@@ -17,19 +17,19 @@ class FirefoxSyncRequestUtilsTest {
         // Expected format is Mobile-<OS>-Sync/(<form factor>; <OS> <OS-version>) (<Application-name>)
         // Note that the Android version is "null" in JUnit tests but shouldn't be on device.
         val expectedUARegex = "Mobile-Android-Sync/\\([A-Za-z]+; Android [a-zA-Z0-9.]+\\) \\($applicationName\\)".toRegex()
-        val actualUA = FirefoxSyncRequestUtils.getUserAgent(applicationName, false)
+        val actualUA = FirefoxDataRequestUtils.getUserAgent(applicationName, false)
         assertTrue("Expected pattern to match actual user agent: " + actualUA, actualUA.matches(expectedUARegex))
     }
 
     @Test
     fun testGetUserAgentIndicatesPhoneFormFactor() {
-        val actualPhoneUA = FirefoxSyncRequestUtils.getUserAgent("whatever", false)
+        val actualPhoneUA = FirefoxDataRequestUtils.getUserAgent("whatever", false)
         assertTrue("Expected phone form factor to be in actual user agent: " + actualPhoneUA, actualPhoneUA.contains("Mobile"))
     }
 
     @Test
     fun testGetUserAgentIndicatesTabletFormFactor() {
-        val actualTabletUA = FirefoxSyncRequestUtils.getUserAgent("whatever", true)
+        val actualTabletUA = FirefoxDataRequestUtils.getUserAgent("whatever", true)
         assertTrue("Expected tablet form factor to be in actual user agent: " + actualTabletUA, actualTabletUA.contains("Tablet"))
     }
 }

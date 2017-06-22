@@ -21,7 +21,7 @@ import org.mozilla.gecko.sync.net.SyncStorageResponse;
 import org.mozilla.gecko.sync.repositories.domain.RecordParseException;
 import org.mozilla.gecko.tokenserver.TokenServerToken;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
-import org.mozilla.fxa_data.impl.FirefoxSyncRequestUtils;
+import org.mozilla.fxa_data.impl.FirefoxDataRequestUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,7 +30,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
-import static org.mozilla.fxa_data.impl.FirefoxSyncShared.LOGTAG;
+import static org.mozilla.fxa_data.impl.FirefoxDataShared.LOGTAG;
 
 /** A container for static functions to get the crypto keys for a Firefox account. */
 class FirefoxSyncCryptoKeysAccessor {
@@ -62,7 +62,7 @@ class FirefoxSyncCryptoKeysAccessor {
      * Both the request & the callback occur on the calling thread (this is unintuitive: issue #3).
      *
      * {@code onComplete}'s {@link CollectionKeysCallback#onError(Exception)} will be passed a
-     * {@link FirefoxSyncAssertionException} in the event that some assertion we make fails.
+     * {@link FirefoxDataAssertionException} in the event that some assertion we make fails.
      */
     @WorkerThread // network request.
     static void getBlocking(@NonNull final FirefoxAccount marriedAccount, @NonNull final TokenServerToken token, @NonNull final CollectionKeysCallback onComplete) {
@@ -86,9 +86,9 @@ class FirefoxSyncCryptoKeysAccessor {
     private static void makeCryptoKeysRequest(final FirefoxAccount marriedAccount, final TokenServerToken token, final CollectionKeysCallback onComplete) {
         final SyncStorageRecordRequest request;
         try {
-            request = new SyncStorageRecordRequest(FirefoxSyncRequestUtils.getCollectionURI(token, CRYPTO_COLLECTION, KEYS_ID, null));
+            request = new SyncStorageRecordRequest(FirefoxDataRequestUtils.getCollectionURI(token, CRYPTO_COLLECTION, KEYS_ID, null));
         } catch (final URISyntaxException e) {
-            onComplete.onError(new FirefoxSyncAssertionException("Could not create crypto keys request URI", e));
+            onComplete.onError(new FirefoxDataAssertionException("Could not create crypto keys request URI", e));
             return;
         }
 
@@ -122,7 +122,7 @@ class FirefoxSyncCryptoKeysAccessor {
             @Override
             public AuthHeaderProvider getAuthHeaderProvider() {
                 try {
-                    return FirefoxSyncRequestUtils.getAuthHeaderProvider(token);
+                    return FirefoxDataRequestUtils.getAuthHeaderProvider(token);
                 } catch (final UnsupportedEncodingException | URISyntaxException e) {
                     Log.e(LOGTAG, "getAuthHeaderProvider: unable to get auth header.");
                     return null; // Oh well - we'll make the request we expect to fail and handle the failed request.

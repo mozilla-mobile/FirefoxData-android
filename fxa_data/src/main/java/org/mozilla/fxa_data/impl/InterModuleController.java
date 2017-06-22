@@ -19,7 +19,7 @@ class InterModuleController {
 
         FirefoxSyncInterModuleReceiver.setUserAgentFetcher(new FirefoxSyncInterModuleReceiver.UserAgentFetcher() {
             @Override
-            public String getUserAgent() { return FirefoxSyncShared.getUserAgent(); }
+            public String getUserAgent() { return FirefoxDataShared.getUserAgent(); }
         });
 
         isInit.set(true);
