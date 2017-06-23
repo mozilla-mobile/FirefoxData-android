@@ -1,1 +1,1 @@
-include ':fxa_data', ':thirdparty', ':gecko', ':example'
+include ':download', ':thirdparty', ':gecko', ':example'

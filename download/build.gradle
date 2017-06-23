@@ -61,6 +61,6 @@ unMock {
 }
 
 apply from: '../publish.gradle'
-def packageName = 'fxa_data'
+def packageName = 'download'
 def description = 'The public API for FirefoxData, allowing login and access to a user\'s history, bookmarks, etc.'
 ext.configurePublish(packageName, description)

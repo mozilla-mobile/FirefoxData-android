@@ -205,7 +205,7 @@ upload:
 
 ### Coding notes
 The code is laid out into a few modules:
-* `fx_data/`: core module, includes the public API.
+* `download`: core module, includes the public API.
 * `gecko/`: dependencies imported from fennec, largerly sync code
 * `thirdparty/`: third-party in-tree dependencies
 * `example/`: examples using the library
