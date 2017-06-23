@@ -7,7 +7,7 @@ package org.mozilla.fxa_data.impl
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fxa_data.FirefoxSyncTestHelpers
+import org.mozilla.fxa_data.FxDataMocks
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 
@@ -20,7 +20,7 @@ class FirefoxDataSharedTest {
 
     @Before
     fun mockStatic() {
-        FirefoxSyncTestHelpers.mockDeviceUtils()
+        FxDataMocks.mockDeviceUtils()
     }
 
     @Before

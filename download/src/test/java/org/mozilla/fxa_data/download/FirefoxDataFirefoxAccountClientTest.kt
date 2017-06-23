@@ -14,9 +14,9 @@ import org.mockito.Matchers.any
 import org.mockito.Matchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
+import org.mozilla.fxa_data.FxDataMocks
 import org.mozilla.gecko.sync.CollectionKeys
 import org.mozilla.gecko.tokenserver.TokenServerToken
-import org.mozilla.fxa_data.impl.FirefoxAccount
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -34,7 +34,7 @@ class FirefoxDataFirefoxAccountClientTest {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        client = FirefoxDataFirefoxAccountClient(mock(FirefoxAccount::class.java), mock(TokenServerToken::class.java),
+        client = FirefoxDataFirefoxAccountClient(FxDataMocks.mockFirefoxAccount(), mock(TokenServerToken::class.java),
                 mock(CollectionKeys::class.java))
     }
 

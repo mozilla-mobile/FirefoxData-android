@@ -20,6 +20,7 @@ import org.mozilla.gecko.fxa.login.Married
 import org.mozilla.gecko.sync.CollectionKeys
 import org.mozilla.gecko.tokenserver.TokenServerToken
 import org.mozilla.fxa_data.FirefoxDataException
+import org.mozilla.fxa_data.FxDataMocks
 import org.mozilla.fxa_data.impl.FirefoxAccount
 import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_ACCOUNT
 import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_FAILURE_REASON
@@ -167,19 +168,11 @@ class FirefoxDataWebViewLoginManagerTest {
 
     /** Returns the result of [org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity] with the expected format.  */
     private fun getPromptLoginResultIntent(activityResult: ActivityResult): Intent {
-        val mockMarriedState = mock(Married::class.java)
-        `when`(mockMarriedState.stateLabel).thenReturn(State.StateLabel.Married)
+        val mockFirefoxAccount = FxDataMocks.mockFirefoxAccount()
 
-        val mockFirefoxAccount = mock(FirefoxAccount::class.java)
+        // withNewState is called to update the state to Married before the account is persisted. We don't want that to
+        // return null (and thus throw an error) so we return the same object.
         `when`(mockFirefoxAccount.withNewState(any())).thenReturn(mockFirefoxAccount)
-
-        // We mock the FirefoxAccount class so we can't pass this field in the constructor - instead we use reflection
-        // to change the final field's value. A more correct way to fix this would be to use field accessors but I
-        // didn't want to add the boilerplate.
-        val fxAccountStateField = FirefoxAccount::class.java.getField("accountState")
-        fxAccountStateField.isAccessible = true
-        fxAccountStateField.set(mockFirefoxAccount, mockMarriedState)
-        fxAccountStateField.isAccessible = false
 
         val returnIntent = Intent(FirefoxDataWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
         when (activityResult) {
