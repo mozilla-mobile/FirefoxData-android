@@ -1,4 +1,6 @@
 # FirefoxData for Android
+[![BuddyBuild](https://dashboard.buddybuild.com/api/statusImage?appID=594d49dc1b97a400017fceb0&branch=master&build=latest)](https://dashboard.buddybuild.com/apps/594d49dc1b97a400017fceb0/build/latest?branch=master)
+
 FirefoxData is an Android library that allows an application to easily access a
 selection of the user's [Firefox Account][fxa] data:
 * History
