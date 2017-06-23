@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         // which is used to get a FirefoxDataClient.
         loginManager = FirefoxData.getLoginManager(this);
 
-        final FirefoxDataLoginManager.LoginCallback callback = new ExampleLoginCallback(this);
+        final FirefoxDataLoginManager.LoginCallback callback = new ExampleLoginCallback();
         if (!loginManager.isSignedIn()) {
             loginManager.promptLogin(this, "Your app name", callback);
         } else {
