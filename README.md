@@ -180,7 +180,12 @@ issue](https://github.com/mozilla-mobile/FirefoxData-android/issues).
 ## Contributing to the repository
 
 ### Setting up a build
-todo: explain how to load examples into IDE (run config!)/develop library.
+After cloning, in Android Studio, select "File -> Open". Find your
+`./FirefoxAccounts-android` directory and select the `build.gradle` file in
+that root directory. Running the default configuration should run the
+`FirefoxDataInRecyclerViewExampleActivity`.
+
+You may also want to add a run configuration for `SimpleExampleActivity`.
 
 ### Publishing to bintray
 To publish, ensure you have a bintray account with the appropriate permissions,
