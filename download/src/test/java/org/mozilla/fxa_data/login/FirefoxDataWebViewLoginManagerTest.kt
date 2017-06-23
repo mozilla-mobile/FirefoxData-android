@@ -24,6 +24,7 @@ import org.mozilla.fxa_data.impl.FirefoxAccount
 import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_ACCOUNT
 import org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity.EXTRA_FAILURE_REASON
 import org.mozilla.fxa_data.download.FirefoxDataClient
+import org.mozilla.gecko.fxa.login.State
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
@@ -166,8 +167,19 @@ class FirefoxDataWebViewLoginManagerTest {
 
     /** Returns the result of [org.mozilla.fxa_data.login.FirefoxDataWebViewLoginActivity] with the expected format.  */
     private fun getPromptLoginResultIntent(activityResult: ActivityResult): Intent {
+        val mockMarriedState = mock(Married::class.java)
+        `when`(mockMarriedState.stateLabel).thenReturn(State.StateLabel.Married)
+
         val mockFirefoxAccount = mock(FirefoxAccount::class.java)
         `when`(mockFirefoxAccount.withNewState(any())).thenReturn(mockFirefoxAccount)
+
+        // We mock the FirefoxAccount class so we can't pass this field in the constructor - instead we use reflection
+        // to change the final field's value. A more correct way to fix this would be to use field accessors but I
+        // didn't want to add the boilerplate.
+        val fxAccountStateField = FirefoxAccount::class.java.getField("accountState")
+        fxAccountStateField.isAccessible = true
+        fxAccountStateField.set(mockFirefoxAccount, mockMarriedState)
+        fxAccountStateField.isAccessible = false
 
         val returnIntent = Intent(FirefoxDataWebViewLoginActivity.ACTION_WEB_VIEW_LOGIN_RETURN)
         when (activityResult) {
