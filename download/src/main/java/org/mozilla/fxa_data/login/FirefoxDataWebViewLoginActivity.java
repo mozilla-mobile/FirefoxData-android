@@ -7,9 +7,11 @@ package org.mozilla.fxa_data.login;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -17,6 +19,8 @@ import android.webkit.WebView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mozilla.fxa_data.FirefoxData;
+import org.mozilla.fxa_data.impl.DeviceUtils;
+import org.mozilla.fxa_data.impl.FirefoxDataRequestUtils;
 import org.mozilla.fxa_data.impl.FirefoxDataShared;
 import org.mozilla.gecko.R;
 import org.mozilla.fxa_data.impl.FirefoxAccount;
@@ -56,6 +60,7 @@ public class FirefoxDataWebViewLoginActivity extends AppCompatActivity {
 
     // Input values.
     static final String EXTRA_DEBUG_ACCOUNT_CONFIG = "org.mozilla.sync.login.extra.debug-account-config";
+    static final String EXTRA_APPLICATION_NAME = "org.mozilla.sync.login.extra.application-name";
 
     // Return values.
     static final String ACTION_WEB_VIEW_LOGIN_RETURN = "org.mozilla.sync.login.action.web-view-login-return";
@@ -69,6 +74,7 @@ public class FirefoxDataWebViewLoginActivity extends AppCompatActivity {
     private String script;
 
     private FirefoxAccountEndpointConfig endpointConfig;
+    private String applicationName;
     private String webViewURL;
 
     @Override
@@ -97,6 +103,11 @@ public class FirefoxDataWebViewLoginActivity extends AppCompatActivity {
             endpointConfig = FirefoxAccountEndpointConfig.getProduction();
         }
 
+        applicationName = intent.getStringExtra(EXTRA_APPLICATION_NAME);
+        if (TextUtils.isEmpty(applicationName)) {
+            applicationName = FirefoxDataShared.UNKNOWN_APPLICATION_NAME;
+        }
+
         webViewURL = endpointConfig.signInURL.toString();
     }
 
@@ -105,6 +116,9 @@ public class FirefoxDataWebViewLoginActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true); // needed for FxA login.
         webView.setWebViewClient(new ScriptInjectionWebViewClient(script));
+
+        final String userAgent = FirefoxDataRequestUtils.getUserAgent(applicationName, DeviceUtils.isTablet());
+        webSettings.setUserAgentString(userAgent);
 
         // It's recommended JS interface is used on SDK min 17+ because on earlier versions the
         // page's JS can use reflection to call Java methods. However, since we trust the page,

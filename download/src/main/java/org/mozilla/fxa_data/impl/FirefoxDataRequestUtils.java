@@ -23,7 +23,7 @@ public class FirefoxDataRequestUtils {
     private FirefoxDataRequestUtils() {}
 
     /** Returns the user agent for requests from the library - expects {@link DeviceUtils} to be init. */
-    static String getUserAgent(final String applicationName, final boolean isTablet) {
+    public static String getUserAgent(final String applicationName, final boolean isTablet) {
         final String formFactor = isTablet ? "Tablet" : "Mobile";
         final String osVersion = Build.VERSION.RELEASE;
 

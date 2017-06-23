@@ -59,6 +59,7 @@ class FirefoxDataWebViewLoginManager implements FirefoxDataLoginManager {
         requestCodeToPromptLoginArgs.put(nextRequestCode, new PromptLoginArgs(callerName, callback));
 
         final Intent loginIntent = new Intent(activity, FirefoxDataWebViewLoginActivity.class);
+        loginIntent.putExtra(FirefoxDataWebViewLoginActivity.EXTRA_APPLICATION_NAME, callerName);
         //loginIntent.putExtra(FirefoxDataWebViewLoginActivity.EXTRA_DEBUG_ACCOUNT_CONFIG, FirefoxAccountEndpointConfig.getStage()); // Uncomment for dev purposes.
         activity.startActivityForResult(loginIntent, nextRequestCode);
         nextRequestCode += 1;

@@ -12,6 +12,8 @@ import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
 public class FirefoxDataShared {
     public static final String LOGTAG = "FirefoxData";
 
+    public static final String UNKNOWN_APPLICATION_NAME = "Unknown app";
+
     private static String signedInApplication;
 
     private FirefoxDataShared() {}
@@ -50,7 +52,7 @@ public class FirefoxDataShared {
             appName = signedInApplication;
         } else {
             Log.w(LOGTAG, "getUserAgent: signedInApplication is unexpectedly not yet set");
-            appName = "Unknown app";
+            appName = UNKNOWN_APPLICATION_NAME;
         }
         return FirefoxDataRequestUtils.getUserAgent(appName, DeviceUtils.isTablet());
     }
