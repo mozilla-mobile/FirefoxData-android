@@ -10,9 +10,13 @@ selection of the user's [Firefox Account][fxa] data:
 This library is also available on iOS (TODO: link).
 
 ## Installation
-Add the following to gradle:
-
-TODO: blocked on upload to jcenter & friends.
+Be sure `jcenter` is present in your gradle repositories and add the following
+to your module's `build.gradle`:
+```
+compile 'org.mozilla.fxa-data:thirdparty:0.0.1'
+compile 'org.mozilla.fxa-data:gecko:0.0.1'
+compile 'org.mozilla.fxa-data:download:0.0.1@aar'
+```
 
 ## Quick start
 Below is the simplest implementation, based on [SimpleExampleActivity][], which
