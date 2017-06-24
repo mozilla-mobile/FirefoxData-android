@@ -57,7 +57,7 @@ class FirefoxDataFirefoxAccountClientTest {
 
         val expectedHistory = listOf(historyOne, historyTwo).map { HistoryRecord(it) }
         val immutableExpectedHistory = Collections.unmodifiableList(expectedHistory) // ensure list is not modified by non-test code.
-        val expectedResult = DataCollectionResult<List<HistoryRecord>>(immutableExpectedHistory)
+        val expectedResult = FirefoxDataResult<List<HistoryRecord>>(immutableExpectedHistory)
 
         PowerMockito.mockStatic(FirefoxSyncHistory::class.java)
         PowerMockito.`when`(FirefoxSyncHistory.getBlocking(any(), anyInt(), historyCallbackCaptor.capture())).then {

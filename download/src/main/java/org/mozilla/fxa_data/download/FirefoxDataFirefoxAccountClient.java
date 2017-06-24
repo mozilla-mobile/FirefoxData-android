@@ -39,18 +39,18 @@ class FirefoxDataFirefoxAccountClient implements FirefoxDataClient {
 
     @NonNull
     @Override
-    public DataCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxDataException {
+    public FirefoxDataResult<BookmarkFolder> getAllBookmarks() throws FirefoxDataException {
         return getBookmarks(-1);
     }
 
     @NonNull
     @Override
-    public DataCollectionResult<BookmarkFolder> getBookmarksWithLimit(final int itemLimit) throws FirefoxDataException {
+    public FirefoxDataResult<BookmarkFolder> getBookmarksWithLimit(final int itemLimit) throws FirefoxDataException {
         return getBookmarks(itemLimit);
     }
 
     @NonNull
-    private DataCollectionResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxDataException {
+    private FirefoxDataResult<BookmarkFolder> getBookmarks(final int itemLimit) throws FirefoxDataException {
         return getCollectionSync(new GetCollectionCall<BookmarkFolder>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<BookmarkFolder> onComplete) {
@@ -61,18 +61,18 @@ class FirefoxDataFirefoxAccountClient implements FirefoxDataClient {
 
     @NonNull
     @Override
-    public DataCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxDataException {
+    public FirefoxDataResult<List<PasswordRecord>> getAllPasswords() throws FirefoxDataException {
         return getPasswords(-1);
     }
 
     @NonNull
     @Override
-    public DataCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(final int itemLimit) throws FirefoxDataException {
+    public FirefoxDataResult<List<PasswordRecord>> getPasswordsWithLimit(final int itemLimit) throws FirefoxDataException {
         return getPasswords(itemLimit);
     }
 
     @NonNull
-    private DataCollectionResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxDataException {
+    private FirefoxDataResult<List<PasswordRecord>> getPasswords(final int itemLimit) throws FirefoxDataException {
         return getCollectionSync(new GetCollectionCall<List<PasswordRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<PasswordRecord>> onComplete) {
@@ -83,18 +83,18 @@ class FirefoxDataFirefoxAccountClient implements FirefoxDataClient {
 
     @NonNull
     @Override
-    public DataCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxDataException {
+    public FirefoxDataResult<List<HistoryRecord>> getAllHistory() throws FirefoxDataException {
         return getHistory(-1);
     }
 
     @NonNull
     @Override
-    public DataCollectionResult<List<HistoryRecord>> getHistoryWithLimit(final int itemLimit) throws FirefoxDataException {
+    public FirefoxDataResult<List<HistoryRecord>> getHistoryWithLimit(final int itemLimit) throws FirefoxDataException {
         return getHistory(itemLimit);
     }
 
     @NonNull
-    private DataCollectionResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxDataException {
+    private FirefoxDataResult<List<HistoryRecord>> getHistory(final int itemLimit) throws FirefoxDataException {
         return getCollectionSync(new GetCollectionCall<List<HistoryRecord>>() {
             @Override
             public void getCollectionAsync(final OnSyncComplete<List<HistoryRecord>> onComplete) {
@@ -109,16 +109,16 @@ class FirefoxDataFirefoxAccountClient implements FirefoxDataClient {
      * At the time of writing (5/18/17), the calls using this method have their time out duration specified from
      * the {@link SyncBaseResourceDelegate#connectionTimeout()} underlying the requests.
      */
-    private <T> DataCollectionResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxDataException {
+    private <T> FirefoxDataResult<T> getCollectionSync(final GetCollectionCall<T> getCollectionCall) throws FirefoxDataException {
         try {
             // The get collection calls are actually blocking but w/ delegates (see issue #3) so `makeSync` will only
             // actually time out if the get collection requests time-out. This code is confusing but it works & I
             // didn't have time to clean it up - please clean it up with #3.
-            return IOUtils.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtils.AsyncCall<DataCollectionResult<T>>() {
+            return IOUtils.makeSync(REQUEST_TIMEOUT_MILLIS, new IOUtils.AsyncCall<FirefoxDataResult<T>>() {
                 @Override
-                public void initAsyncCall(final IOUtils.OnAsyncCallComplete<DataCollectionResult<T>> onComplete) {
+                public void initAsyncCall(final IOUtils.OnAsyncCallComplete<FirefoxDataResult<T>> onComplete) {
                     getCollectionCall.getCollectionAsync(new OnSyncComplete<T>() {
-                        @Override public void onSuccess(final DataCollectionResult<T> result) { onComplete.onComplete(result); }
+                        @Override public void onSuccess(final FirefoxDataResult<T> result) { onComplete.onComplete(result); }
                         @Override public void onException(final FirefoxDataException e) { onComplete.onException(e); }
                     });
                 }

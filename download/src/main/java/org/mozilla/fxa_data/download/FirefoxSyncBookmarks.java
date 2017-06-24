@@ -64,7 +64,7 @@ class FirefoxSyncBookmarks {
             }
 
             final BookmarkFolder rootBookmarkFolder = rawRecordsToBookmarksTree(rawRecords);
-            onComplete.onSuccess(new DataCollectionResult<>(rootBookmarkFolder));
+            onComplete.onSuccess(new FirefoxDataResult<>(rootBookmarkFolder));
         }
 
         private static BookmarkFolder rawRecordsToBookmarksTree(final List<org.mozilla.gecko.sync.repositories.domain.BookmarkRecord> rawRecords) {

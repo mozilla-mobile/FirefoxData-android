@@ -65,7 +65,7 @@ class FirefoxSyncHistory {
             }
 
             final List<HistoryRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onSuccess(new DataCollectionResult<>(resultRecords));
+            onComplete.onSuccess(new FirefoxDataResult<>(resultRecords));
         }
 
         private List<HistoryRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.HistoryRecord> rawRecords) {

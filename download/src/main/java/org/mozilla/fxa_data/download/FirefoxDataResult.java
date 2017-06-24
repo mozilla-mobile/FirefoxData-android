@@ -7,15 +7,15 @@ package org.mozilla.fxa_data.download;
 import android.support.annotation.NonNull;
 
 /**
- * A container with the data from a Firefox Sync get operation (e.g. bookmarks) and
+ * A container with the data from a FirefoxData operation (e.g. bookmarks) and
  * related metadata. The primary results can be retrieved with {@link #getResult()}.
  *
- * We wrap the main Sync data in an Object in order to allow the API to expand in the future.
+ * We wrap the main result in an Object in order to allow the API to expand in the future.
  */
-public class DataCollectionResult<T> {
+public class FirefoxDataResult<T> {
     private final T result;
 
-    DataCollectionResult(@NonNull final T result) {
+    FirefoxDataResult(@NonNull final T result) {
         this.result = result;
     }
 

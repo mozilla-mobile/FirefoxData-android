@@ -8,6 +8,6 @@ import org.mozilla.fxa_data.FirefoxDataException;
 
 /** Callback for when a sync collection request completes. */
 interface OnSyncComplete<T> {
-    void onSuccess(DataCollectionResult<T> result);
+    void onSuccess(FirefoxDataResult<T> result);
     void onException(FirefoxDataException e);
 }

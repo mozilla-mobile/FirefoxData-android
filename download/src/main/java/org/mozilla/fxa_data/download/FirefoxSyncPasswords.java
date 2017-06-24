@@ -64,7 +64,7 @@ class FirefoxSyncPasswords {
             }
 
             final List<PasswordRecord> resultRecords = rawRecordsToResultRecords(rawRecords);
-            onComplete.onSuccess(new DataCollectionResult<>(resultRecords));
+            onComplete.onSuccess(new FirefoxDataResult<>(resultRecords));
         }
 
         private List<PasswordRecord> rawRecordsToResultRecords(final List<org.mozilla.gecko.sync.repositories.domain.PasswordRecord> rawRecords) {

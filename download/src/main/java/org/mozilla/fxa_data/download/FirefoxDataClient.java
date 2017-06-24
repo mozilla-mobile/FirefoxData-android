@@ -36,7 +36,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<BookmarkFolder> getAllBookmarks() throws FirefoxDataException;
+    FirefoxDataResult<BookmarkFolder> getAllBookmarks() throws FirefoxDataException;
 
     /**
      * Retrieves a limited number of bookmarks associated with this Sync account.
@@ -54,7 +54,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxDataException;
+    FirefoxDataResult<BookmarkFolder> getBookmarksWithLimit(int itemLimit) throws FirefoxDataException;
 
     // --- HISTORY --- //
     /**
@@ -67,7 +67,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<List<HistoryRecord>> getAllHistory() throws FirefoxDataException;
+    FirefoxDataResult<List<HistoryRecord>> getAllHistory() throws FirefoxDataException;
 
     /**
      * Retrieves a limited number of history entries a user has created from visiting pages. The
@@ -81,7 +81,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxDataException;
+    FirefoxDataResult<List<HistoryRecord>> getHistoryWithLimit(int itemLimit) throws FirefoxDataException;
 
     // --- PASSWORDS --- //
     /**
@@ -93,7 +93,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<List<PasswordRecord>> getAllPasswords() throws FirefoxDataException;
+    FirefoxDataResult<List<PasswordRecord>> getAllPasswords() throws FirefoxDataException;
 
     /**
      * Retrieves a limited number of passwords the user has saved.
@@ -105,7 +105,7 @@ public interface FirefoxDataClient {
      * @throws FirefoxDataException if there was an error retrieving the results.
      */
     @NonNull @WorkerThread
-    DataCollectionResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxDataException;
+    FirefoxDataResult<List<PasswordRecord>> getPasswordsWithLimit(int itemLimit) throws FirefoxDataException;
 
     /**
      * Gets the email associated with this Sync Client. It is intended to be used in the UI to

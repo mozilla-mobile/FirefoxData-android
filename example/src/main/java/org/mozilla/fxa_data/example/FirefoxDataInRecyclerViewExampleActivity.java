@@ -21,7 +21,7 @@ import org.mozilla.fxa_data.FirefoxDataException;
 import org.mozilla.fxa_data.login.FirefoxDataLoginManager;
 import org.mozilla.fxa_data.download.FirefoxDataClient;
 import org.mozilla.fxa_data.download.HistoryRecord;
-import org.mozilla.fxa_data.download.DataCollectionResult;
+import org.mozilla.fxa_data.download.FirefoxDataResult;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -117,7 +117,7 @@ public class FirefoxDataInRecyclerViewExampleActivity extends AppCompatActivity 
             if (activity == null) { return; }
 
             activity.isWaitingForCallback = false;
-            final DataCollectionResult<List<HistoryRecord>> result;
+            final FirefoxDataResult<List<HistoryRecord>> result;
             try {
                 result = dataClient.getAllHistory();
             } catch (final FirefoxDataException e) {
