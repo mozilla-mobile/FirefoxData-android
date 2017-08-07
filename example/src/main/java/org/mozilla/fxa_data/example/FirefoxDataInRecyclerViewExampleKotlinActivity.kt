@@ -146,7 +146,7 @@ public class FirefoxDataInRecyclerViewExampleKotlinActivity : AppCompatActivity(
         runOnUiThread {
             // Reset UI state by removing all mutations we make.
             for (container in containerViews) {
-                container.visibility = View.GONE // we'll unhide one of these.
+                container?.visibility = View.GONE // we'll unhide one of these.
             }
 
             explanation_button.isEnabled = true
