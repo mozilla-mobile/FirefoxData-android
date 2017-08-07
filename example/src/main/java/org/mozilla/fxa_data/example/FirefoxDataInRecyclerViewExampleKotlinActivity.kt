@@ -71,6 +71,11 @@ public class FirefoxDataInRecyclerViewExampleKotlinActivity : AppCompatActivity(
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        if (data == null) {
+            isWaitingForCallback = false
+            updateUI(UIState.SIGN_IN_PROMPT)
+            return
+        }
         // Required callback.
         loginManager.onActivityResult(requestCode, resultCode, data)
     }
